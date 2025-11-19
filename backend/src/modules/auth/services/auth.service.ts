@@ -2,8 +2,8 @@ import { BadRequestException, Injectable, UnauthorizedException } from "@nestjs/
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcrypt';
-import { UserService } from "src/modules/users/services/user.service";
-import { refreshTokenOptions } from "src/config/jwt.refresh.config";
+import { UserService } from "src/modules/users";
+import { refreshTokenOptions } from "src/config";
 
 @Injectable()
 export class AuthService {
