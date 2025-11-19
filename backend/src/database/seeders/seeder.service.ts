@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { MovieSeederService } from './movies/movie.seeder.service';
-import { TheaterSeederService } from './theaters/theater.seeder.service';
+import { MovieSeederService } from './movies/movie-seeder.service';
+import { TheaterSeederService } from './theaters/theater-seeder.service';
 
 @Injectable()
 export class SeederService {

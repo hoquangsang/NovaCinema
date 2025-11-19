@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
-import { MoviesSeederModule } from "./movies/movies.seeder.module";
 import { SeederService } from "./seeder.service";
-import { TheaterSeederModule } from "./theaters/theaters.seeder.module";
+import { MoviesSeederModule } from "./movies/movies-seeder.module";
+import { TheaterSeederModule } from "./theaters/theaters-seeder.module";
 
 @Module({
     imports: [
