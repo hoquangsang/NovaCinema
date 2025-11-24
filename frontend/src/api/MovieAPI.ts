@@ -1,6 +1,6 @@
 // src/api/movieApi.ts
-import { type Movie } from '../types';
-import { MOCK_MOVIES } from './MockData';
+import { type Movie } from "../types";
+import { MOCK_MOVIES } from "./MockData";
 
 // Hàm giả lập gọi API, trả về một Promise
 const fetchMockData = (data: Movie[]): Promise<Movie[]> => {
@@ -22,7 +22,18 @@ const getComingSoon = (): Promise<Movie[]> => {
   return fetchMockData(MOCK_MOVIES.slice(6, 12));
 };
 
+// Hàm lấy chi tiết phim theo id
+const getMovieById = (id: string): Promise<Movie | undefined> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const found = MOCK_MOVIES.find((m) => m.movie_id === id);
+      resolve(found);
+    }, 300);
+  });
+};
+
 export const movieApi = {
   getNowShowing,
   getComingSoon,
+  getMovieById,
 };
