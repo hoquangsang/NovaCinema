@@ -33,8 +33,10 @@ export default function MovieDetailPage() {
   }
 
   return (
-    <section className="w-full max-w-5xl mx-auto px-4 py-12 text-white">
-      <MovieDetails movie={movie} />
+    <section className="w-full py-12 text-white">
+      <div className="container mx-auto max-w-7xl px-4">
+        <MovieDetails movie={movie} />
+      </div>
     </section>
   );
 }
