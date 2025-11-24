@@ -9,7 +9,7 @@ export const MOCK_MOVIES: Movie[] = [
     poster_url:
       "https://www.cgv.vn/media/catalog/product/cache/1/image/1800x/71252117777b696995f01934522c402d/4/7/470wx700h-cvcn_1.jpg",
     rating_age: 13,
-    description: `Inspired by the sweet memories of childhood, "My Little Grandma" tells a heartfelt story about the bond between a grandmother and her grandchild...`,
+    description: `Inspired by the sweet memories of childhood, “My Little Grandma” tells a heartfelt story about the bond between a grandmother and her grandchild in a small, close-knit neighborhood. Mrs. Hau – a woman who has spent her whole life working hard – suddenly becomes the only support for her young grandchild after her daughter leaves. Though life is full of struggles, her love never fades. To her, the child is her “little treasure” – her joy, her comfort, and the very reason she keeps going. The film gently invites the audience into everyday moments of this small community: the child’s innocent laughter, the grandmother’s protective embrace, and the kindness of caring neighbors. Together, they weave a warm portrait of family, childhood, and the simple yet enduring beauty of human connection.`,
     genre: "Family, Drama",
     duration: 120,
     language: "Vietnamese",
@@ -25,7 +25,7 @@ export const MOCK_MOVIES: Movie[] = [
     poster_url:
       "https://www.cgv.vn/media/catalog/product/cache/3/image/c5f0a1eff4c394a251036189ccddaacd/c/g/cgv_pd_up.jpg",
     rating_age: 18,
-    description: `A young Predator outcast from his clan finds an unlikely ally...`,
+    description: `Trong tương lai, tại một hành tinh hẻo lánh, một Predator non nớt - kẻ bị chính tộc của mình ruồng bỏ - tìm thấy một đồng minh không ngờ tới là Thia và bắt đầu hành trình sinh tử nhằm truy tìm kẻ thù tối thượng. Bộ phim do Dan Trachtenberg - đạo diễn của Prey chỉ đạo và nằm trong chuỗi thương hiệu Quái Thú Vô Hình Predator.`,
     genre: "Adventure, Action",
     duration: 110,
     language: "English",
@@ -40,7 +40,7 @@ export const MOCK_MOVIES: Movie[] = [
     director: "Takashi Yamazaki",
     poster_url: "https://cinema.momocdn.net/img/57240060814553111-minus.png?size=M",
     rating_age: 13,
-    description: `In 1945, as World War II is nearing its end...`,
+    description: `Năm 1945, khi Thế chiến thứ Hai đang đi đến hồi kết, phi công Nhật Bản Koichi Shikishima bất ngờ chạm trán một quái vật biển đến từ cõi ngoài, mà người dân trên đảo Odo gọi là Godzilla. Bị giày vò bởi nỗi tội lỗi của kẻ sống sót — vì không thể bắn hạ con quái vật bằng súng gắn trên máy bay, và vì đã bỏ lại nhiệm vụ cảm tử của mình — Shikishima tìm được chút niềm an ủi mong manh bên Noriko, một người phụ nữ sống sót sau các đợt không kích Tokyo, và Akiko, một bé gái mồ côi. Năm tháng trôi qua, Shikishima dần mở lòng với Noriko và những người xung quanh. Nhưng bóng ma quá khứ — lần chạm trán năm xưa với Godzilla, nay đã biến đổi và nhiễm phóng xạ — lại một lần nữa trỗi dậy, khi toàn bộ nước Nhật chìm trong tuyệt vọng và kinh hoàng.`,
     genre: "Action",
     duration: 135,
     language: "Japanese",
@@ -56,7 +56,7 @@ export const MOCK_MOVIES: Movie[] = [
     poster_url:
       "https://www.cgv.vn/media/catalog/product/cache/1/image/c5f0a1eff4c394a251036189ccddaacd/3/5/350x495_2_1.jpg",
     rating_age: 16,
-    description: `A brutal murder shatters the peace of a quiet town...`,
+    description: `Một vụ án mạng tàn bạo làm chấn động thị trấn yên bình. Khi thi thể người phụ nữ bị sát hại dã man được phát hiện, mọi nghi ngờ đổ dồn vào Sơn — có thể là người tình của nạn nhân. Triết, một nhà điêu khắc danh tiếng, rơi vào giằng xé giữa nghi ngờ và tình thân khi anh cùng vợ mình cố gắng tìm cách minh oan cho em trai. Rốt cuộc, Sơn là kẻ giết người, nạn nhân của định mệnh nghiệt ngã, hay một trái tim lạc lối bị cuốn vào tình yêu đến mức tự hủy diệt.`,
     genre: "Nervous, Drama",
     duration: 100,
     language: "Vietnamese",
@@ -72,7 +72,7 @@ export const MOCK_MOVIES: Movie[] = [
     poster_url:
       "https://www.cgv.vn/media/catalog/product/cache/1/image/c5f0a1eff4c394a251036189ccddaacd/3/5/350x495-nhamaxo.jpg",
     rating_age: 16,
-    description: `The Ghost House revolves around the story of Mrs. Hien...`,
+    description: `Nhà Ma Xó xoay quanh câu chuyện về bà Hiền, người phụ nữ một mình nuôi 3 người con sau tai nạn chồng qua đời. Mọi chuyện bắt đầu khi người con trai giữa trong một lần thả lưới bắt cá vớt được một cái khạp bằng sành, nắp đậy kín. Từ đó, những hiện tượng kỳ quái liên tiếp xảy ra trong gia đình.`,
     genre: "Family, Horror",
     duration: 100,
     language: "Vietnamese",
@@ -87,7 +87,7 @@ export const MOCK_MOVIES: Movie[] = [
     director: "Wanchai Darawan",
     poster_url: "https://cdn.galaxycine.vn/media/2025/10/27/tinh-nguoi-duyen-ma-500_1761537469837.jpg",
     rating_age: 13,
-    description: `Director remaking the legendary Thai ghost story Nang Nak...`,
+    description: `Lấy cảm hứng từ truyền thuyết dân gian Thái Lan về hồn ma Mae Nak, Tình Người Duyên Ma: Nhắm Mak Yêu Luôn kể câu chuyện tình vượt thời gian giữa nàng Nak và chàng Mak. Xuyên không đến 200 năm sau, Nak bất ngờ được vào vai nữ chính trong chính bộ phim về truyền thuyết của mình. Tình cờ thay, vai nam chính lại được thủ bởi Mak - lúc này đã là một nam diễn viên nổi tiếng toàn quốc. Ở đây, Nak phải chinh phục lại trái tim Mak trong vòng 30 ngày mà không được dùng đến ma lực, để có thể ở bên anh trọn đời trọn kiếp.`,
     genre: "Romance, Comedy, Horror",
     duration: 104,
     language: "Thai",
@@ -103,7 +103,7 @@ export const MOCK_MOVIES: Movie[] = [
     poster_url:
       "https://www.cgv.vn/media/catalog/product/cache/1/image/1800x/71252117777b696995f01934522c402d/4/5/457x590-tct_1.jpg",
     rating_age: 16,
-    description: `Nho, a successful businessman through tricks...`,
+    description: `Nhơn, một doanh nhân thành đạt nhờ thủ đoạn và mưu mẹo, tìm đến thứ tà thuật mang tên “Thai Chiêu Tài” để giữ lấy tài khí đã vô tình khơi dậy những ám ảnh từ quá khứ và sang chấn liên thế hệ.`,
     genre: "Horror",
     duration: 104,
     language: "Vietnamese",
@@ -119,7 +119,7 @@ export const MOCK_MOVIES: Movie[] = [
     poster_url:
       "https://www.cgv.vn/media/catalog/product/cache/3/image/c5f0a1eff4c394a251036189ccddaacd/3/5/350x495-nui-te-vong.jpg",
     rating_age: 16,
-    description: `In the mountains of Taiwan, there is a well-known "Yellow Taboo"...`,
+    description: `A legend in Taiwan's mountains says that when lost, hikers encounter a figure in a yellow raincoat who points to a blurry path, leading them to disappear.`,
     genre: "Horror",
     duration: 100,
     language: "Chinese",
@@ -135,7 +135,7 @@ export const MOCK_MOVIES: Movie[] = [
     poster_url:
       "https://www.cgv.vn/media/catalog/product/cache/3/image/c5f0a1eff4c394a251036189ccddaacd/t/w/twitwc.jpg",
     rating_age: 16,
-    description: `Everyone lies… In the early hours after a raging snowstorm...`,
+    description: `Everyone lies… In the early hours after a raging snowstorm, Do Kyung (Jung Ryeo-won) rushes her blood-soaked sister to the hospital, begging for help. But when detective Hyun Joo (Lee Jung-eun) arrives at the scene, she senses that something in Do Kyung’s frantic testimony doesn’t add up. As each person recalls the incident from a different perspective, truth and deception begin to intertwine—unraveling a haunting psychological mystery where no one’s memory can be trusted. On that snowy night when every trace was buried, who is the real culprit?`,
     genre: "Nervous, Drama",
     duration: 108,
     language: "Korean",
