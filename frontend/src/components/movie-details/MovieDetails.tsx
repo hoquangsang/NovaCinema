@@ -25,7 +25,7 @@ function DescriptionWithToggle({
       {desc && (
         <button
           type="button"
-          className="mt-2 text-yellow-400 underline bg-transparent p-0"
+          className="mt-2 text-yellow-400 underline bg-transparent p-0 cursor-pointer"
           onClick={() => setOpen((s) => !s)}
           aria-expanded={open}
         >
@@ -95,20 +95,16 @@ export default function MovieDetails({ movie }: MovieDetailsProps) {
 
         <div className="mt-4" />
 
-        <div className="flex items-center gap-3 mt-6">
-          <Button intent="secondary" onClick={() => setShowTrailerModal(true)}>
+        <div className="flex items-center gap-3 mt-6 cursor-pointer">
+          <Button intent="secondary" onClick={() => setShowTrailerModal(true)} className="cursor-pointer">
             <div className="flex items-center gap-2">
               <CirclePlay className="w-5 h-5" />
               <span>Watch trailer</span>
             </div>
           </Button>
 
-          <Button intent="primary" onClick={() => navigate(`/movie/${movie.movie_id}`)}>
+          <Button intent="primary" onClick={() => navigate(`/movie/${movie.movie_id}`)} className="cursor-pointer">
             BUY TICKETS
-          </Button>
-
-          <Button intent="ghost" onClick={() => navigate(-1)}>
-            Back
           </Button>
         </div>
         <TrailerModal
