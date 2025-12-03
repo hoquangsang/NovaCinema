@@ -1,5 +1,7 @@
 import { Controller, Get, Param, Query } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
+import { ParseObjectIdPipe } from "@nestjs/mongoose";
+import { SuccessResponse } from "src/common/responses";
 import { RoomService } from "../services/room.service";
 
 @ApiTags('rooms')
@@ -11,17 +13,19 @@ export class RoomsController {
 
     @ApiOperation({ operationId: 'getRoomById' })
     @Get(':id')
-    getRoomById(
-        @Param('id') id: string
+    async getRoomById(
+        @Param('id', ParseObjectIdPipe) id: string
     ) {
-        return this.service.getRoomById(id);
+        const result = await this.service.getRoomById(id);
+        return SuccessResponse.of(result);
     }
 
     @ApiOperation({ operationId: 'getRoomsByTheaterId' })
     @Get('')
-    getRoomsByTheaterId(
-        @Query('theaterId') theaterId: string
+    async getRoomsByTheaterId(
+        @Query('theaterId', ParseObjectIdPipe) theaterId: string
     ) {
-        return this.service.getRoomsByTheaterId(theaterId);
+        const result = await this.service.getRoomsByTheaterId(theaterId);
+        return SuccessResponse.of(result);
     }
 }

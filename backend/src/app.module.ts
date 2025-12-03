@@ -1,10 +1,14 @@
 import { Module } from '@nestjs/common';
+import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
-import { DatabaseModule } from 'src/database';
-import { UsersModule } from 'src/modules/users';
-import { AuthModule } from 'src/modules/auth';
+import { DatabaseModule } from './database';
+import { UsersModule } from './modules/users';
+import { AuthModule } from './modules/auth';
 import { MoviesModule } from './modules/movies';
 import { TheatersModule } from './modules/theaters';
+import { ValidationPipe } from './common/pipes';
+import { LoggingInterceptor } from './common/interceptors';
+import { HttpExceptionFilter, MongoExceptionFilter } from './common/filters';
 
 @Module({
   imports: [
@@ -14,6 +18,13 @@ import { TheatersModule } from './modules/theaters';
     AuthModule,
     MoviesModule,
     TheatersModule,
+  ],
+
+  providers: [
+    { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
+    { provide: APP_FILTER, useClass: HttpExceptionFilter },
+    { provide: APP_FILTER, useClass: MongoExceptionFilter },
+    { provide: APP_PIPE, useClass: ValidationPipe },
   ],
 })
 export class AppModule {}

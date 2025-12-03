@@ -1,5 +1,7 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
+import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ParseObjectIdPipe } from '@nestjs/mongoose';
+import { SuccessResponse } from 'src/common/responses';
 import { MovieService } from '../services/movie.service';
 
 @ApiTags('movies')
@@ -10,20 +12,35 @@ export class MoviesController {
   ) {}
 
   @ApiOperation({ operationId: 'showing' })
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
   @Get('showing')
-  getShowingMovies(@Query('page') page = 1, @Query('limit') limit = 10) {
-    return this.service.getShowingMovies(+page, +limit);
+  async getShowingMovies(
+    @Query('page', new ParseIntPipe({ optional: true })) page = 1,
+    @Query('limit', new ParseIntPipe({ optional: true })) limit = 10
+  ) {
+    const { data, total } = await this.service.getShowingMovies(page, limit);
+    return SuccessResponse.withPagination(data, total, page, limit);
   }
 
   @ApiOperation({ operationId: 'upcoming' })
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
   @Get('upcoming')
-  getUpcomingMovies(@Query('page') page = 1, @Query('limit') limit = 10) {
-    return this.service.getUpcomingMovies(+page, +limit);
+  async getUpcomingMovies(
+    @Query('page', new ParseIntPipe({ optional: true })) page = 1,
+    @Query('limit', new ParseIntPipe({ optional: true })) limit = 10
+  ) {
+    const { data, total } = await this.service.getUpcomingMovies(page, limit);
+    return SuccessResponse.withPagination(data, total, page, limit);
   }
 
   @ApiOperation({ operationId: 'detail' })
   @Get(':id')
-  getMovieDetail(@Param('id') id: string) {
-    return this.service.getMovieById(id);
+  async getMovieDetail(
+    @Param('id', ParseObjectIdPipe) id: string
+  ) {
+    const movie = await this.service.getMovieById(id);
+    return SuccessResponse.of(movie);
   }
 }

@@ -1,10 +1,9 @@
 import { BadRequestException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from '@nestjs/jwt';
-import bcrypt from 'bcrypt';
 import { UserService } from "src/modules/users";
 import { refreshTokenOptions } from "src/config";
-
+import { HashUtil } from "src/common/utils";
 @Injectable()
 export class AuthService {
   constructor(
@@ -22,7 +21,7 @@ export class AuthService {
     if (!user)
       throw new UnauthorizedException('User not found');
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await HashUtil.compare(password, user.password);
     if (!isMatch)
       throw new UnauthorizedException('Invalid password');
 
@@ -52,7 +51,7 @@ export class AuthService {
     if (existed)
       throw new BadRequestException('Email already exists');
 
-    const pwhashed = await bcrypt.hash(password, 10);
+    const pwhashed = await HashUtil.hash(password);
     const user = await this.userService.createUser({
       email: email,
       password: pwhashed,

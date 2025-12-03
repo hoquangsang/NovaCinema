@@ -2,6 +2,7 @@ import { Body, Controller, Post } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import { AuthService } from "../services/auth.service";
 import { LoginDto, RegisterDto } from "../dto/auth.dto";
+import { SuccessResponse } from "src/common/responses";
 
 @ApiTags('auth')
 @Controller('auth')
@@ -15,10 +16,12 @@ export class AuthController {
   async login(
     @Body() dto: LoginDto
   ) {
-    return this.authService.login(
+    const result = await this.authService.login(
       dto.email,
       dto.password
     );
+
+    return SuccessResponse.of(result, 'Login successful');
   }
 
   @ApiOperation({ operationId: 'register' })
@@ -31,5 +34,7 @@ export class AuthController {
       dto.password,
       dto.userName
     );
+
+    return SuccessResponse.created(null, 'Register successful');
   }
 }
