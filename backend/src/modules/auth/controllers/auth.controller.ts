@@ -1,8 +1,9 @@
-import { Body, Controller, Post } from "@nestjs/common";
+import { Body, Controller, HttpCode, Post } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
+import { SuccessResponse } from "src/common/responses";
+import { Public } from "src/common/decorators";
 import { AuthService } from "../services/auth.service";
 import { LoginDto, RegisterDto } from "../dto/auth.dto";
-import { SuccessResponse } from "src/common/responses";
 
 @ApiTags('auth')
 @Controller('auth')
@@ -12,6 +13,8 @@ export class AuthController {
   ) {}
 
   @ApiOperation({ operationId: 'login' })
+  @Public()
+  @HttpCode(200)
   @Post('login')
   async login(
     @Body() dto: LoginDto
@@ -25,6 +28,8 @@ export class AuthController {
   }
 
   @ApiOperation({ operationId: 'register' })
+  @Public()
+  @HttpCode(201)
   @Post('register')
   async register(
     @Body() dto: RegisterDto
@@ -32,7 +37,7 @@ export class AuthController {
     await this.authService.register(
       dto.email,
       dto.password,
-      dto.userName
+      dto.username
     );
 
     return SuccessResponse.created(null, 'Register successful');

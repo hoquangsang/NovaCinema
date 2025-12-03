@@ -4,9 +4,9 @@ export const jwtAccessConfig = {
   imports: [ConfigModule],
   inject: [ConfigService],
   useFactory: async (cfg: ConfigService) => ({
-    secret: cfg.getOrThrow<string>('JWT_ACCESS_SECRET'),
+    secret: cfg.getOrThrow('JWT_ACCESS_SECRET'),
     signOptions: {
-      expiresIn: cfg.getOrThrow<number>('JWT_ACCESS_EXPIRES'),
+      expiresIn: parseInt(cfg.getOrThrow('JWT_ACCESS_EXPIRES'), 10),
     },
   }),
 };

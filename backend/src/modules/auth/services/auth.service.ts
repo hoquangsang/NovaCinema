@@ -1,16 +1,32 @@
 import { BadRequestException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { UserService } from "src/modules/users";
 import { refreshTokenOptions } from "src/config";
 import { HashUtil } from "src/common/utils";
 @Injectable()
 export class AuthService {
+  private readonly tokenConfig: {
+    expiresIn: number;
+    refreshExpiresIn: number;
+    refreshOptions: JwtSignOptions;
+  };
+
   constructor(
     private userService: UserService,
     private jwtService: JwtService,
     private cfgService: ConfigService
-  ) {}
+  ) {
+    const accessExpiresIn = parseInt(this.cfgService.getOrThrow('JWT_ACCESS_EXPIRES'), 10);
+    const refreshExpiresIn = parseInt(this.cfgService.getOrThrow('JWT_REFRESH_EXPIRES'), 10);
+    const refreshOptions = refreshTokenOptions(this.cfgService);
+
+    this.tokenConfig = {
+      expiresIn: accessExpiresIn,
+      refreshExpiresIn: refreshExpiresIn,
+      refreshOptions: refreshOptions
+    };
+  }
 
   //
   async login(
@@ -27,7 +43,8 @@ export class AuthService {
 
     const accessToken = this.jwtService.sign({
       sub: user._id,
-      email: user.email
+      email: user.email,
+      roles: user.roles,
     });
 
     const refreshToken = this.jwtService.sign(
@@ -35,10 +52,13 @@ export class AuthService {
       refreshTokenOptions(this.cfgService)
     );
 
+    const { password: _, ...userWithoutPassword } = user;
     return {
       accessToken: accessToken,
+      expiresIn: this.tokenConfig.expiresIn,
       refreshToken: refreshToken,
-      expiresIn: this.cfgService.getOrThrow<number>('JWT_ACCESS_EXPIRES'),
+      refreshExpiresIn: this.tokenConfig.refreshExpiresIn,
+      ...userWithoutPassword
     }
   }
 

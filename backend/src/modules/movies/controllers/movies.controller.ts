@@ -2,6 +2,7 @@ import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { ParseObjectIdPipe } from '@nestjs/mongoose';
 import { SuccessResponse } from 'src/common/responses';
+import { Public, Roles } from 'src/common/decorators';
 import { MovieService } from '../services/movie.service';
 
 @ApiTags('movies')
@@ -14,6 +15,7 @@ export class MoviesController {
   @ApiOperation({ operationId: 'showing' })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
+  @Public()
   @Get('showing')
   async getShowingMovies(
     @Query('page', new ParseIntPipe({ optional: true })) page = 1,
@@ -26,6 +28,7 @@ export class MoviesController {
   @ApiOperation({ operationId: 'upcoming' })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
+  @Public()
   @Get('upcoming')
   async getUpcomingMovies(
     @Query('page', new ParseIntPipe({ optional: true })) page = 1,
@@ -36,6 +39,7 @@ export class MoviesController {
   }
 
   @ApiOperation({ operationId: 'detail' })
+  @Public()
   @Get(':id')
   async getMovieDetail(
     @Param('id', ParseObjectIdPipe) id: string

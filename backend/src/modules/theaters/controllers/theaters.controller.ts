@@ -2,6 +2,7 @@ import { Controller, Get, Param } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import { ParseObjectIdPipe } from "@nestjs/mongoose";
 import { SuccessResponse } from "src/common/responses";
+import { Public } from "src/common/decorators";
 import { TheaterService } from "../services/theater.service";
 
 @ApiTags('theaters')
@@ -12,6 +13,7 @@ export class TheatersController {
     ) {}
 
     @ApiOperation({ operationId: 'getTheaterById' })
+    @Public()
     @Get(':id')
     async getTheaterById(
         @Param('id', ParseObjectIdPipe) id: string
@@ -21,6 +23,7 @@ export class TheatersController {
     }
 
     @ApiOperation({ operationId: 'getAllTheaters' })
+    @Public()
     @Get()
     async getAllTheaters() {
         const result = await this.service.getAllTheaters();

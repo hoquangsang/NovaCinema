@@ -11,9 +11,20 @@ export class User {
   @Prop({ required: true })
   password!: string;
 
-  //
   @Prop()
-  userName?: string;
+  phoneNumber?: string;
+
+  @Prop()
+  username?: string;
+
+  @Prop()
+  fullName?: string;
+
+  @Prop()
+  dateOfBirth?: Date;
+
+  @Prop({ type: [String], default: ['user'] })
+  roles!: string[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
