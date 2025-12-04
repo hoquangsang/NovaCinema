@@ -7,6 +7,10 @@ export class UserService {
     private usersRepo: UserRepository
   ) {}
 
+  findById(id: string) {
+    return this.usersRepo.findById(id);
+  }
+
   findByEmail(email: string) {
     return this.usersRepo.findByEmail(email);
   }
@@ -15,8 +19,29 @@ export class UserService {
     data: {
       email: string;
       password: string;
-      userName?: string;
-    }) {
-      return this.usersRepo.createUser(data);
+      username?: string;
+      fullName?: string;
+      phoneNumber?: string;
+      dateOfBirth?: string;
     }
+  ) {
+    return this.usersRepo.createUser(data);
+  }
+  
+  updateUserByEmail(
+    email: string,
+    updates: {
+      username?: string;
+      fullName?: string;
+      phoneNumber?: string;
+      dateOfBirth?: string;
+      lastLogin?: Date;
+    }
+  ) {
+    return this.usersRepo.updateByFilter({ email }, updates);
+  }
+
+  markEmailVerified(email: string) {
+    return this.usersRepo.markEmailVerified(email);
+  }
 }

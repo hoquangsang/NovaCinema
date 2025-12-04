@@ -1,7 +1,7 @@
 import { IsDateString, IsEmail, IsNotEmpty, IsOptional, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class RegisterDto {
+export class RegisterRequestDto {
   @ApiProperty({ example: "user@example.com" })
   @IsEmail()
   email!: string;
@@ -29,14 +29,4 @@ export class RegisterDto {
   @IsOptional()
   @IsDateString()
   dateOfBirth?: string;
-}
-
-export class LoginDto {
-  @ApiProperty({ example: "user@example.com" })
-  @IsEmail()
-  email!: string;
-
-  @ApiProperty({ example: "password123" })
-  @MinLength(6)
-  password!: string;
 }

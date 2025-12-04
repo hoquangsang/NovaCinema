@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database';
+import { MailModule } from './mail';
 import { UsersModule } from './modules/users';
 import { AuthModule } from './modules/auth';
 import { MoviesModule } from './modules/movies';
@@ -15,6 +16,7 @@ import { JwtAuthGuard, RolesGuard } from './common/guards';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }), // load .env toàn cục
     DatabaseModule,
+    MailModule,
     UsersModule,
     AuthModule,
     MoviesModule,
