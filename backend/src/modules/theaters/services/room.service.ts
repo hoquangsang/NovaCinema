@@ -39,6 +39,7 @@ export class RoomService {
     for (let row = 1; row <= data.rowCount; row++) {
       for (let num = 1; num <= data.seatsPerRow; num++) {
         seats.push({
+          theaterId: new Types.ObjectId(data.theaterId),
           roomId: new Types.ObjectId(room._id),
           row,
           number: num,

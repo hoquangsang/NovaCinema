@@ -26,6 +26,7 @@ export const ROOMS_MOCK = [
 ];
 
 export function generateSeats(
+  theaterId: Types.ObjectId,
   roomId: Types.ObjectId,
   rowCount: number,
   seatsPerRow: number
@@ -35,6 +36,7 @@ export function generateSeats(
   for (let row = 1; row <= rowCount; row++) {
     for (let number = 1; number <= seatsPerRow; number++) {
       seats.push({
+        theaterId,
         roomId,
         row,
         number,
