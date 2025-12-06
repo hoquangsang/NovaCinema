@@ -1,9 +1,9 @@
-import { Body, Controller, Delete, Get, HttpCode, NotFoundException, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, NotFoundException, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ParseObjectIdPipe } from '@nestjs/mongoose';
 import { Public, Roles, WrapCreatedResponse, WrapNoContentResponse, WrapOkResponse, WrapPaginatedResponse } from 'src/common/decorators';
 import { MovieService } from '../services/movie.service';
-import { CreateMovieDto, MovieDto, QueryMoviesDto } from '../dtos';
+import { CreateMovieDto, MovieDto, QueryMoviesDto, UpdateMovieDto } from '../dtos';
 
 @ApiTags('movies')
 @Controller('movies')
@@ -71,6 +71,18 @@ export class MoviesController {
     @Body() dto: CreateMovieDto
   ) {
     return this.service.createMovie(dto)
+  }
+
+  @ApiOperation({ description: 'update movie by ID' })
+  @WrapOkResponse({ dto: MovieDto, message: 'Movie updated successfully' })
+  @Roles('admin')
+  @HttpCode(200)
+  @Patch(':id')
+  async updateMovie(
+    @Param('id', ParseObjectIdPipe) id: string,
+    @Body() dto: UpdateMovieDto
+  ) {
+    return this.service.updateById(id, dto);
   }
 
   @ApiOperation({ description: 'delete movie'})

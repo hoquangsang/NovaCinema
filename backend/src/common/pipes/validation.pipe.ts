@@ -7,6 +7,7 @@ export class ValidationPipe extends VP {
   constructor() {
     super({
       whitelist: true,
+      forbidNonWhitelisted: true,
       transform: true,
       exceptionFactory: (errors) => {
         return new BadRequestException({
