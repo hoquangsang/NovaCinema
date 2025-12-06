@@ -4,7 +4,6 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Seat, SeatDocument } from "../schemas/seat.schema";
 import { BaseRepository } from "src/modules/shared";
 
-
 @Injectable()
 export class SeatRepository extends BaseRepository<Seat, SeatDocument> {
   constructor(
@@ -28,7 +27,16 @@ export class SeatRepository extends BaseRepository<Seat, SeatDocument> {
     return super.create(data);  
   }
 
+  createMany(data: Partial<Seat>[]) {
+    return super.createMany(data);
+  }
+
   deleteById(id: string) {
     return super.deleteById(id);
+  }
+  
+  deleteByRoomId(roomId: string) {
+    const objectId = new Types.ObjectId(roomId);
+    return this.deleteMany({ roomId: objectId });
   }
 }

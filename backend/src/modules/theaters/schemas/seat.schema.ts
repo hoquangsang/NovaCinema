@@ -14,7 +14,13 @@ export class Seat {
   roomId!: Types.ObjectId;
 
   @Prop({ required: true })
-  seatNumber!: string;
+  row!: number;
+
+  @Prop({ required: true })
+  number!: number;
+
+  @Prop({ required: true })
+  seatCode!: string;
 }
 
 export const SeatSchema = SchemaFactory.createForClass(Seat);

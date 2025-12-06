@@ -91,6 +91,15 @@ export abstract class BaseRepository<T, TDoc extends Document & T> {
     return this.convertId(plain)!;
   }
 
+  protected async createMany(data: Partial<T>[]): Promise<WithId<T>[]> {
+    if (!Array.isArray(data) || data.length === 0) return [];
+
+    const docs = await this.model.insertMany(data, { ordered: true });
+    const plain = docs.map((d) => d.toObject({ flattenMaps: true }));
+
+    return this.convertIdArray(plain);
+  }
+
   protected async updateOne(
     filter: FilterQuery<TDoc>,
     updates: UpdateQuery<TDoc>
@@ -127,5 +136,10 @@ export abstract class BaseRepository<T, TDoc extends Document & T> {
     if (!this.isValidObjectId(id)) return false;
     const res = await this.model.findByIdAndDelete(id).exec();
     return !!res;
+  }
+
+  protected async deleteMany(filter: FilterQuery<TDoc>): Promise<number> {
+    const res = await this.model.deleteMany(filter).exec();
+    return res.deletedCount ?? 0;
   }
 }

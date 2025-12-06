@@ -4,7 +4,6 @@ import { Model } from "mongoose";
 import { Theater, TheaterDocument } from "../schemas/theater.schema";
 import { BaseRepository } from "src/modules/shared";
 
-
 @Injectable()
 export class TheaterRepository extends BaseRepository<Theater, TheaterDocument> {
   constructor(
@@ -24,6 +23,10 @@ export class TheaterRepository extends BaseRepository<Theater, TheaterDocument> 
 
   create(data: Partial<Theater>) {
     return super.create(data);  
+  }
+
+  updateById(id: string, updates: Partial<Theater>) {
+    return super.updateById(id, updates);
   }
 
   deleteById(id: string) {

@@ -16,5 +16,13 @@ export class RoomDto {
 
   @ApiProperty()
   @Expose()
+  rowCount!: number;
+
+  @ApiProperty()
+  @Expose()
+  seatsPerRow!: number;
+
+  @ApiProperty()
+  @Expose()
   capacity!: number;
 }

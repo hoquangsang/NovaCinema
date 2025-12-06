@@ -20,20 +20,25 @@ export const THEATERS_MOCK = [
 ];
 
 export const ROOMS_MOCK = [
-  { roomName: 'Room 1', capacity: 80 },
-  { roomName: 'Room 2', capacity: 80 },
-  { roomName: 'Room 3', capacity: 80 },
+  { roomName: 'Room 1', rowCount: 8, seatsPerRow: 10 },
+  { roomName: 'Room 2', rowCount: 8, seatsPerRow: 10 },
+  { roomName: 'Room 3', rowCount: 8, seatsPerRow: 10 },
 ];
 
-export function generateSeats(roomId: Types.ObjectId): Partial<Seat>[] {
+export function generateSeats(
+  roomId: Types.ObjectId,
+  rowCount: number,
+  seatsPerRow: number
+): Partial<Seat>[] {
   const seats: Partial<Seat>[] = [];
-  const rows = 'ABCDEFGH';
 
-  for (const row of rows) {
-    for (let i = 1; i <= 10; i++) {
+  for (let row = 1; row <= rowCount; row++) {
+    for (let number = 1; number <= seatsPerRow; number++) {
       seats.push({
         roomId,
-        seatNumber: `${row}${i}`,
+        row,
+        number,
+        seatCode: `${String.fromCharCode(64 + row)}${number}`, // A1, B1, ...
       });
     }
   }

@@ -17,6 +17,12 @@ export class Room {
   roomName!: string;
 
   @Prop({ required: true })
+  rowCount!: number;
+
+  @Prop({ required: true })
+  seatsPerRow!: number;
+
+  @Prop({ required: true })
   capacity!: number;
 }
 

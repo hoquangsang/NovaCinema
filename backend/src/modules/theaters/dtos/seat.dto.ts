@@ -12,5 +12,5 @@ export class SeatDto {
 
   @ApiProperty()
   @Expose()
-  seatNumber!: string;
+  seatCode!: string;
 }

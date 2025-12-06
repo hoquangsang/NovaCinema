@@ -86,7 +86,7 @@ export class MoviesController {
   }
 
   @ApiOperation({ description: 'delete movie'})
-  @WrapNoContentResponse({ dto: MovieDto })
+  @WrapNoContentResponse({ message: 'Movie deleted successfully' })
   @Roles('admin')
   @HttpCode(204)
   @Delete(':id')
