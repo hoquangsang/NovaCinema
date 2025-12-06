@@ -1,4 +1,5 @@
 export const METADATA_KEYS = {
+  RESPONSE_META: 'RESPONSE_META',
   IS_PUBLIC: 'IS_PUBLIC',
   ROLES: 'ROLES',
 };

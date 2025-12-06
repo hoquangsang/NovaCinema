@@ -1,1 +1,1 @@
-export { METADATA_KEYS } from "./metadata-keys";
+export { METADATA_KEYS } from "./metadata-keys.constant";

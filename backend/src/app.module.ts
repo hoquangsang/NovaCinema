@@ -8,7 +8,7 @@ import { AuthModule } from './modules/auth';
 import { MoviesModule } from './modules/movies';
 import { TheatersModule } from './modules/theaters';
 import { ValidationPipe } from './common/pipes';
-import { LoggingInterceptor } from './common/interceptors';
+import { LoggingInterceptor, ResponseInterceptor } from './common/interceptors';
 import { HttpExceptionFilter, MongoExceptionFilter } from './common/filters';
 import { JwtAuthGuard, RolesGuard } from './common/guards';
 
@@ -25,6 +25,7 @@ import { JwtAuthGuard, RolesGuard } from './common/guards';
 
   providers: [
     { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
+    { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
     { provide: APP_FILTER, useClass: HttpExceptionFilter },

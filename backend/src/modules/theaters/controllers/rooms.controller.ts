@@ -1,34 +1,32 @@
-import { Controller, Get, Param, Query } from "@nestjs/common";
+import { Controller, Get, HttpCode, NotFoundException, Param } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import { ParseObjectIdPipe } from "@nestjs/mongoose";
-import { SuccessResponse } from "src/common/responses";
-import { Public } from "src/common/decorators";
 import { RoomService } from "../services/room.service";
+import { WrapListResponse, WrapOkResponse } from "src/common/decorators";
+import { RoomDto } from "../dtos";
 
-@ApiTags('rooms')
+@ApiTags('Theaters')
 @Controller('rooms')
 export class RoomsController {
-    constructor(
-        private readonly service: RoomService
-    ) {}
+  constructor(
+      private readonly service: RoomService
+  ) {}
 
-    @ApiOperation({ operationId: 'getRoomById' })
-    @Public()
-    @Get(':id')
-    async getRoomById(
-        @Param('id', ParseObjectIdPipe) id: string
-    ) {
-        const result = await this.service.getRoomById(id);
-        return SuccessResponse.of(result);
-    }
+  @ApiOperation({ description: 'get room by ID' })
+  @WrapOkResponse({ dto: RoomDto })
+  @HttpCode(200)
+  @Get(':id')
+  async getById(@Param('id', ParseObjectIdPipe) id: string) {
+    const room = await this.service.findRoomById(id);
+    if (!room) throw new NotFoundException('Room not found');
+    return room;
+  }
 
-    @ApiOperation({ operationId: 'getRoomsByTheaterId' })
-    @Public()
-    @Get('')
-    async getRoomsByTheaterId(
-        @Query('theaterId', ParseObjectIdPipe) theaterId: string
-    ) {
-        const result = await this.service.getRoomsByTheaterId(theaterId);
-        return SuccessResponse.of(result);
-    }
+  @ApiOperation({ description: 'get rooms by theater ID' })
+  @WrapListResponse({ dto: RoomDto })
+  @HttpCode(200)
+  @Get('theater/:theaterId')
+  async getByTheaterId(@Param('theaterId', ParseObjectIdPipe) theaterId: string) {
+    return this.service.getRoomsByTheaterId(theaterId);
+  }
 }

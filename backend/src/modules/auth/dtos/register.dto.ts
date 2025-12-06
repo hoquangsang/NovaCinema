@@ -1,7 +1,8 @@
-import { IsDateString, IsEmail, IsNotEmpty, IsOptional, MinLength } from 'class-validator';
+import { IsDate, IsEmail, IsNotEmpty, IsOptional, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 
-export class RegisterRequestDto {
+export class RegisterDto {
   @ApiProperty({ example: "user@example.com" })
   @IsEmail()
   email!: string;
@@ -25,8 +26,9 @@ export class RegisterRequestDto {
   @IsNotEmpty()
   fullName?: string;
 
-  @ApiProperty({ example: "1990-01-01", required: false })
+  @ApiProperty({ type: String,  example: "1990-01-01", required: false })
   @IsOptional()
-  @IsDateString()
-  dateOfBirth?: string;
+  @IsDate()
+  @Type(() => Date)
+  dateOfBirth?: Date;
 }

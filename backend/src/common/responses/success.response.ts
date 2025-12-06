@@ -1,40 +1,57 @@
-export class SuccessResponse<T> {
+export abstract class BaseResponse {
   success = true;
-  timestamp: string;
-  data: T;
+  timestamp = new Date().toISOString();
   message: string;
-  meta?: Record<string, any>;
 
-  constructor(data: T, message = 'OK', meta?: Record<string, any>) {
-    this.timestamp = new Date().toISOString();
-    this.data = data;
+  constructor(message = 'OK') {
     this.message = message;
-    if (meta) this.meta = meta;
   }
+}
 
-  //
-  static of<T>(data: T, message: string = 'OK') {
-    return new SuccessResponse(data, message);
+export class SuccessResponse<T> extends BaseResponse {
+  data: T;
+
+  constructor(data: T, message = 'OK') {
+    super(message);
+    this.data = data;
   }
+}
 
-  static withPagination<T>(
-    items: T[],
-    total: number,
-    page: number,
-    limit: number,
-    message?: string,
-  ) {
-    const meta = {
+export class ListResponse<T> extends BaseResponse {
+  data: T[];
+
+  constructor(items: T[], message = 'OK') {
+    super(message);
+    this.data = items;
+  }
+}
+
+export class PaginatedResponse<T> extends BaseResponse {
+  data: T[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+
+  constructor(items: T[], total: number, page: number, limit: number, message = 'OK') {
+    super(message);
+    this.data = items;
+    this.meta = {
       total,
       page,
       limit,
       totalPages: Math.ceil(total / limit),
     };
-
-    return new SuccessResponse(items, message ?? 'OK', meta);
   }
+}
 
-  static created<T>(data: T, message = 'Created successfully') {
-    return new SuccessResponse(data, message);
+export class CreatedResponse<T> extends BaseResponse {
+  data: T;
+
+  constructor(data: T, message = 'Created') {
+    super(message);
+    this.data = data;
   }
 }

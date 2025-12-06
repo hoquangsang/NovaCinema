@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { TheaterRepository } from "../repositories/theater.repository";
 
 @Injectable()
@@ -7,15 +7,11 @@ export class TheaterService {
     private readonly theaterRepo: TheaterRepository
   ) {}
 
-  async getTheaterById(id: string) {
-    const theater = await this.theaterRepo.findTheaterById(id);
-    if (!theater)
-      throw new NotFoundException('Theater not found');
-
-    return theater;
+  findTheaterById(id: string) {
+    return this.theaterRepo.findById(id);
   }
 
   getAllTheaters() {
-    return this.theaterRepo.findAllTheaters();
+    return this.theaterRepo.findAll();
   }
 }

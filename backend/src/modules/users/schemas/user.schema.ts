@@ -29,6 +29,9 @@ export class User {
   @Prop({ type: [String], default: ['user'] })
   roles!: string[];
 
+  @Prop({ default: true })
+  active!: boolean;
+
   @Prop()
   lastLogin?: Date;
 }

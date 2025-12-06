@@ -3,19 +3,15 @@ import { RoomRepository } from "../repositories/room.repository";
 
 @Injectable()
 export class RoomService {
-    constructor(
-        private readonly roomRepo: RoomRepository
-    ) {}
+  constructor(
+    private readonly roomRepo: RoomRepository
+  ) {}
+  
+  findRoomById(id: string) {
+    return this.roomRepo.findById(id);
+  }
 
-    async getRoomById(id: string) {
-        const room = await this.roomRepo.findRoomById(id);
-        if (!room)
-            throw new NotFoundException('Room not found');
-        
-        return room;
-    }
-
-    getRoomsByTheaterId(theaterId: string) {
-        return this.roomRepo.findRoomsByTheaterId(theaterId);
-    }
+  getRoomsByTheaterId(theaterId: string) {
+    return this.roomRepo.findRoomsByTheaterId(theaterId);
+  }
 }

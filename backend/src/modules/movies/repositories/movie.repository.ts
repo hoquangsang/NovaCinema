@@ -1,73 +1,61 @@
 import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { Model, Types } from "mongoose";
+import { Model } from "mongoose";
 import { Movie, MovieDocument } from "../schemas/movie.schema";
-
+import { BaseRepository } from "src/modules/shared";
+import { WithId } from "src/modules/shared/repositories/base.repository";
 
 @Injectable()
-export class MovieRepository {
+export class MovieRepository extends BaseRepository<Movie, MovieDocument> {
   constructor(
     @InjectModel(Movie.name)
-    private movieModel: Model<MovieDocument>,
-  ) {}
-
-  findMovieById(id: string): Promise<Movie | null> {
-    return this.movieModel
-      .findById(id)
-      .lean()
-      .exec();
+    private readonly movieModel: Model<MovieDocument>,
+  ) {
+    super(movieModel);
   }
 
-  async findShowingMovies(
-    page: number,
-    limit: number
-  )
-  {
+  findById(id: string) {
+    return super.findById(id);
+  }
+
+  findShowingMovies(page: number, limit: number) {
     const today = new Date();
-    const skip = (page - 1) * limit;
     const filter = {
       releaseDate: { $lte: today },
       endDate: { $gte: today },
-    }
-    
-    const [data, total] = await Promise.all([
-      this.movieModel
-        .find(filter)
-        .skip(skip)
-        .limit(limit)
-        .lean()
-        .exec(),
-      
-      this.movieModel
-        .countDocuments(filter)
-        .exec(),
-    ]);
+    };
 
-    return { data, total };
+    return this.findPaginated({
+      filter,
+      page,
+      limit,
+      sort: { releaseDate: 1 }
+    });
   }
 
-  async findUpcomingMovies(
-    page: number,
-    limit: number
-  ) {
+  findUpcomingMovies(page: number, limit: number) {
     const today = new Date();
-    const skip = (page - 1) * limit;
     const filter = {
       releaseDate: { $gt: today }
-    }
-    
-    const [data, total] = await Promise.all([
-      this.movieModel
-        .find(filter)
-        .skip(skip)
-        .limit(limit)
-        .lean()
-        .exec(),
+    };
 
-      this.movieModel
-        .countDocuments(filter)
-        .exec(),
-    ]);
-    return { data, total };
+    return this.findPaginated({
+      filter,
+      page,
+      limit,
+      sort: { releaseDate: 1 }
+    });
+  }
+
+  create(data: Partial<Movie>) {
+    return super.create(data);  
+  }
+
+  updateById(id: string, updates: Partial<Movie>) {
+    return super.updateById(id, updates);
+  }
+
+  deleteById(id: string) {
+    return super.deleteById(id);
   }
 }

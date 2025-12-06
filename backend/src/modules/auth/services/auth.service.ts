@@ -1,9 +1,9 @@
-import { BadRequestException, Injectable, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from '@nestjs/jwt';
 import { MailService } from "src/mail";
 import { refreshTokenOptions } from "src/config";
-import { generateOtp, HashUtil } from "src/common/utils";
+import { OtpUtil, HashUtil } from "src/common/utils";
 import { UserService } from "src/modules/users";
 import { OtpRepository } from "../repositories/otp.repository";
 
@@ -29,23 +29,26 @@ export class AuthService {
     password: string,
   ) {
     const user = await this.userService.findByEmail(email);
-    if (!user) throw new UnauthorizedException('User not found');
+    if (!user)
+      throw new UnauthorizedException('User not found');
+    if (!user.emailVerified)
+      throw new ForbiddenException('Email is not verified');
 
     const isMatch = await HashUtil.compare(password, user.password);
     if (!isMatch) throw new UnauthorizedException('Invalid credentials');
 
-    await this.userService.updateUserByEmail(email, { lastLogin: new Date() });
+    await this.userService.updateLastLogin(user._id);
 
     const accessToken = this.signAccessToken(user);
-    const refreshToken = this.signRefreshToken(user._id.toString());
+    const refreshToken = this.signRefreshToken(user._id);
 
     const { password: _, ...userWithoutPassword } = user;
     return {
+      user: userWithoutPassword,
       accessToken: accessToken,
       expiresIn: this.accessExpiresIn,
       refreshToken: refreshToken,
-      refreshExpiresIn: this.refreshExpiresIn,
-      ...userWithoutPassword
+      refreshExpiresIn: this.refreshExpiresIn
     }
   }
   private signAccessToken(user: any) {
@@ -70,7 +73,7 @@ export class AuthService {
       username?: string;
       fullName?: string;
       phoneNumber?: string;
-      dateOfBirth?: string;
+      dateOfBirth?: Date;
     }
   ) {
     const existed = await this.userService.findByEmail(payload.email);
@@ -91,7 +94,7 @@ export class AuthService {
   }
 
   private async createAndSendOtp(email: string) {
-    const otp = generateOtp(6);
+    const otp = OtpUtil.generate(6);
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
     const otpHash = await HashUtil.hash(otp);
 

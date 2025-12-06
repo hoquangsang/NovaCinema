@@ -1,25 +1,30 @@
 import { Logger } from "@nestjs/common";
 
-export class LoggerUtil {
-  private static logger = new Logger("App");
+export const LoggerUtil = {
+  logger: new Logger("App"),
 
-  static info(msg: any) {
+  info: (msg: unknown): void => {
     LoggerUtil.logger.log(LoggerUtil.format(msg));
-  }
+  },
 
-  static error(msg: any) {
+  error: (msg: unknown): void => {
     LoggerUtil.logger.error(LoggerUtil.format(msg));
-  }
+  },
 
-  static warn(msg: any) {
+  warn: (msg: unknown): void => {
     LoggerUtil.logger.warn(LoggerUtil.format(msg));
-  }
+  },
 
-  static debug(msg: any) {
+  debug: (msg: unknown): void => {
     LoggerUtil.logger.debug(LoggerUtil.format(msg));
-  }
+  },
 
-  private static format(msg: any): string {
-    return typeof msg === "string" ? msg : JSON.stringify(msg);
-  }
-}
+  format: (msg: unknown): string => {
+    if (typeof msg === "string") return msg;
+    try {
+      return JSON.stringify(msg, null, 2);
+    } catch {
+      return String(msg);
+    }
+  },
+};

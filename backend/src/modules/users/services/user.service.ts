@@ -4,7 +4,7 @@ import { UserRepository } from '../repositories/user.repository';
 @Injectable()
 export class UserService {
   constructor(
-    private usersRepo: UserRepository
+    private readonly usersRepo: UserRepository
   ) {}
 
   findById(id: string) {
@@ -15,33 +15,55 @@ export class UserService {
     return this.usersRepo.findByEmail(email);
   }
 
-  async createUser(
+  findPaginated(options: {
+    search?: string;
+    page?: number;
+    limit?: number;
+    sort?: Record<string, 1 | -1>;
+  }) {
+    return this.usersRepo.findPaginated(options);
+  }
+
+  createUser(
     data: {
       email: string;
       password: string;
       username?: string;
       fullName?: string;
       phoneNumber?: string;
-      dateOfBirth?: string;
+      dateOfBirth?: Date;
     }
   ) {
-    return this.usersRepo.createUser(data);
+    return this.usersRepo.create(data);
   }
   
-  updateUserByEmail(
-    email: string,
+  updateById(
+    id: string,
     updates: {
       username?: string;
       fullName?: string;
       phoneNumber?: string;
-      dateOfBirth?: string;
+      dateOfBirth?: Date;
+      emailVerified?: boolean;
       lastLogin?: Date;
     }
   ) {
-    return this.usersRepo.updateByFilter({ email }, updates);
+    return this.usersRepo.updateById(id, updates);
   }
 
-  markEmailVerified(email: string) {
-    return this.usersRepo.markEmailVerified(email);
+  updateLastLogin(id: string) {
+    return this.updateById(id, {
+      lastLogin: new Date(),
+    });
+  }
+
+  markEmailVerified(id: string) {
+    return this.updateById(id, {
+      emailVerified: true,
+    });
+  }
+  
+  deleteById(id: string) {
+    return this.usersRepo.deleteById(id);
   }
 }
