@@ -40,7 +40,7 @@ export class TheaterSeederService {
       );
 
       for (const room of rooms) {
-        const seats = generateSeats(room._id, room.rowCount, room.seatsPerRow);
+        const seats = generateSeats(room.theaterId, room._id, room.rowCount, room.seatsPerRow);
         await this.seatModel.insertMany(seats);
       }
     }
