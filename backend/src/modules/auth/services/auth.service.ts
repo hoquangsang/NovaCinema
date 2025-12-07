@@ -131,8 +131,11 @@ export class AuthService {
     const isMatch = await HashUtil.compare(otp, record.otpHash);
     if (!isMatch) throw new BadRequestException('Invalid or expired OTP');
 
+    const user = await this.userService.findByEmail(email);
+    if (!user) throw new BadRequestException('User not found');
+
     await this.otpRepo.deleteByEmail(email);
-    await this.userService.markEmailVerified(email);
+    await this.userService.markEmailVerified(user._id);
 
     return true;
   }

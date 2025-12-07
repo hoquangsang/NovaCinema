@@ -6,11 +6,7 @@ export type RoomDocument = HydratedDocument<Room>;
 
 @Schema()
 export class Room {
-  @Prop({ 
-    type: Types.ObjectId,
-    ref: Theater.name,
-    required: true,
-  })
+  @Prop({ type: Types.ObjectId, ref: Theater.name, required: true })
   theaterId!: Types.ObjectId;
   
   @Prop({ required: true })

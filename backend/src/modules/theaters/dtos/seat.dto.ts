@@ -8,7 +8,19 @@ export class SeatDto {
 
   @ApiProperty()
   @Expose()
+  theaterId!: string;
+
+  @ApiProperty()
+  @Expose()
   roomId!: string;
+
+  @ApiProperty()
+  @Expose()
+  row!: number;
+
+  @ApiProperty()
+  @Expose()
+  number!: number;
 
   @ApiProperty()
   @Expose()
