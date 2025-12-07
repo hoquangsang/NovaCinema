@@ -13,20 +13,32 @@ export interface LoginParams {
 export interface RegisterParams {
   email: string;
   password: string;
-  fullName: string;
+  phoneNumber?: string;
+  username?: string;
+  fullName?: string;
+  dateOfBirth?: string;
+}
+
+export interface User {
+  _id: string;
+  email: string;
+  emailVerified: boolean;
   phoneNumber: string;
+  username: string;
+  fullName: string;
   dateOfBirth: string;
+  roles: string[];
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface AuthResponse {
+  user: User;
   accessToken: string;
   refreshToken: string;
-  user: {
-    id: string;
-    email: string;
-    fullName: string;
-    role: string;
-  };
+  expiresIn: number;
+  refreshExpiresIn: number;
 }
 
 export const authApi = {
@@ -64,8 +76,17 @@ export const authApi = {
   /**
    * Verify email with OTP
    */
-  verifyEmail: async (email: string, otp: string): Promise<void> => {
-    await apiClient.post('/auth/verify-email', { email, otp });
+  verifyEmail: async (email: string, otp: string): Promise<boolean> => {
+    const response = await apiClient.post('/auth/email/verify', { email, otp });
+    return response.data;
+  },
+
+  /**
+   * Resend OTP
+   */
+  resendOTP: async (email: string): Promise<boolean> => {
+    const response = await apiClient.post('/auth/otp/resend', { email });
+    return response.data;
   },
 
   /**
