@@ -1,6 +1,6 @@
 // src/features/movies/NowShowingSection.tsx
 import { useQuery } from '@tanstack/react-query';
-import { moviesApi } from '../../api/endpoints/movies';
+import { moviesApi } from '../../api/endpoints/movies.api';
 import { MovieListSlider } from './MovieListSlider';
 
 export const NowShowing = () => {

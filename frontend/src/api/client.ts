@@ -3,7 +3,7 @@
  * Centralized HTTP client with interceptors for request/response handling
  */
 
-import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { type AxiosError, type InternalAxiosRequestConfig, type AxiosResponse } from 'axios';
 import { config } from '../config/env';
 
 // Create axios instance
@@ -17,20 +17,16 @@ export const apiClient = axios.create({
 
 // Request interceptor - add auth token
 apiClient.interceptors.request.use(
-  (config) => {
+  (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem('accessToken');
     
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    if (config.enableLogging) {
-      console.log('API Request:', config.method?.toUpperCase(), config.url);
-    }
-
     return config;
   },
-  (error) => {
+  (error: AxiosError) => {
     return Promise.reject(error);
   }
 );
@@ -41,8 +37,8 @@ apiClient.interceptors.response.use(
     // Extract data from success response
     return response.data?.data ? response.data : response;
   },
-  async (error: AxiosError<any>) => {
-    const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
+  async (error: AxiosError<{ message?: string; errors?: unknown[] }>) => {
+    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
     // Handle 401 Unauthorized - try to refresh token
     if (error.response?.status === 401 && !originalRequest._retry) {
@@ -66,7 +62,7 @@ apiClient.interceptors.response.use(
           }
           return apiClient(originalRequest);
         }
-      } catch (refreshError) {
+      } catch {
         // Refresh failed, logout user
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
@@ -78,15 +74,6 @@ apiClient.interceptors.response.use(
     const errorMessage = error.response?.data?.message || 'An unexpected error occurred';
     const errors = error.response?.data?.errors || [];
 
-    if (config.enableLogging) {
-      console.error('API Error:', {
-        url: error.config?.url,
-        status: error.response?.status,
-        message: errorMessage,
-        errors,
-      });
-    }
-
     return Promise.reject({
       message: errorMessage,
       errors,
@@ -96,14 +83,14 @@ apiClient.interceptors.response.use(
 );
 
 // Helper types
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T> {
   success: boolean;
   message?: string;
   data: T;
   timestamp?: string;
 }
 
-export interface PaginatedResponse<T = any> {
+export interface PaginatedResponse<T> {
   items: T[];
   total: number;
   page: number;
