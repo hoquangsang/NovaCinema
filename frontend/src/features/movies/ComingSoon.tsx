@@ -1,12 +1,12 @@
 // src/features/movies/ComingSoonSection.tsx
 import { useQuery } from '@tanstack/react-query';
-import { movieApi } from '../../api/MovieAPI';
+import { moviesApi } from '../../api/endpoints/movies.api';
 import { MovieListSlider } from './MovieListSlider';
 
 export const ComingSoon = () => {
   const { data: movies, isLoading } = useQuery({
     queryKey: ['movies', 'coming-soon'],
-    queryFn: movieApi.getComingSoon
+    queryFn: () => moviesApi.getUpcomingMovies()
   });
 
   if (isLoading) {

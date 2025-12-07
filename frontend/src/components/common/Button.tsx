@@ -4,7 +4,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { clsx } from 'clsx';
 
 const buttonVariants = cva(
-  'gap-1.5 rounded-md px-5 py-2.5 text-xs font-bold transition-all duration-800 ease-in-out',
+  'gap-1.5 rounded-md px-5 py-2.5 text-xs font-bold transition-all duration-800 ease-in-out cursor-pointer',
   {
     variants: {
       intent: {

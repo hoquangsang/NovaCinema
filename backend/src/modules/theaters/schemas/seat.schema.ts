@@ -20,7 +20,17 @@ export class Seat {
   number!: number;
 
   @Prop({ required: true })
-  seatCode!: string;
+  seatCode: string;
+
+  @Prop({ required: true, enum: ['standard', 'vip', 'couple'] })
+  type: string;
+
+  @Prop({
+    required: true,
+    enum: ['available', 'reserved', 'booked', 'maintenance'],
+    default: 'available',
+  })
+  status: string;
 }
 
 export const SeatSchema = SchemaFactory.createForClass(Seat);
