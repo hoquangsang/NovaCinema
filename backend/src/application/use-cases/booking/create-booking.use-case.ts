@@ -4,7 +4,12 @@
  * This follows the Use Case pattern from Clean Architecture
  */
 
-import { Injectable, BadRequestException, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { BookingRepository } from '@/modules/bookings/repositories/booking.repository';
 import { ShowtimeRepository } from '@/modules/showtimes/repositories/showtime.repository';
 import { SeatRepository } from '@/modules/theaters/repositories/seat.repository';
@@ -64,20 +69,30 @@ export class CreateBookingUseCase {
     }
 
     // Check if all seats belong to the correct room
-    const allSeatsInRoom = seats.every(seat => seat.roomId === showtime.roomId);
+    const allSeatsInRoom = seats.every(
+      (seat) => seat.roomId.toString() === showtime.roomId.toString(),
+    );
     if (!allSeatsInRoom) {
-      throw new BadRequestException('Selected seats do not belong to the showtime room');
+      throw new BadRequestException(
+        'Selected seats do not belong to the showtime room',
+      );
     }
 
     // Check if all seats are available
-    const unavailableSeats = seats.filter(seat => seat.status !== 'available');
+    const unavailableSeats = seats.filter(
+      (seat) => seat.status !== 'available',
+    );
     if (unavailableSeats.length > 0) {
-      throw new ConflictException('Some selected seats are no longer available');
+      throw new ConflictException(
+        'Some selected seats are no longer available',
+      );
     }
 
     // Check if enough seats are available in showtime
     if (showtime.availableSeats < seatIds.length) {
-      throw new ConflictException('Not enough available seats for this showtime');
+      throw new ConflictException(
+        'Not enough available seats for this showtime',
+      );
     }
 
     // 3. Calculate total amount
@@ -88,15 +103,17 @@ export class CreateBookingUseCase {
 
     // 5. Set expiration time
     const expiresAt = new Date();
-    expiresAt.setMinutes(expiresAt.getMinutes() + this.BOOKING_EXPIRATION_MINUTES);
+    expiresAt.setMinutes(
+      expiresAt.getMinutes() + this.BOOKING_EXPIRATION_MINUTES,
+    );
 
     // 6. Create booking
-    const bookedSeats = seats.map(seat => ({
+    const bookedSeats = seats.map((seat) => ({
       seatId: seat._id,
-      row: seat.row,
+      row: String(seat.row),
       number: seat.number,
-      type: seat.type,
-      price: this.calculateSeatPrice(seat.type, showtime.basePrice),
+      type: seat.type as string,
+      price: this.calculateSeatPrice(seat.type as string, showtime.basePrice),
     }));
 
     const booking = await this.bookingRepo.create({
@@ -128,9 +145,9 @@ export class CreateBookingUseCase {
    */
   private calculateSeatPrice(seatType: string, basePrice: number): number {
     const priceMultipliers = {
-      'standard': 1.0,
-      'vip': 1.5,
-      'couple': 2.0,
+      standard: 1.0,
+      vip: 1.5,
+      couple: 2.0,
     };
 
     const multiplier = priceMultipliers[seatType] || 1.0;

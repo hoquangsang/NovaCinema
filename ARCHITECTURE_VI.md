@@ -5,6 +5,7 @@
 NovaCinema là hệ thống đặt vé xem phim hiện đại được xây dựng với **Kiến trúc 3 tầng (3-Tier Architecture)** để phân tách rõ ràng giữa các tầng: **Giao diện (Presentation)**, **Nghiệp vụ (Business Logic)**, và **Dữ liệu (Data Access)**.
 
 Hệ thống tuân theo các nguyên tắc **Clean Architecture** và các best practices trong ngành bao gồm:
+
 - Domain-Driven Design (DDD) - Thiết kế hướng miền
 - Repository Pattern - Mẫu kho lưu trữ
 - Use Case Pattern - Mẫu ca sử dụng
@@ -22,6 +23,7 @@ Hệ thống tuân theo các nguyên tắc **Clean Architecture** và các best 
 **Vị trí**: `backend/src/modules/*/controllers/`
 
 **Trách nhiệm**:
+
 - Xử lý HTTP request/response
 - Validate dữ liệu đầu vào (DTOs với class-validator)
 - Xác thực & Phân quyền (Guards)
@@ -29,9 +31,10 @@ Hệ thống tuân theo các nguyên tắc **Clean Architecture** và các best 
 - Format response (Interceptors)
 
 **Ví dụ**:
+
 ```typescript
-@ApiTags('bookings')
-@Controller('bookings')
+@ApiTags("bookings")
+@Controller("bookings")
 export class BookingsController {
   constructor(private readonly bookingService: BookingService) {}
 
@@ -43,6 +46,7 @@ export class BookingsController {
 ```
 
 **Các thành phần chính**:
+
 - **Controllers**: Xử lý routes và HTTP
 - **DTOs**: Định nghĩa cấu trúc request/response
 - **Guards**: Bảo vệ routes (JWT, Roles)
@@ -55,11 +59,13 @@ export class BookingsController {
 
 **Mục đích**: Triển khai các quy tắc nghiệp vụ và điều phối các thao tác domain
 
-**Vị trí**: 
+**Vị trí**:
+
 - Services: `backend/src/modules/*/services/`
 - Use Cases: `backend/src/application/use-cases/`
 
 **Trách nhiệm**:
+
 - Triển khai logic nghiệp vụ
 - Quản lý transactions
 - Điều phối domain models
@@ -69,13 +75,15 @@ export class BookingsController {
 **Cấu trúc**:
 
 #### Services (Dịch vụ)
+
 Xử lý logic nghiệp vụ cụ thể của module:
+
 ```typescript
 @Injectable()
 export class BookingService {
   constructor(
     private readonly createBookingUseCase: CreateBookingUseCase,
-    private readonly bookingRepo: BookingRepository,
+    private readonly bookingRepo: BookingRepository
   ) {}
 
   async createBooking(params) {
@@ -85,7 +93,9 @@ export class BookingService {
 ```
 
 #### Use Cases (Ca sử dụng)
+
 Đóng gói một nghiệp vụ đơn lẻ:
+
 ```typescript
 @Injectable()
 export class CreateBookingUseCase {
@@ -101,6 +111,7 @@ export class CreateBookingUseCase {
 ```
 
 **Các mẫu thiết kế**:
+
 - **Use Case Pattern**: Một class cho một nghiệp vụ
 - **Service Layer**: Điều phối các use cases
 - **Domain Services**: Logic nghiệp vụ không thuộc về một entity cụ thể
@@ -112,11 +123,13 @@ export class CreateBookingUseCase {
 **Mục đích**: Quản lý các thao tác database và lưu trữ
 
 **Vị trí**:
+
 - Schemas: `backend/src/modules/*/schemas/`
 - Repositories: `backend/src/modules/*/repositories/`
 - Domain Models: `backend/src/domain/models/`
 
 **Trách nhiệm**:
+
 - Truy vấn database
 - Lưu trữ dữ liệu
 - Mapping entities
@@ -125,14 +138,14 @@ export class CreateBookingUseCase {
 **Cấu trúc**:
 
 #### Domain Models (Entities nghiệp vụ thuần túy)
+
 ```typescript
 export class Booking {
   constructor(
     public readonly id: string,
     public readonly userId: string,
     public readonly showtimeId: string,
-    public readonly totalAmount: number,
-    // ... các thuộc tính khác
+    public readonly totalAmount: number // ... các thuộc tính khác
   ) {}
 
   // Các phương thức nghiệp vụ
@@ -141,16 +154,17 @@ export class Booking {
   }
 
   canBeCancelled(): boolean {
-    return this.status === 'confirmed' || this.status === 'pending';
+    return this.status === "confirmed" || this.status === "pending";
   }
 }
 ```
 
 #### MongoDB Schemas (Cấu trúc database)
+
 ```typescript
 @Schema({ timestamps: true })
 export class Booking {
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  @Prop({ type: Types.ObjectId, ref: "User", required: true })
   userId: Types.ObjectId;
 
   @Prop({ type: Number, required: true })
@@ -160,16 +174,20 @@ export class Booking {
 ```
 
 #### Repositories (Truy cập dữ liệu)
+
 ```typescript
 @Injectable()
-export class BookingRepository extends BaseRepository<Booking, BookingDocument> {
+export class BookingRepository extends BaseRepository<
+  Booking,
+  BookingDocument
+> {
   async findByUserId(userId: string, page: number, limit: number) {
     return this.findPaginated({ filter: { userId }, page, limit });
   }
 
   async confirmBooking(bookingId: string, paymentId: string) {
     return this.updateById(bookingId, {
-      status: 'confirmed',
+      status: "confirmed",
       paymentId,
       confirmedAt: new Date(),
     });
@@ -178,36 +196,40 @@ export class BookingRepository extends BaseRepository<Booking, BookingDocument> 
 ```
 
 **Các mẫu thiết kế**:
+
 - **Repository Pattern**: Trừu tượng hóa truy cập dữ liệu
 - **Base Repository**: Cung cấp các thao tác CRUD chung
 - **Data Mapper**: Chuyển đổi giữa domain models và database documents
 
 ---
 
-## Tầng Domain (MỚI)
+## Tầng Domain
 
 **Mục đích**: Logic nghiệp vụ cốt lõi độc lập với infrastructure
 
 **Vị trí**: `backend/src/domain/`
 
 **Nội dung**:
+
 - `models/`: Domain entities thuần túy với các phương thức nghiệp vụ
 - `interfaces/`: Các contracts cho repositories và services
 
 **Lợi ích**:
+
 - Logic nghiệp vụ độc lập với framework
 - Dễ test không cần database
 - Quy tắc nghiệp vụ rõ ràng
 - Có thể tái sử dụng cho nhiều dự án
 
 **Ví dụ**:
+
 ```typescript
 // Domain Model
 export class Showtime {
   isBookable(): boolean {
     const now = new Date();
     return (
-      this.status === 'scheduled' &&
+      this.status === "scheduled" &&
       this.startTime > now &&
       this.availableSeats > 0
     );
@@ -248,35 +270,41 @@ modules/
 ## Các Module Chính
 
 ### 1. Users Module
+
 Quản lý tài khoản và profiles người dùng.
 
 **Entities**: User
 **Nghiệp vụ**: Đăng ký, cập nhật profile, quản lý tài khoản
 
 ### 2. Auth Module
+
 Xử lý xác thực và phân quyền.
 
 **Nghiệp vụ**: Đăng nhập, đăng xuất, refresh token, xác thực email, reset mật khẩu
 
 ### 3. Movies Module
+
 Quản lý danh mục phim.
 
 **Entities**: Movie
 **Nghiệp vụ**: CRUD phim, tìm kiếm, lọc theo thể loại, lấy phim đang chiếu/sắp chiếu
 
 ### 4. Theaters Module
+
 Quản lý rạp chiếu và phòng chiếu.
 
 **Entities**: Theater, Room, Seat
 **Nghiệp vụ**: CRUD rạp, quản lý phòng, quản lý ghế
 
 ### 5. Showtimes Module (MỚI)
+
 Quản lý lịch chiếu phim.
 
 **Entities**: Showtime
 **Nghiệp vụ**: Tạo lịch chiếu, lấy lịch khả dụng, cập nhật trạng thái
 
 ### 6. Bookings Module (MỚI)
+
 Xử lý đặt vé và thanh toán.
 
 **Entities**: Booking
@@ -290,13 +318,13 @@ Xử lý đặt vé và thanh toán.
 1. Client gửi request
    POST /api/bookings
    { showtimeId, seatIds }
-   
+
 2. Tầng Giao Diện
    BookingsController.createBooking()
    - Validate DTO
    - Lấy user từ JWT
    - Gọi service
-   
+
 3. Tầng Nghiệp Vụ
    BookingService.createBooking()
    -> CreateBookingUseCase.execute()
@@ -307,7 +335,7 @@ Xử lý đặt vé và thanh toán.
       - Giữ chỗ
       - Cập nhật số ghế trống
       - Trả về booking
-      
+
 4. Tầng Dữ Liệu
    BookingRepository.create()
    SeatRepository.bulkUpdateStatus()
@@ -315,7 +343,7 @@ Xử lý đặt vé và thanh toán.
    - Thực thi các thao tác database
    - Map domain models sang DB documents
    - Trả về kết quả
-   
+
 5. Response
    Đặt vé thành công
    { bookingCode, expiresAt, totalAmount, ... }
@@ -326,21 +354,27 @@ Xử lý đặt vé và thanh toán.
 ## Các Mẫu Thiết Kế Được Sử Dụng
 
 ### 1. Repository Pattern
+
 Trừu tượng hóa truy cập dữ liệu, dễ dàng thay đổi database.
 
 ### 2. Use Case Pattern (Interactor)
+
 Đóng gói một nghiệp vụ đơn lẻ, tuân theo Single Responsibility Principle.
 
 ### 3. Dependency Injection
+
 Framework quản lý dependencies để giảm coupling.
 
 ### 4. Data Mapper Pattern
+
 Tách biệt domain models khỏi database schemas.
 
 ### 5. Strategy Pattern
+
 Dùng trong xử lý thanh toán (các payment gateways khác nhau).
 
 ### 6. Decorator Pattern
+
 NestJS decorators cho metadata và cross-cutting concerns.
 
 ---
@@ -441,17 +475,3 @@ Response API nhất quán:
   }
 }
 ```
-
----
-
-## Kết Luận
-
-Kiến trúc này cung cấp:
-- ✅ Phân tách rõ ràng các trách nhiệm
-- ✅ Codebase có thể mở rộng và bảo trì
-- ✅ Logic nghiệp vụ dễ test
-- ✅ Domain độc lập với framework
-- ✅ Các mẫu thiết kế chuẩn ngành
-- ✅ Cấu trúc sẵn sàng cho production
-
-Kiến trúc 3 tầng với tầng domain đảm bảo ứng dụng có thể phát triển và thích ứng với yêu cầu thay đổi trong khi vẫn duy trì chất lượng code và năng suất của developer.

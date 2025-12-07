@@ -3,7 +3,11 @@
  * Handles booking confirmation after successful payment
  */
 
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { BookingRepository } from '@/modules/bookings/repositories/booking.repository';
 import { SeatRepository } from '@/modules/theaters/repositories/seat.repository';
 
@@ -30,8 +34,10 @@ export class ConfirmBookingUseCase {
     }
 
     // 2. Verify booking belongs to user
-    if (booking.userId !== userId) {
-      throw new BadRequestException('You are not authorized to confirm this booking');
+    if (booking.userId.toString() !== userId) {
+      throw new BadRequestException(
+        'You are not authorized to confirm this booking',
+      );
     }
 
     // 3. Check booking status
@@ -45,13 +51,16 @@ export class ConfirmBookingUseCase {
     }
 
     // 5. Confirm booking
-    const confirmedBooking = await this.bookingRepo.confirmBooking(bookingId, paymentId);
+    const confirmedBooking = await this.bookingRepo.confirmBooking(
+      bookingId,
+      paymentId,
+    );
     if (!confirmedBooking) {
       throw new BadRequestException('Failed to confirm booking');
     }
 
     // 6. Update seat status from 'reserved' to 'booked'
-    const seatIds = booking.seats.map(seat => seat.seatId);
+    const seatIds = booking.seats.map((seat) => seat.seatId.toString());
     await this.seatRepo.bulkUpdateStatus(seatIds, 'booked');
 
     return confirmedBooking;

@@ -21,12 +21,23 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "strict": true,
+    "strictPropertyInitialization": false,
     "paths": {
-      "@/*": ["src/*"],
-      "@/domain/*": ["src/domain/*"],
-      "@/infrastructure/*": ["src/infrastructure/*"],
-      "@/application/*": ["src/application/*"],
-      "@/common/*": ["src/common/*"]
+      "@/*": [
+        "src/*"
+      ],
+      "@/domain/*": [
+        "src/domain/*"
+      ],
+      "@/infrastructure/*": [
+        "src/infrastructure/*"
+      ],
+      "@/application/*": [
+        "src/application/*"
+      ],
+      "@/common/*": [
+        "src/common/*"
+      ]
     }
   }
 }

@@ -3,7 +3,11 @@
  * Handles booking cancellation and seat release
  */
 
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { BookingRepository } from '@/modules/bookings/repositories/booking.repository';
 import { ShowtimeRepository } from '@/modules/showtimes/repositories/showtime.repository';
 import { SeatRepository } from '@/modules/theaters/repositories/seat.repository';
@@ -31,8 +35,10 @@ export class CancelBookingUseCase {
     }
 
     // 2. Verify booking belongs to user
-    if (booking.userId !== userId) {
-      throw new BadRequestException('You are not authorized to cancel this booking');
+    if (booking.userId.toString() !== userId) {
+      throw new BadRequestException(
+        'You are not authorized to cancel this booking',
+      );
     }
 
     // 3. Check if booking can be cancelled
@@ -45,17 +51,22 @@ export class CancelBookingUseCase {
     }
 
     // 4. Check cancellation policy
-    const showtime = await this.showtimeRepo.findById(booking.showtimeId);
+    const showtime = await this.showtimeRepo.findById(
+      booking.showtimeId.toString(),
+    );
     if (!showtime) {
       throw new NotFoundException('Showtime not found');
     }
 
     const now = new Date();
-    const hoursUntilShowtime = (showtime.startTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+    const hoursUntilShowtime =
+      (showtime.startTime.getTime() - now.getTime()) / (1000 * 60 * 60);
 
     // Must cancel at least 2 hours before showtime
     if (hoursUntilShowtime < 2) {
-      throw new BadRequestException('Cannot cancel booking less than 2 hours before showtime');
+      throw new BadRequestException(
+        'Cannot cancel booking less than 2 hours before showtime',
+      );
     }
 
     // 5. Cancel booking
@@ -65,25 +76,31 @@ export class CancelBookingUseCase {
     }
 
     // 6. Release seats (make them available again)
-    const seatIds = booking.seats.map(seat => seat.seatId);
+    const seatIds = booking.seats.map((seat) => seat.seatId.toString());
     await this.seatRepo.bulkUpdateStatus(seatIds, 'available');
 
     // 7. Update showtime available seats
     await this.showtimeRepo.updateAvailableSeats(
-      booking.showtimeId,
+      booking.showtimeId.toString(),
       -booking.seats.length, // Increment back
     );
 
     return {
       booking: cancelledBooking,
-      refundAmount: this.calculateRefundAmount(booking.totalAmount, hoursUntilShowtime),
+      refundAmount: this.calculateRefundAmount(
+        booking.totalAmount,
+        hoursUntilShowtime,
+      ),
     };
   }
 
   /**
    * Calculate refund amount based on cancellation time
    */
-  private calculateRefundAmount(totalAmount: number, hoursUntilShowtime: number): number {
+  private calculateRefundAmount(
+    totalAmount: number,
+    hoursUntilShowtime: number,
+  ): number {
     if (hoursUntilShowtime >= 24) {
       return totalAmount; // 100% refund
     } else if (hoursUntilShowtime >= 2) {

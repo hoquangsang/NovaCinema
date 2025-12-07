@@ -5,10 +5,10 @@
 
 import { Injectable } from '@nestjs/common';
 import { BookingRepository } from '../repositories/booking.repository';
-import { 
-  CreateBookingUseCase, 
-  ConfirmBookingUseCase, 
-  CancelBookingUseCase 
+import {
+  CreateBookingUseCase,
+  ConfirmBookingUseCase,
+  CancelBookingUseCase,
 } from '@/application/use-cases/booking';
 
 @Injectable()
@@ -71,16 +71,19 @@ export class BookingService {
    */
   async processExpiredBookings() {
     const expiredBookings = await this.bookingRepo.findExpiredBookings();
-    
+
     // Cancel each expired booking
     for (const booking of expiredBookings) {
       try {
         await this.cancelBookingUseCase.execute({
           bookingId: booking._id,
-          userId: booking.userId,
+          userId: booking.userId.toString(),
         });
       } catch (error) {
-        console.error(`Failed to cancel expired booking ${booking._id}:`, error);
+        console.error(
+          `Failed to cancel expired booking ${booking._id}:`,
+          error,
+        );
       }
     }
 
