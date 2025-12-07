@@ -79,12 +79,6 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-5">
-            {apiError && (
-                <div className="rounded-md bg-red-50 border border-red-200 p-3 text-sm text-red-600">
-                    {apiError}
-                </div>
-            )}
-
             <Input
                 label="Email"
                 type="email"
@@ -107,6 +101,12 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
                 showPasswordToggle
                 autoComplete="current-password"
             />
+
+            {apiError && (
+                <div className="rounded-md bg-red-50 border border-red-200 p-3 text-sm text-red-600">
+                    {apiError}
+                </div>
+            )}
 
             <div className="flex items-center justify-between">
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -135,6 +135,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
             >
                 {isLoading ? 'SIGNING IN...' : 'SIGN IN'}
             </Button>
+
+
         </form>
     );
 };
