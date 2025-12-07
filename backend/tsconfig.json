@@ -20,6 +20,24 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
-    "strict": true
+    "strict": true,
+    "strictPropertyInitialization": false,
+    "paths": {
+      "@/*": [
+        "src/*"
+      ],
+      "@/domain/*": [
+        "src/domain/*"
+      ],
+      "@/infrastructure/*": [
+        "src/infrastructure/*"
+      ],
+      "@/application/*": [
+        "src/application/*"
+      ],
+      "@/common/*": [
+        "src/common/*"
+      ]
+    }
   }
 }

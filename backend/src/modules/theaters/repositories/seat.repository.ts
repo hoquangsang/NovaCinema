@@ -39,4 +39,26 @@ export class SeatRepository extends BaseRepository<Seat, SeatDocument> {
     const objectId = new Types.ObjectId(roomId);
     return this.deleteMany({ roomId: objectId });
   }
+
+  /**
+   * Bulk update seat status
+   */
+  async bulkUpdateStatus(seatIds: string[], status: string): Promise<boolean> {
+    const result = await this.seatModel.updateMany(
+      { _id: { $in: seatIds } },
+      { $set: { status } },
+    );
+
+    return result.modifiedCount > 0;
+  }
+
+  /**
+   * Find available seats by room ID
+   */
+  async findAvailableSeats(roomId: string) {
+    return this.findMany({
+      roomId,
+      status: 'available',
+    } as any);
+  }
 }
