@@ -51,12 +51,6 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
                         </button>
                     )}
 
-                    {type === 'date' && (
-                        <Calendar
-                            size={18}
-                            className="cursor-pointer pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-                        />
-                    )}
                 </div>
 
                 {error && (
