@@ -39,6 +39,7 @@ export default function Header() {
               <UserCircle size={24} />
               <span className="hidden font-medium sm:block">Sign In</span>
             </Link>
+ (feat(fe): finish call API to register)
           </div>
         </div>
 
