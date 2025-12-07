@@ -18,15 +18,26 @@ export interface RegisterParams {
   dateOfBirth: string;
 }
 
+export interface User {
+  _id: string;
+  email: string;
+  emailVerified: boolean;
+  phoneNumber: string;
+  username: string;
+  fullName: string;
+  dateOfBirth: string;
+  roles: string[];
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface AuthResponse {
+  user: User;
   accessToken: string;
   refreshToken: string;
-  user: {
-    id: string;
-    email: string;
-    fullName: string;
-    role: string;
-  };
+  expiresIn: number;
+  refreshExpiresIn: number;
 }
 
 export const authApi = {
