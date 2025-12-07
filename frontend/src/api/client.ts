@@ -19,7 +19,7 @@ export const apiClient = axios.create({
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem('accessToken');
-    
+
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -46,7 +46,7 @@ apiClient.interceptors.response.use(
 
       try {
         const refreshToken = localStorage.getItem('refreshToken');
-        
+
         if (refreshToken) {
           const response = await axios.post(
             `${config.apiBaseUrl}/api/auth/refresh`,
@@ -70,9 +70,26 @@ apiClient.interceptors.response.use(
       }
     }
 
+    // Handle network errors
+    if (!error.response) {
+      console.error('Network error:', error);
+      return Promise.reject({
+        message: 'Network error. Please check your connection and ensure the backend is running.',
+        errors: [],
+        status: 0,
+      });
+    }
+
     // Format error response
-    const errorMessage = error.response?.data?.message || 'An unexpected error occurred';
+    const errorMessage = error.response?.data?.message || error.message || 'An unexpected error occurred';
     const errors = error.response?.data?.errors || [];
+
+    console.error('API Error:', {
+      status: error.response?.status,
+      message: errorMessage,
+      errors,
+      data: error.response?.data,
+    });
 
     return Promise.reject({
       message: errorMessage,

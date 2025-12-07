@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { LoginForm } from '../features/auth/LoginForm';
 import { RegisterForm } from '../features/auth/RegisterForm';
+import { useAuth } from '../contexts/AuthContext';
 
 type AuthTab = 'signin' | 'signup';
 
 export default function AuthPage() {
     const navigate = useNavigate();
+    const { login } = useAuth();
     const [searchParams] = useSearchParams();
     const initialTab = (searchParams.get('tab') as AuthTab) || 'signin';
     const [activeTab, setActiveTab] = useState<AuthTab>(initialTab);

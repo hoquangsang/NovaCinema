@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { authApi, type LoginParams } from '../../api/endpoints/auth.api';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface LoginFormProps {
     onSuccess?: () => void;
 }
 
 export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
+    const { login } = useAuth();
     const [formData, setFormData] = useState<LoginParams>({
         email: '',
         password: '',
@@ -47,22 +49,32 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
         setIsLoading(true);
 
         try {
+            console.log('🔐 Attempting login with:', { email: formData.email });
+
+            // Call backend API
             const response = await authApi.login(formData);
 
-            // Store tokens
-            localStorage.setItem('accessToken', response.accessToken);
-            localStorage.setItem('refreshToken', response.refreshToken);
+            console.log('✅ Login API response:', response);
 
-            // Store user info
-            localStorage.setItem('user', JSON.stringify(response.user));
+            // Use AuthContext to update global state
+            login(response.user, response.accessToken, response.refreshToken);
+
+            console.log('✅ Auth state updated successfully');
 
             // Handle "Keep me signed in"
             if (keepSignedIn) {
                 localStorage.setItem('keepSignedIn', 'true');
             }
 
+            // Redirect will be handled by AuthPage
             onSuccess?.();
         } catch (error: any) {
+            console.error('❌ Login error details:', {
+                message: error.message,
+                status: error.status,
+                errors: error.errors,
+                fullError: error,
+            });
             setApiError(error.message || 'Login failed. Please check your credentials.');
         } finally {
             setIsLoading(false);

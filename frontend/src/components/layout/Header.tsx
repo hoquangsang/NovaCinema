@@ -1,8 +1,23 @@
 import { Ticket, Search, UserCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../common/Button';
+import { useAuth } from '../../contexts/AuthContext';
+
+// Helper function to get last name from full name
+const getLastName = (fullName: string): string => {
+  const parts = fullName.trim().split(' ');
+  return parts[parts.length - 1] || fullName;
+};
 
 export default function Header() {
+  const { user, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
   return (
     <header className="w-full bg-[#10142C] text-white shadow-lg sticky top-0 z-50">
       <div className="container mx-auto max-w-7xl px-4">
@@ -32,13 +47,52 @@ export default function Header() {
               <span>BUY TICKETS</span>
             </Button>
 
-            <Link
-              to="/login"
-              className="flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2 py-2 transition-colors hover:bg-gray-700 hover:text-yellow-400"
-            >
-              <UserCircle size={24} />
-              <span className="hidden font-medium sm:block">Sign In</span>
-            </Link>
+
+            {/* Sign In / User Display */}
+            {!isAuthenticated ? (
+              <Link
+                to="/login"
+                className="flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2 py-2 transition-colors hover:bg-gray-700 hover:text-yellow-400"
+              >
+                <UserCircle size={24} />
+                <span className="hidden font-medium sm:block">Sign In</span>
+              </Link>
+            ) : (
+              <div className="relative group">
+                <button className="flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2 py-2 transition-colors hover:bg-gray-700 hover:text-yellow-400">
+                  <UserCircle size={24} />
+                  <span className="hidden font-medium sm:block">{getLastName(user?.fullName || '')}</span>
+                </button>
+
+                {/* Dropdown Menu */}
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                  <div className="py-2">
+                    <div className="px-4 py-2 text-sm text-gray-700 border-b">
+                      <p className="font-semibold">{user?.fullName}</p>
+                      <p className="text-xs text-gray-500">{user?.email}</p>
+                    </div>
+                    <Link
+                      to="/profile"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      My Profile
+                    </Link>
+                    <Link
+                      to="/bookings"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      My Bookings
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
