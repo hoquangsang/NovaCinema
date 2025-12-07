@@ -3,15 +3,12 @@ import { authApi, type RegisterParams } from '../../api/endpoints/auth.api';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { OTPVerificationModal } from './OTPVerificationModal';
-import { useAuth } from '../../contexts/AuthContext';
 
 interface RegisterFormProps {
-    onSuccess?: () => void;
     onSwitchToLogin?: () => void;
 }
 
-export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchToLogin }) => {
-    const { login } = useAuth();
+export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
     const [formData, setFormData] = useState<RegisterParams>({
         email: '',
         password: '',
@@ -104,29 +101,13 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
     };
 
     const handleOTPVerified = async () => {
-        console.log('✅ OTP verified, attempting auto-login');
+        console.log('✅ OTP verified successfully');
 
-        try {
-            // Auto-login after successful verification
-            const response = await authApi.login({
-                email: formData.email,
-                password: formData.password,
-            });
+        // Close modal
+        setShowOTPModal(false);
 
-            console.log('✅ Auto-login successful:', response);
-
-            // Update auth context
-            login(response.user, response.accessToken, response.refreshToken);
-
-            // Close modal and trigger success callback
-            setShowOTPModal(false);
-            onSuccess?.();
-        } catch (error: any) {
-            console.error('❌ Auto-login error:', error);
-            // Close modal and switch to login tab
-            setShowOTPModal(false);
-            onSwitchToLogin?.();
-        }
+        // Switch to login tab so user can sign in
+        onSwitchToLogin?.();
     };
 
     const handleChange = (field: keyof RegisterParams) => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -139,11 +120,6 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
     return (
         <>
             <form onSubmit={handleSubmit} className="space-y-4">
-                {apiError && (
-                    <div className="rounded-md bg-red-50 border border-red-200 p-3 text-sm text-red-600">
-                        {apiError}
-                    </div>
-                )}
 
                 <Input
                     label="FullName (Last, First)"
@@ -252,6 +228,12 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
                         <p className="text-xs text-red-500 ml-6">{errors.terms}</p>
                     )}
                 </div>
+
+                {apiError && (
+                    <div className="rounded-md bg-red-50 border border-red-200 p-3 text-sm text-red-600">
+                        {apiError}
+                    </div>
+                )}
 
                 <Button
                     type="submit"
