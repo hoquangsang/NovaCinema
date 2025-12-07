@@ -8,12 +8,32 @@ export class User {
   @Prop({ unique: true, required: true })
   email!: string;
 
+  @Prop({ default: false })
+  emailVerified!: boolean;
+
   @Prop({ required: true })
   password!: string;
 
-  //
   @Prop()
-  userName?: string;
+  phoneNumber?: string;
+
+  @Prop()
+  username?: string;
+
+  @Prop()
+  fullName?: string;
+
+  @Prop()
+  dateOfBirth?: Date;
+
+  @Prop({ type: [String], default: ['user'] })
+  roles!: string[];
+
+  @Prop({ default: true })
+  active!: boolean;
+
+  @Prop()
+  lastLogin?: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

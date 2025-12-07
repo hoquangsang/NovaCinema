@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 import { Theater, TheaterDocument } from 'src/modules/theaters/schemas/theater.schema';
 import { Room, RoomDocument } from 'src/modules/theaters/schemas/room.schema';
 import { Seat, SeatDocument } from 'src/modules/theaters/schemas/seat.schema';
-import { THEATERS_MOCK, ROOMS_MOCK, generateSeats } from './theater.seeder.data';
+import { THEATERS_MOCK, ROOMS_MOCK, generateSeats } from './theater-seeder.data';
 
 @Injectable()
 export class TheaterSeederService {
@@ -32,12 +32,15 @@ export class TheaterSeederService {
       const rooms = await this.roomModel.insertMany(
         ROOMS_MOCK.map(r => ({
           theaterId,
-          ...r,
+          roomName: r.roomName,
+          rowCount: r.rowCount,
+          seatsPerRow: r.seatsPerRow,
+          capacity: r.rowCount * r.seatsPerRow,
         }))
       );
 
       for (const room of rooms) {
-        const seats = generateSeats(room._id);
+        const seats = generateSeats(room._id, room.rowCount, room.seatsPerRow);
         await this.seatModel.insertMany(seats);
       }
     }

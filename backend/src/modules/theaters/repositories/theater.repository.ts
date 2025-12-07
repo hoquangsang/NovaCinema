@@ -1,27 +1,35 @@
 import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
-import { Theater } from "../schemas/theater.schema";
-
+import { Theater, TheaterDocument } from "../schemas/theater.schema";
+import { BaseRepository } from "src/modules/shared";
 
 @Injectable()
-export class TheaterRepository {
+export class TheaterRepository extends BaseRepository<Theater, TheaterDocument> {
   constructor(
     @InjectModel(Theater.name)
-    private readonly theaterModel: Model<Theater>
-  ) {}
-
-  findTheaterById(id: string) {
-    return this.theaterModel
-      .findById(id)
-      .lean()
-      .exec();
+    private readonly theaterModel: Model<TheaterDocument>
+  ) {
+    super(theaterModel);
   }
 
-  findAllTheaters() {
-    return this.theaterModel
-      .find()
-      .lean()
-      .exec();
+  findById(id: string) {
+    return super.findById(id);
+  }
+
+  findAll() {
+    return super.findAll();
+  }
+
+  create(data: Partial<Theater>) {
+    return super.create(data);  
+  }
+
+  updateById(id: string, updates: Partial<Theater>) {
+    return super.updateById(id, updates);
+  }
+
+  deleteById(id: string) {
+    return super.deleteById(id);
   }
 }
