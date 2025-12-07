@@ -114,7 +114,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
                         type="checkbox"
                         checked={keepSignedIn}
                         onChange={(e) => setKeepSignedIn(e.target.checked)}
-                        className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                        className="h-4 w-4 rounded border-gray-300 text-purple-600 cursor-pointer focus:ring-purple-500"
                     />
                     <span className="text-sm text-gray-700">Keep me signed in</span>
                 </label>
@@ -131,7 +131,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
                 type="submit"
                 intent="primary"
                 disabled={isLoading}
-                className="w-full !bg-yellow-400 !text-black hover:!bg-yellow-500 font-bold text-base py-3"
+                className="w-full !bg-yellow-400 hover:!bg-yellow-500 font-bold text-base py-3"
             >
                 {isLoading ? 'SIGNING IN...' : 'SIGN IN'}
             </Button>
