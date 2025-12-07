@@ -1,11 +1,12 @@
 import { Ticket, Search, UserCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from '../common/Button';
 
 export default function Header() {
   return (
     <header className="w-full bg-[#10142C] text-white shadow-lg sticky top-0 z-50">
       <div className="container mx-auto max-w-7xl px-4">
-        
+
         <div className="flex h-20 items-center justify-between">
 
           <a href="/" aria-label="Trang chủ NOVA CINEMA">
@@ -13,7 +14,7 @@ export default function Header() {
           </a>
 
           <div className="flex items-center gap-4">
-            
+
             <div className="relative hidden lg:block">
               <input
                 type="text"
@@ -30,19 +31,20 @@ export default function Header() {
               <Ticket size={16} />
               <span>BUY TICKETS</span>
             </Button>
-            
-            <a
-              href="/login"
+
+            <Link
+              to="/login"
               className="flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2 py-2 transition-colors hover:bg-gray-700 hover:text-yellow-400"
             >
               <UserCircle size={24} />
               <span className="hidden font-medium sm:block">Sign In</span>
-            </a>
+            </Link>
+ (feat(fe): finish call API to register)
           </div>
         </div>
 
         <div className="flex h-12 items-center justify-between border-t border-white">
-          
+
           <nav className="flex items-center gap-6">
             <a
               href="/theaters"
