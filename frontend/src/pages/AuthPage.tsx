@@ -20,7 +20,7 @@ export default function AuthPage() {
     const switchToLogin = () => setActiveTab('signin');
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-[#1a1f3a] via-[#2d1b4e] to-[#1a1f3a] flex items-center justify-center p-4">
+        <div className="min-h-screen bg-[#10142C] flex items-center justify-center p-4">
             <div className="w-full max-w-md">
                 {/* Tab Headers */}
                 <div className="flex mb-0 rounded-t-lg overflow-hidden">
