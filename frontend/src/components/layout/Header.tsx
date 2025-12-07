@@ -59,7 +59,7 @@ export default function Header() {
               </Link>
             ) : (
               <div className="relative group">
-                <button className="flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2 py-2 transition-colors hover:bg-gray-700 hover:text-yellow-400">
+                <button className="flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2 py-2 transition-colors hover:bg-gray-700 cursor-pointer hover:text-yellow-400">
                   <UserCircle size={24} />
                   <span className="hidden font-medium sm:block">{getLastName(user?.fullName || '')}</span>
                 </button>
@@ -73,19 +73,19 @@ export default function Header() {
                     </div>
                     <Link
                       to="/profile"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="block px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-gray-100"
                     >
                       My Profile
                     </Link>
                     <Link
                       to="/bookings"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="block px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-gray-100"
                     >
                       My Bookings
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 cursor-pointer hover:bg-gray-100"
                     >
                       Logout
                     </button>
