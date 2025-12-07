@@ -3,7 +3,7 @@
  * API endpoints for movie operations
  */
 
-import { apiClient, PaginatedResponse } from '../client';
+import { apiClient, type PaginatedResponse } from '../client';
 
 export interface Movie {
   _id: string;

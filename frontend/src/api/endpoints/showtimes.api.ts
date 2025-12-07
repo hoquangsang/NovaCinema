@@ -3,7 +3,7 @@
  * API endpoints for showtime operations
  */
 
-import { apiClient, PaginatedResponse } from '../client';
+import { apiClient, type PaginatedResponse } from '../client';
 
 export interface Showtime {
   _id: string;

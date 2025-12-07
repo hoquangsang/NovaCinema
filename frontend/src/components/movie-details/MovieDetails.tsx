@@ -4,7 +4,7 @@ import { Button } from "../common/Button";
 import { CirclePlay, Tag, Clock, Globe, MessageSquareMore, UserCheck } from "lucide-react";
 import MetaItem from "./MetaItem";
 import TrailerModal from "./TrailerModal";
-import type { Movie } from "../../types";
+import type { Movie } from "../../api/endpoints/movies.api";
 
 // Component: render description with a "Xem thêm / Thu gọn" toggle underneath
 function DescriptionWithToggle({
@@ -57,7 +57,7 @@ export default function MovieDetails({ movie }: MovieDetailsProps) {
     <div className="flex flex-col md:flex-row gap-8">
       <div className="md:w-2/5 self-start">
         <img
-          src={movie.poster_url}
+          src={movie.posterUrl}
           alt={movie.title}
           className="w-full rounded-lg max-h-[700px] object-cover border border-white/60"
         />
@@ -69,7 +69,7 @@ export default function MovieDetails({ movie }: MovieDetailsProps) {
         </h1>
 
         <div className="text-lg space-y-1">
-          <MetaItem icon={Tag}>{movie.genre}</MetaItem>
+          <MetaItem icon={Tag}>{Array.isArray(movie.genre) ? movie.genre.join(', ') : movie.genre}</MetaItem>
 
           <MetaItem icon={Clock}>{movie.duration}'</MetaItem>
 
@@ -78,14 +78,14 @@ export default function MovieDetails({ movie }: MovieDetailsProps) {
           <MetaItem icon={MessageSquareMore}>{movie.language ?? "N/A"}</MetaItem>
 
           <MetaItem icon={UserCheck}>
-            <span className="bg-yellow-400 text-black px-2 rounded">{formatRatingAge(movie.rating_age)}</span>
+            <span className="bg-yellow-400 text-black px-2 rounded">{formatRatingAge(movie.ratingAge)}</span>
           </MetaItem>
         </div>
 
         <div className="mt-4 text-lm text-gray-300">
           <h3 className="font-bold text-white text-lg">MÔ TẢ</h3>
           <p className="mt-1">Đạo diễn: {movie.director}</p>
-          <p className="">Khởi chiếu: {movie.release_date}</p>
+          <p className="">Khởi chiếu: {new Date(movie.releaseDate).toLocaleDateString('vi-VN')}</p>
         </div>
 
         <div className="mt-4 text-lm text-gray-300">
@@ -103,13 +103,13 @@ export default function MovieDetails({ movie }: MovieDetailsProps) {
             </div>
           </Button>
 
-          <Button intent="primary" onClick={() => navigate(`/movie/${movie.movie_id}`)} className="cursor-pointer">
+          <Button intent="primary" onClick={() => navigate(`/movie/${movie._id}`)} className="cursor-pointer">
             BUY TICKETS
           </Button>
         </div>
         <TrailerModal
           open={showTrailerModal}
-          trailerUrl={movie.trailer_url}
+          trailerUrl={movie.trailerUrl}
           title={movie.title}
           onClose={() => setShowTrailerModal(false)}
         />
