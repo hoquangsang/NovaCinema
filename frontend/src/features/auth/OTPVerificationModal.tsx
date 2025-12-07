@@ -19,7 +19,7 @@ export const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({
     const [error, setError] = useState('');
     const [isVerifying, setIsVerifying] = useState(false);
     const [isResending, setIsResending] = useState(false);
-    const [resendCountdown, setResendCountdown] = useState(60);
+    const [resendCountdown, setResendCountdown] = useState(30);
     const [canResend, setCanResend] = useState(false);
 
     // OTP validity countdown (5 minutes = 300 seconds)
