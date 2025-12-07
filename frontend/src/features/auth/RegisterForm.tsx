@@ -109,10 +109,10 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
             )}
 
             <Input
-                label="Name (Last, First)"
+                label="FullName (Last, First)"
                 type="text"
                 required
-                placeholder="Name"
+                placeholder="FullName"
                 value={formData.fullName}
                 onChange={handleChange('fullName')}
                 error={errors.fullName}
@@ -130,10 +130,10 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
             />
 
             <Input
-                label="Phone number"
+                label="Phone Number"
                 type="tel"
                 required
-                placeholder="Phone number"
+                placeholder="Phone Number"
                 value={formData.phoneNumber}
                 onChange={handleChange('phoneNumber')}
                 error={errors.phoneNumber}
@@ -191,11 +191,11 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
                                 setErrors(prev => ({ ...prev, terms: '' }));
                             }
                         }}
-                        className="mt-0.5 h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                        className="mt-0.5 h-4 w-4 rounded border-gray-300 text-purple-600 cursor-pointer focus:ring-purple-500"
                     />
                     <span className="text-sm text-gray-700">
                         Customers have agreed to the{' '}
-                        <a href="/terms" className="text-purple-600 hover:underline">
+                        <a href="/terms" className="text-purple-600 hover:underline cursor-pointer">
                             terms and conditions
                         </a>{' '}
                         of Cinestar membership
@@ -210,7 +210,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
                 type="submit"
                 intent="primary"
                 disabled={isLoading}
-                className="w-full !bg-yellow-400 !text-black hover:!bg-yellow-500 font-bold text-base py-3"
+                className="w-full !bg-yellow-400 hover:!bg-yellow-500 font-bold text-base py-3"
             >
                 {isLoading ? 'SIGNING UP...' : 'SIGN UP'}
             </Button>
@@ -220,7 +220,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
                 <button
                     type="button"
                     onClick={onSwitchToLogin}
-                    className="font-semibold text-purple-600 hover:text-purple-700 hover:underline"
+                    className="font-semibold text-purple-600 cursor-pointer hover:text-purple-700 hover:underline"
                 >
                     Sign in
                 </button>
