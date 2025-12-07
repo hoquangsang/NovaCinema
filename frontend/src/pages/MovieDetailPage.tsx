@@ -1,7 +1,7 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { movieApi } from "../api/MovieAPI";
+import { moviesApi } from "../api/endpoints/movies";
 import MovieDetails from "../components/movie-details/MovieDetails";
 import { Button } from "../components/common/Button";
 
@@ -11,7 +11,7 @@ export default function MovieDetailPage() {
 
   const { data: movie, isLoading } = useQuery({
     queryKey: ["movie", id],
-    queryFn: () => (id ? movieApi.getMovieById(id) : Promise.resolve(undefined)),
+    queryFn: () => (id ? moviesApi.getMovieById(id) : Promise.resolve(undefined)),
     enabled: Boolean(id),
   });
 

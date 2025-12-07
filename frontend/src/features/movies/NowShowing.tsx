@@ -1,12 +1,12 @@
 // src/features/movies/NowShowingSection.tsx
 import { useQuery } from '@tanstack/react-query';
-import { movieApi } from '../../api/MovieAPI';
+import { moviesApi } from '../../api/endpoints/movies';
 import { MovieListSlider } from './MovieListSlider';
 
 export const NowShowing = () => {
   const { data: movies, isLoading } = useQuery({
     queryKey: ['movies', 'now-showing'],
-    queryFn: movieApi.getNowShowing
+    queryFn: () => moviesApi.getShowingMovies()
   });
 
   if (isLoading) {
