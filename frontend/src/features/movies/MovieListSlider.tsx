@@ -1,6 +1,7 @@
 // src/features/movies/components/MovieListSlider.tsx
 import { type Movie } from '../../api/endpoints/movie.api';
 import { MovieCard } from './MovieCard';
+import { Link } from 'react-router-dom';
 import { Button } from '../../components/common/Button';
 // Import Swiper
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -62,7 +63,9 @@ export const MovieListSlider = ({ title, movies, variant }: Props) => {
       </div>
 
       <div className="text-center mt-6">
-        <Button intent="ghost">SEE MORE</Button>
+        <Link to="/now-showing">
+          <Button intent="ghost">SEE MORE</Button>
+        </Link>
       </div>
     </section>
   );
