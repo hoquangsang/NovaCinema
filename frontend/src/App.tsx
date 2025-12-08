@@ -4,6 +4,7 @@ import MainLayout from "./components/layout/MainLayout";
 import HomePage from "./pages/HomePage";
 import MovieDetailPage from "./pages/MovieDetailPage";
 import AuthPage from "./pages/AuthPage";
+import ProfilePage from "./pages/ProfilePage";
 import "./App.css";
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
 
           {/* Thêm các trang khác ở đây sau này, ví dụ: */}
           <Route path="login" element={<AuthPage />} />
+          <Route path="profile" element={<ProfilePage />} />
           {/* <Route path="movie/:id" element={<div>Movie Detail Page</div>} /> */}
           {/* Movie detail */}
           <Route path="movie/:id" element={<MovieDetailPage />} />
