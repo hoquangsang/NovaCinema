@@ -1,11 +1,14 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import type { User } from '../api/endpoints/auth.api';
+import { profileApi } from '../api/endpoints/profile.api';
 
 interface AuthContextType {
     user: User | null;
     isAuthenticated: boolean;
     login: (user: User, accessToken: string, refreshToken: string) => void;
     logout: () => void;
+    refreshUser: () => Promise<void>;
+    updateUserLocally: (user: User) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -57,11 +60,29 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         localStorage.removeItem('keepSignedIn');
     };
 
+    const refreshUser = async () => {
+        try {
+            const updatedUser = await profileApi.getProfile();
+            setUser(updatedUser);
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+        } catch (error) {
+            console.error('Failed to refresh user:', error);
+            logout(); // Logout if token is invalid
+        }
+    };
+
+    const updateUserLocally = (u: User) => {
+        setUser(u);
+        localStorage.setItem('user', JSON.stringify(u));
+    };
+
     const value = {
         user,
         isAuthenticated: !!user,
         login,
         logout,
+        refreshUser,
+        updateUserLocally,
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -6,6 +6,7 @@ import ProtectedRoute from "./components/common/ProtectedRoute";
 import HomePage from "./pages/HomePage";
 import MovieDetailPage from "./pages/MovieDetailPage";
 import AuthPage from "./pages/AuthPage";
+
 import DashboardPage from "./pages/management/DashboardPage";
 import MoviesManagementPage from "./pages/management/MoviesManagementPage";
 import TheatersManagementPage from "./pages/management/TheatersManagementPage";
@@ -13,6 +14,9 @@ import RoomsManagementPage from "./pages/management/RoomsManagementPage";
 import ShowtimesManagementPage from "./pages/management/ShowtimesManagementPage";
 import UsersManagementPage from "./pages/management/UsersManagementPage";
 import SettingsPage from "./pages/management/SettingsPage";
+
+import ProfilePage from "./pages/ProfilePage";
+
 import "./App.css";
 
 function App() {
@@ -27,6 +31,7 @@ function App() {
 
           {/* Thêm các trang khác ở đây sau này, ví dụ: */}
           <Route path="login" element={<AuthPage />} />
+          <Route path="profile" element={<ProfilePage />} />
           {/* <Route path="movie/:id" element={<div>Movie Detail Page</div>} /> */}
           {/* Movie detail */}
           <Route path="movie/:id" element={<MovieDetailPage />} />
