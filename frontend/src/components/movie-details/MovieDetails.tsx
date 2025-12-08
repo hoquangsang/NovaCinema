@@ -85,6 +85,7 @@ export default function MovieDetails({ movie }: MovieDetailsProps) {
         <div className="mt-4 text-lm text-gray-300">
           <h3 className="font-bold text-white text-lg">MÔ TẢ</h3>
           <p className="mt-1">Đạo diễn: {movie.director}</p>
+          <p className="">{movie.actors ? `Diễn viên: ${movie.actors.join(', ')}` : "Diễn viên: N/A"}</p>
           <p className="">Khởi chiếu: {new Date(movie.releaseDate).toLocaleDateString('vi-VN')}</p>
         </div>
 
