@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import type { User } from '../../api/endpoints/auth.api';
 import { useAuth } from '../../context/AuthContext';
 import { profileApi, type UpdateProfileParams } from '../../api/endpoints/profile.api';
@@ -8,14 +9,35 @@ interface Props {
 }
 
 const PersonalInfoCard = ({}: Props) => {
-  const { user, refreshUser } = useAuth();
+  const { user, updateUserLocally } = useAuth();
+  // normalize date string for <input type="date" /> (expects YYYY-MM-DD)
+  const formatForDateInput = (val?: string | null) => {
+    if (!val) return '';
+    // already in ISO format
+    if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
+    // dd/mm/yyyy or dd-mm-yyyy -> convert to yyyy-mm-dd
+    const m1 = val.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (m1) return `${m1[3]}-${m1[2]}-${m1[1]}`;
+    const m2 = val.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+    if (m2) return `${m2[3]}-${m2[2]}-${m2[1]}`;
+    // try Date parse
+    const d = new Date(val);
+    if (!isNaN(d.getTime())) {
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd}`;
+    }
+    return '';
+  };
   const [formData, setFormData] = useState<UpdateProfileParams>({
     fullName: user?.fullName || '',
     phoneNumber: user?.phoneNumber || '',
-    dateOfBirth: user?.dateOfBirth || '',
+    dateOfBirth: formatForDateInput(user?.dateOfBirth),
     email: user?.email || '',
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [errorInfo, setErrorInfo] = useState<{ message: string; details?: string[] } | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -26,12 +48,32 @@ const PersonalInfoCard = ({}: Props) => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await profileApi.updateProfile(formData);
-      await refreshUser();
+      setErrorInfo(null);
+      const updated = await profileApi.updateProfile(formData);
+      // Update user locally to avoid calling refreshUser which may trigger
+      // a logout if token refresh fails. This keeps the user on the page.
+      updateUserLocally(updated);
       alert('Cập nhật thông tin thành công');
-    } catch (error) {
-      console.error('Failed to update profile:', error);
-      alert('Cập nhật thất bại. Vui lòng thử lại.');
+    } catch (err) {
+      console.error('Failed to update profile:', err);
+      // Extract detailed error information when available
+      let message = 'Cập nhật thất bại. Vui lòng thử lại.';
+      const details: string[] = [];
+
+      if (axios.isAxiosError(err) && err.response) {
+        const data = err.response.data as any;
+        if (data?.message) message = data.message;
+        if (Array.isArray(data?.errors)) {
+          for (const e of data.errors) {
+            if (e?.message) details.push(e.message);
+            else details.push(JSON.stringify(e));
+          }
+        }
+      } else if ((err as any)?.message) {
+        message = (err as any).message;
+      }
+
+      setErrorInfo({ message, details: details.length ? details : undefined });
     } finally {
       setIsLoading(false);
     }
@@ -41,7 +83,7 @@ const PersonalInfoCard = ({}: Props) => {
     setFormData({
       fullName: user?.fullName ?? '',
       phoneNumber: user?.phoneNumber ?? '',
-      dateOfBirth: user?.dateOfBirth ?? '',
+      dateOfBirth: formatForDateInput(user?.dateOfBirth),
       email: user?.email ?? '',
     });
   }, [user]);
@@ -49,6 +91,18 @@ const PersonalInfoCard = ({}: Props) => {
   return (
     <div className="bg-white rounded-md p-6 shadow-md mb-6">
       <h3 className="text-xl font-bold mb-6">Thông tin cá nhân</h3>
+      {errorInfo ? (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-800 rounded">
+          <div className="font-semibold">{errorInfo.message}</div>
+          {errorInfo.details && (
+            <ul className="mt-2 list-disc ml-5">
+              {errorInfo.details.map((d, i) => (
+                <li key={i}>{d}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ) : null}
       <div className="">
         <form onSubmit={handleSubmit} className="">
           <div className="grid grid-cols-2 gap-6">
