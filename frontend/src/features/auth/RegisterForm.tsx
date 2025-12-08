@@ -5,10 +5,11 @@ import { Button } from '../../components/common/Button';
 import { OTPVerificationModal } from './OTPVerificationModal';
 
 interface RegisterFormProps {
+    onSuccess?: () => void;
     onSwitchToLogin?: () => void;
 }
 
-export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
+export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchToLogin }) => {
     const [formData, setFormData] = useState<RegisterParams>({
         email: '',
         password: '',
@@ -105,6 +106,9 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
 
         // Close modal
         setShowOTPModal(false);
+
+        // Call onSuccess callback if provided
+        onSuccess?.();
 
         // Switch to login tab so user can sign in
         onSwitchToLogin?.();

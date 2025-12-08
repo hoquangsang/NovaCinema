@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { Film, Theater, DoorOpen, Users, Settings, LayoutDashboard } from 'lucide-react';
+import { Film, Theater, DoorOpen, Users, Settings, LayoutDashboard, Calendar } from 'lucide-react';
 
 interface NavItem {
     path: string;
@@ -27,6 +27,11 @@ const navItems: NavItem[] = [
         path: '/management/rooms',
         label: 'Rooms',
         icon: <DoorOpen size={20} />,
+    },
+    {
+        path: '/management/showtimes',
+        label: 'Showtimes',
+        icon: <Calendar size={20} />,
     },
     {
         path: '/management/users',
@@ -61,8 +66,8 @@ export default function ManagementLayout() {
                                     <Link
                                         to={item.path}
                                         className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${isActive
-                                                ? 'bg-yellow-400 text-[#10142C] font-semibold shadow-md'
-                                                : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                                            ? 'bg-yellow-400 text-[#10142C] font-semibold shadow-md'
+                                            : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                                             }`}
                                     >
                                         {item.icon}

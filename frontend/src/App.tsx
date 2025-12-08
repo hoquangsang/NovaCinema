@@ -10,6 +10,7 @@ import DashboardPage from "./pages/management/DashboardPage";
 import MoviesManagementPage from "./pages/management/MoviesManagementPage";
 import TheatersManagementPage from "./pages/management/TheatersManagementPage";
 import RoomsManagementPage from "./pages/management/RoomsManagementPage";
+import ShowtimesManagementPage from "./pages/management/ShowtimesManagementPage";
 import UsersManagementPage from "./pages/management/UsersManagementPage";
 import SettingsPage from "./pages/management/SettingsPage";
 import "./App.css";
@@ -44,6 +45,7 @@ function App() {
           <Route path="movies" element={<MoviesManagementPage />} />
           <Route path="theaters" element={<TheatersManagementPage />} />
           <Route path="rooms" element={<RoomsManagementPage />} />
+          <Route path="showtimes" element={<ShowtimesManagementPage />} />
           <Route path="users" element={<UsersManagementPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
