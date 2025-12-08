@@ -41,11 +41,8 @@ import { TheatersController } from "./controllers/theaters.controller";
   ],
   exports: [
     TheaterService,
-    TheaterRepository,
     RoomService,
-    RoomRepository,
-    SeatService,
-    SeatRepository,
+    SeatService
   ]
 })
 export class TheatersModule {}

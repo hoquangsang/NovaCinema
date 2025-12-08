@@ -7,8 +7,6 @@ import { UsersModule } from './modules/users';
 import { AuthModule } from './modules/auth';
 import { MoviesModule } from './modules/movies';
 import { TheatersModule } from './modules/theaters';
-import { ShowtimesModule } from './modules/showtimes/showtimes.module';
-import { BookingsModule } from './modules/bookings/bookings.module';
 import { ValidationPipe } from './common/pipes';
 import { LoggingInterceptor, ResponseInterceptor } from './common/interceptors';
 import { HttpExceptionFilter, MongoExceptionFilter } from './common/filters';
@@ -23,8 +21,6 @@ import { JwtAuthGuard, RolesGuard } from './common/guards';
     AuthModule,
     MoviesModule,
     TheatersModule,
-    ShowtimesModule,
-    BookingsModule,
   ],
 
   providers: [
