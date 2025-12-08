@@ -1,4 +1,4 @@
-import { type Movie } from "../../api/endpoints/movies.api";
+import { type Movie } from "../../api/endpoints/movie.api";
 import { Button } from "../../components/common/Button";
 import { CirclePlay } from "lucide-react";
 import { useNavigate } from "react-router-dom";

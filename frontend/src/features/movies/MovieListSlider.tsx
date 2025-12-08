@@ -1,5 +1,5 @@
 // src/features/movies/components/MovieListSlider.tsx
-import { type Movie } from '../../types';
+import { type Movie } from '../../api/endpoints/movie.api';
 import { MovieCard } from './MovieCard';
 import { Button } from '../../components/common/Button';
 // Import Swiper
@@ -25,7 +25,7 @@ export const MovieListSlider = ({ title, movies, variant }: Props) => {
       <h2 className="text-4xl font-bold text-white text-center uppercase mb-6 tracking-wide" style={{ fontFamily: 'Anton, sans-serif' }}>
         {title}
       </h2>
-      
+
       <div className="relative movie-slider-wrapper">
 
         <button className={`swiper-button-prev-custom ${prevClass}`}>
@@ -44,14 +44,14 @@ export const MovieListSlider = ({ title, movies, variant }: Props) => {
             nextEl: `.${nextClass}`,
             prevEl: `.${prevClass}`,
           }}
-          pagination={{ 
+          pagination={{
             clickable: true,
-           }}
+          }}
           className="pb-4"
         >
           {movies.map((movie) => (
-            <SwiperSlide key={movie.movie_id} className="movie-slide mb-10">
-              <MovieCard movie={movie} variant={variant}/>
+            <SwiperSlide key={movie._id} className="movie-slide mb-10">
+              <MovieCard movie={movie} variant={variant} />
             </SwiperSlide>
           ))}
         </Swiper>

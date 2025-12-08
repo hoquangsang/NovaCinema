@@ -1,6 +1,6 @@
 // src/features/movies/ComingSoonSection.tsx
 import { useQuery } from '@tanstack/react-query';
-import { movieApi } from '../../api/MovieAPI';
+import { movieApi } from '../../api/endpoints/movie.api';
 import { MovieListSlider } from './MovieListSlider';
 
 export const ComingSoon = () => {

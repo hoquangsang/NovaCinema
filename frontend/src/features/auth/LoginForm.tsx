@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { authApi, type LoginParams } from '../../api/endpoints/auth.api';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
+import { useAuth } from '../../context/AuthContext';
 
 interface LoginFormProps {
     onSuccess?: () => void;
 }
 
 export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
+    const { login } = useAuth();
     const [formData, setFormData] = useState<LoginParams>({
         email: '',
         password: '',
@@ -49,12 +51,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
         try {
             const response = await authApi.login(formData);
 
-            // Store tokens
-            localStorage.setItem('accessToken', response.accessToken);
-            localStorage.setItem('refreshToken', response.refreshToken);
-
-            // Store user info
-            localStorage.setItem('user', JSON.stringify(response.user));
+            // Use AuthContext login function to update global state
+            login(response.user, response.accessToken, response.refreshToken);
 
             // Handle "Keep me signed in"
             if (keepSignedIn) {

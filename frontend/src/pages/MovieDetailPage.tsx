@@ -1,7 +1,7 @@
-import React from "react";
+
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { movieApi } from "../api/MovieAPI";
+import { movieApi } from "../api/endpoints/movie.api";
 import MovieDetails from "../components/movie-details/MovieDetails";
 import { Button } from "../components/common/Button";
 
