@@ -33,35 +33,27 @@ export abstract class BaseRepository<T, TDoc extends Document & T> {
       .filter((x): x is WithId<T> => x !== null);
   }
 
-  async findById(id: string): Promise<WithId<T> | null> {
+  protected async findById(id: string): Promise<WithId<T> | null> {
     if (!this.isValidObjectId(id)) return null;
     const doc = await this.model.findById(id).lean().exec();
     return this.convertId(doc);
   }
 
-  async findOne(filter: FilterQuery<TDoc>): Promise<WithId<T> | null> {
+  protected async findOne(filter: FilterQuery<TDoc>): Promise<WithId<T> | null> {
     const doc = await this.model.findOne(filter).lean().exec();
     return this.convertId(doc);
   }
 
-  async findMany(filter: FilterQuery<TDoc>): Promise<WithId<T>[]> {
+  protected async findMany(filter: FilterQuery<TDoc>): Promise<WithId<T>[]> {
     const docs = await this.model.find(filter).lean().exec();
     return this.convertIdArray(docs);
   }
 
-  async findAll(): Promise<WithId<T>[]> {
+  protected async findAll(): Promise<WithId<T>[]> {
     return this.findMany({});
   }
 
-  async findByIds(ids: string[]): Promise<WithId<T>[]> {
-    const validIds = ids.filter(id => this.isValidObjectId(id));
-    if (validIds.length === 0) return [];
-    
-    const docs = await this.model.find({ _id: { $in: validIds } } as any).lean().exec();
-    return this.convertIdArray(docs);
-  }
-
-  async findPaginated(options: {
+  protected async findPaginated(options: {
     filter?: FilterQuery<TDoc>;
     sort?: Record<string, 1 | -1>;
     page?: number;
@@ -93,13 +85,13 @@ export abstract class BaseRepository<T, TDoc extends Document & T> {
     };
   }
 
-  async create(data: Partial<T>): Promise<WithId<T>> {
+  protected async create(data: Partial<T>): Promise<WithId<T>> {
     const doc = await this.model.create(data);
     const plain = doc.toObject({ flattenMaps: true });
     return this.convertId(plain)!;
   }
 
-  async createMany(data: Partial<T>[]): Promise<WithId<T>[]> {
+  protected async createMany(data: Partial<T>[]): Promise<WithId<T>[]> {
     if (!Array.isArray(data) || data.length === 0) return [];
 
     const docs = await this.model.insertMany(data, { ordered: true });
@@ -108,7 +100,7 @@ export abstract class BaseRepository<T, TDoc extends Document & T> {
     return this.convertIdArray(plain);
   }
 
-  async updateOne(
+  protected async updateOne(
     filter: FilterQuery<TDoc>,
     updates: UpdateQuery<TDoc>
   ): Promise<WithId<T> | null> {
@@ -123,7 +115,7 @@ export abstract class BaseRepository<T, TDoc extends Document & T> {
     return this.convertId(doc);
   }
 
-  async updateById(
+  protected async updateById(
     id: string,
     updates: UpdateQuery<TDoc>
   ): Promise<WithId<T> | null> {
@@ -140,13 +132,13 @@ export abstract class BaseRepository<T, TDoc extends Document & T> {
     return this.convertId(doc);
   }
 
-  async deleteById(id: string): Promise<boolean> {
+  protected async deleteById(id: string): Promise<boolean> {
     if (!this.isValidObjectId(id)) return false;
     const res = await this.model.findByIdAndDelete(id).exec();
     return !!res;
   }
 
-  async deleteMany(filter: FilterQuery<TDoc>): Promise<number> {
+  protected async deleteMany(filter: FilterQuery<TDoc>): Promise<number> {
     const res = await this.model.deleteMany(filter).exec();
     return res.deletedCount ?? 0;
   }
