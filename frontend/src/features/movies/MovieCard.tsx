@@ -1,4 +1,4 @@
-import { type Movie } from "../../types";
+import { type Movie } from "../../api/endpoints/movies.api";
 import { Button } from "../../components/common/Button";
 import { CirclePlay } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -18,15 +18,15 @@ export const MovieCard = ({ movie, variant }: Props) => {
     <div className="bg-transparent rounded-lg overflow-hidden group">
       <div className="relative">
         <img
-          src={movie.poster_url}
+          src={movie.posterUrl}
           alt={movie.title}
           className="w-full aspect-2/3 object-top rounded-bl-lg rounded-br-lg cursor-pointer"
-          onClick={() => navigate(`/movie/${movie.movie_id}`)}
+          onClick={() => navigate(`/movie/${movie._id}`)}
         />
       </div>
 
       <div className="p-4">
-        <h3 className=" text-white text-lg wrapper text-center font-bergensans tracking-wide h-10 cursor-pointer hover:text-yellow-400 hover: transition-colors duration-300" title={movie.title} onClick={() => navigate(`/movie/${movie.movie_id}`)}>
+        <h3 className=" text-white text-lg wrapper text-center font-bergensans tracking-wide h-10 cursor-pointer hover:text-yellow-400 hover: transition-colors duration-300" title={movie.title} onClick={() => navigate(`/movie/${movie._id}`)}>
           {movie.title}
         </h3>
 
@@ -39,18 +39,18 @@ export const MovieCard = ({ movie, variant }: Props) => {
           </Button>
 
           {variant === "now-showing" ? (
-            <Button intent="primary" className="hidden sm:flex" onClick={() => navigate(`/movie/${movie.movie_id}`)}>
+            <Button intent="primary" className="hidden sm:flex" onClick={() => navigate(`/movie/${movie._id}`)}>
               BUY TICKETS
             </Button>
           ) : (
-            <Button intent="primary" className="hidden sm:flex" onClick={() => navigate(`/movie/${movie.movie_id}`)}>
+            <Button intent="primary" className="hidden sm:flex" onClick={() => navigate(`/movie/${movie._id}`)}>
               VIEW DETAILS
             </Button>
           )}
         </div>
         <TrailerModal
           open={showTrailer}
-          trailerUrl={movie.trailer_url}
+          trailerUrl={movie.trailerUrl}
           title={movie.title}
           onClose={() => setShowTrailer(false)}
         />
