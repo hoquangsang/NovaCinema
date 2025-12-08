@@ -83,6 +83,15 @@ export default function Header() {
                     >
                       My Bookings
                     </Link>
+                    {/* Management option - only visible for admin users */}
+                    {user?.roles?.includes('admin') && (
+                      <Link
+                        to="/management"
+                        className="block px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-gray-100"
+                      >
+                        Management
+                      </Link>
+                    )}
                     <button
                       onClick={handleLogout}
                       className="w-full text-left px-4 py-2 text-sm text-red-600 cursor-pointer hover:bg-gray-100"
