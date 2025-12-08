@@ -1,9 +1,4 @@
-/**
- * Movie API
- * API endpoints for movie operations
- */
-
-import { apiClient } from '../client';
+import { apiClient, type PaginatedResponse } from '../client';
 
 export interface Movie {
     _id: string; // ID của phim
@@ -27,17 +22,21 @@ export const movieApi = {
     /**
      * Get now showing movies
      */
-    getNowShowing: async (): Promise<Movie[]> => {
-        const response = await apiClient.get('/movies/showing');
-        return response.data;
+    getNowShowing: async (page: number = 1, limit: number = 12): Promise<PaginatedResponse<Movie>> => {
+        const response = await apiClient.get('/movies/showing', {
+            params: { page, limit }
+        });
+        return response as unknown as PaginatedResponse<Movie>; // Interceptor transforms this
     },
 
     /**
      * Get coming soon movies
      */
-    getComingSoon: async (): Promise<Movie[]> => {
-        const response = await apiClient.get('/movies/upcoming');
-        return response.data;
+    getComingSoon: async (page: number = 1, limit: number = 12): Promise<PaginatedResponse<Movie>> => {
+        const response = await apiClient.get('/movies/upcoming', {
+            params: { page, limit }
+        });
+        return response as unknown as PaginatedResponse<Movie>; // Interceptor transforms this
     },
 
     /**

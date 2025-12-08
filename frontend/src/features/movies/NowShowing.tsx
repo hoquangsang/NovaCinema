@@ -4,9 +4,9 @@ import { movieApi } from '../../api/endpoints/movie.api';
 import { MovieListSlider } from './MovieListSlider';
 
 export const NowShowing = () => {
-  const { data: movies, isLoading } = useQuery({
-    queryKey: ['movies', 'now-showing'],
-    queryFn: movieApi.getNowShowing
+  const { data: response, isLoading } = useQuery({
+    queryKey: ['movies', 'now-showing', 1],
+    queryFn: () => movieApi.getNowShowing(1, 10)
   });
 
   if (isLoading) {
@@ -16,7 +16,7 @@ export const NowShowing = () => {
   return (
     <MovieListSlider
       title="NOW SHOWING"
-      movies={movies || []}
+      movies={response?.items || []}
       variant="now-showing"
     />
   );

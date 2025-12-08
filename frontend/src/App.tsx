@@ -6,7 +6,7 @@ import ProtectedRoute from "./components/common/ProtectedRoute";
 import HomePage from "./pages/HomePage";
 import MovieDetailPage from "./pages/MovieDetailPage";
 import AuthPage from "./pages/AuthPage";
-
+import NowShowingPage from "./pages/NowShowingPage";
 import DashboardPage from "./pages/management/DashboardPage";
 import MoviesManagementPage from "./pages/management/MoviesManagementPage";
 import TheatersManagementPage from "./pages/management/TheatersManagementPage";
@@ -35,6 +35,7 @@ function App() {
           {/* <Route path="movie/:id" element={<div>Movie Detail Page</div>} /> */}
           {/* Movie detail */}
           <Route path="movie/:id" element={<MovieDetailPage />} />
+          <Route path="now-showing" element={<NowShowingPage />} />
         </Route>
 
         {/* Management Routes - Protected for Admin only */}

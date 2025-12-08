@@ -34,7 +34,17 @@ apiClient.interceptors.request.use(
 // Response interceptor - handle errors globally
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => {
-    // Extract data from success response
+    // If response has meta (pagination), map data to items
+    if (response.data?.meta) {
+      return {
+        items: response.data.data,
+        total: response.data.meta.total,
+        page: response.data.meta.page,
+        limit: response.data.meta.limit,
+        totalPages: response.data.meta.totalPages
+      };
+    }
+    // Otherwise, extract data from success response
     return response.data?.data ? response.data : response;
   },
   async (error: AxiosError<{ message?: string; errors?: unknown[] }>) => {

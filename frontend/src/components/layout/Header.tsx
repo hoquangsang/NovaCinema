@@ -114,12 +114,12 @@ export default function Header() {
             >
               Showtimes
             </a>
-            <a
-              href="/showtimes"
+            <Link
+              to="/now-showing"
               className="font-semibold text-white transition-colors hover:text-yellow-400"
             >
               Now Showing
-            </a>
+            </Link>
             <a
               href="/showtimes"
               className="font-semibold text-white transition-colors hover:text-yellow-400"
