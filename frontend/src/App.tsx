@@ -1,5 +1,6 @@
 // src/App.tsx
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ToastProvider } from './components/common/ToastProvider';
 import MainLayout from "./components/layout/MainLayout";
 import ManagementLayout from "./components/layout/ManagementLayout";
 import ProtectedRoute from "./components/common/ProtectedRoute";
@@ -21,8 +22,9 @@ import "./App.css";
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
+    <ToastProvider>
+      <BrowserRouter>
+        <Routes>
         {/* Route cha "/" sẽ dùng MainLayout */}
         <Route path="/" element={<MainLayout />}>
           {/* Khi truy cập "/", route con `index` sẽ được render */}
@@ -55,8 +57,9 @@ function App() {
           <Route path="users" element={<UsersManagementPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
-      </Routes>
-    </BrowserRouter>
+        </Routes>
+      </BrowserRouter>
+    </ToastProvider>
   );
 }
 
