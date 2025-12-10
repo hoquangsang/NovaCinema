@@ -120,12 +120,12 @@ export default function Header() {
             >
               Now Showing
             </Link>
-            <a
-              href="/showtimes"
+            <Link
+              to="/coming-soon"
               className="font-semibold text-white transition-colors hover:text-yellow-400"
             >
               Coming Soon
-            </a>
+            </Link>
           </nav>
 
           <nav className="flex items-center gap-6">
