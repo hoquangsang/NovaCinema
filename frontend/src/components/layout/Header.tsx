@@ -117,15 +117,17 @@ export default function Header() {
             <Link
               to="/now-showing"
               className="font-semibold text-white transition-colors hover:text-yellow-400"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             >
               Now Showing
             </Link>
-            <a
-              href="/showtimes"
+            <Link
+              to="/coming-soon"
               className="font-semibold text-white transition-colors hover:text-yellow-400"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             >
               Coming Soon
-            </a>
+            </Link>
           </nav>
 
           <nav className="flex items-center gap-6">

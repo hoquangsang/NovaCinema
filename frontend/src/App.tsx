@@ -8,6 +8,7 @@ import HomePage from "./pages/HomePage";
 import MovieDetailPage from "./pages/MovieDetailPage";
 import AuthPage from "./pages/AuthPage";
 import NowShowingPage from "./pages/NowShowingPage";
+import ComingSoonPage from "./pages/ComingSoonPage";
 import DashboardPage from "./pages/management/DashboardPage";
 import MoviesManagementPage from "./pages/management/MoviesManagementPage";
 import TheatersManagementPage from "./pages/management/TheatersManagementPage";
@@ -25,38 +26,39 @@ function App() {
     <ToastProvider>
       <BrowserRouter>
         <Routes>
-        {/* Route cha "/" sẽ dùng MainLayout */}
-        <Route path="/" element={<MainLayout />}>
-          {/* Khi truy cập "/", route con `index` sẽ được render */}
-          {/* Đây chính là HomePage, nó sẽ chui vào <Outlet /> của MainLayout */}
-          <Route index element={<HomePage />} />
+          {/* Route cha "/" sẽ dùng MainLayout */}
+          <Route path="/" element={<MainLayout />}>
+            {/* Khi truy cập "/", route con `index` sẽ được render */}
+            {/* Đây chính là HomePage, nó sẽ chui vào <Outlet /> của MainLayout */}
+            <Route index element={<HomePage />} />
 
-          {/* Thêm các trang khác ở đây sau này, ví dụ: */}
-          <Route path="login" element={<AuthPage />} />
-          <Route path="profile" element={<ProfilePage />} />
-          {/* <Route path="movie/:id" element={<div>Movie Detail Page</div>} /> */}
-          {/* Movie detail */}
-          <Route path="movie/:id" element={<MovieDetailPage />} />
-          <Route path="now-showing" element={<NowShowingPage />} />
-        </Route>
+            {/* Thêm các trang khác ở đây sau này, ví dụ: */}
+            <Route path="login" element={<AuthPage />} />
+            <Route path="profile" element={<ProfilePage />} />
+            {/* <Route path="movie/:id" element={<div>Movie Detail Page</div>} /> */}
+            {/* Movie detail */}
+            <Route path="movie/:id" element={<MovieDetailPage />} />
+            <Route path="now-showing" element={<NowShowingPage />} />
+            <Route path="coming-soon" element={<ComingSoonPage />} />
+          </Route>
 
-        {/* Management Routes - Protected for Admin only */}
-        <Route
-          path="/management"
-          element={
-            <ProtectedRoute requireAdmin={true}>
-              <ManagementLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<DashboardPage />} />
-          <Route path="movies" element={<MoviesManagementPage />} />
-          <Route path="theaters" element={<TheatersManagementPage />} />
-          <Route path="rooms" element={<RoomsManagementPage />} />
-          <Route path="showtimes" element={<ShowtimesManagementPage />} />
-          <Route path="users" element={<UsersManagementPage />} />
-          <Route path="settings" element={<SettingsPage />} />
-        </Route>
+          {/* Management Routes - Protected for Admin only */}
+          <Route
+            path="/management"
+            element={
+              <ProtectedRoute requireAdmin={true}>
+                <ManagementLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<DashboardPage />} />
+            <Route path="movies" element={<MoviesManagementPage />} />
+            <Route path="theaters" element={<TheatersManagementPage />} />
+            <Route path="rooms" element={<RoomsManagementPage />} />
+            <Route path="showtimes" element={<ShowtimesManagementPage />} />
+            <Route path="users" element={<UsersManagementPage />} />
+            <Route path="settings" element={<SettingsPage />} />
+          </Route>
         </Routes>
       </BrowserRouter>
     </ToastProvider>

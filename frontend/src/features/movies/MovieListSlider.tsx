@@ -63,7 +63,7 @@ export const MovieListSlider = ({ title, movies, variant }: Props) => {
       </div>
 
       <div className="text-center mt-6">
-        <Link to="/now-showing">
+        <Link to={variant === 'now-showing' ? '/now-showing' : '/coming-soon'} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
           <Button intent="ghost">SEE MORE</Button>
         </Link>
       </div>
