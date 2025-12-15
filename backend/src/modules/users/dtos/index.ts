@@ -1,4 +1,4 @@
-export { QueryUsersDto } from "./query-users.dto";
-export { UserDto } from "./user.dto";
-export { UpdateProfileDto } from "./update-profile";
-export { UpdateUserDto } from "./update-user.dto";
+export { PaginatedQueryUsersRequestDto } from "./paginated-query-users.request.dto";
+export { UpdateProfileRequestDto } from "./update-profile.request";
+
+export { UserResponseDto } from "./user.response.dto";

@@ -1,86 +1,82 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, NotFoundException, Param, Patch, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { SortUtil } from 'src/common/utils';
-import { CurrentUser, WrapOkResponse, WrapPaginatedResponse, Roles, WrapNoContentResponse } from 'src/common/decorators';
-import { UserService } from '../services/user.service';
-import { UpdateUserDto, QueryUsersDto, UpdateProfileDto, UserDto } from '../dtos';
 import { ParseObjectIdPipe } from '@nestjs/mongoose';
+import { CurrentUser, WrapOkResponse, WrapPaginatedResponse, Roles, WrapNoContentResponse, Public } from 'src/common/decorators';
+import { UserService } from '../services/user.service';
+import { PaginatedQueryUsersRequestDto, UpdateProfileRequestDto, UserResponseDto } from '../dtos';
 
+@Public()/////////////////// for test
 @ApiTags('Users')
 @Controller('users')
 export class UserController {
   constructor(
-    private readonly usersService: UserService
+    private readonly userService: UserService
   ) {}
 
-  @ApiOperation({ description: 'get me' })
-  @WrapOkResponse({ dto: UserDto })
-  @HttpCode(200)
+  @ApiOperation({ description: 'Get me' })
+  @WrapOkResponse({ dto: UserResponseDto })
+  @HttpCode(HttpStatus.OK)
   @Get('me')
-  async getMe(
+  public async getMe(
     @CurrentUser() user: any
   ) {
-    return await this.usersService.findById(user.sub);
+    const existed = await this.userService.findUserById(user.sub);
+    if (!existed) throw new NotFoundException('User not found');
+    return existed;
   }
   
-  @ApiOperation({ description: 'update me' })
-  @WrapOkResponse({ dto: UserDto })
-  @HttpCode(200)
+  @ApiOperation({ description: 'Update me' })
+  @WrapOkResponse({ dto: UserResponseDto })
+  @HttpCode(HttpStatus.OK)
   @Patch('me')
-  async updateMe(
+  public async updateMe(
     @CurrentUser() user: any,
-    @Body() dto: UpdateProfileDto
+    @Body() dto: UpdateProfileRequestDto
   ) {
-    return await this.usersService.updateById(user.sub, dto);
+    return await this.userService.updateUserById(user.sub, dto);
   }
 
-  @ApiOperation({ description: 'find paginated users' })
-  @WrapPaginatedResponse({ dto: UserDto })
-  @Roles('admin')
-  @HttpCode(200)
+  @ApiOperation({ description: 'Query users' })
+  @WrapPaginatedResponse({ dto: UserResponseDto })
+  @Roles('ADMIN')
+  @HttpCode(HttpStatus.OK)
   @Get()
-  async findPaginated(
-    @Query() q: QueryUsersDto
+  public async getUsers(
+    @Query() query: PaginatedQueryUsersRequestDto
   ) {
-    const page = q.page ?? 1;
-    const limit = q.limit ?? 10;
-    const sort = SortUtil.parse(q.sort);
-
-    const result = await this.usersService.findPaginated({
-      search: q.search,
-      sort,
-      page,
-      limit,
-    });
-
-    return {
-      items: result.items,
-      total: result.total,
-      page,
-      limit,
-    };
+    return this.userService.findUsersPaginated(query);
   }
 
-  @ApiOperation({ description: 'admin update user' })
-  @WrapOkResponse({ dto: UserDto })
-  @Roles('admin')
-  @HttpCode(200)
-  @Patch(':id')
-  async adminUpdate(
+  @ApiOperation({ description: 'Activate user' })
+  @WrapNoContentResponse({ message: 'Activated successful' })
+  @Roles('ADMIN')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Patch(':id/activate')
+  public async activateUser(
     @Param('id', ParseObjectIdPipe) id: string,
-    @Body() dto: UpdateUserDto
   ) {
-    return await this.usersService.updateById(id, dto);
+    await this.userService.activateUserById(id);
   }
 
-  @ApiOperation({ description: 'admin delete user' })
-  @WrapNoContentResponse({ message: 'User deleted successfully' })
-  @Roles('admin')
-  @HttpCode(204)
+  @ApiOperation({ description: 'Deactivate user' })
+  @WrapNoContentResponse({ message: 'Deactivated successful' })
+  @Roles('ADMIN')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Patch(':id/deactivate')
+  public async deactivateUser(
+    @Param('id', ParseObjectIdPipe) id: string,
+  ) {
+    await this.userService.deactivateUserById(id);
+  }
+
+  @ApiOperation({ description: 'Hard delete user' })
+  @WrapNoContentResponse({ message: 'Deleted successfully' })
+  @Roles('ADMIN')
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
-  async deleteUser(
+  public async deleteUser(
     @Param('id', ParseObjectIdPipe) id: string
   ) {
-    return await this.usersService.deleteById(id);
+    return await this.userService.deleteUserById(id);
   }
 }
