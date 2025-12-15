@@ -1,8 +1,8 @@
 import { Reflector } from '@nestjs/core';
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor, Type } from '@nestjs/common';
 import { Observable, map } from 'rxjs';
+import { plainToInstance } from 'class-transformer';
 import { METADATA_KEYS } from '../constants';
-import { TransformUtil } from '../utils';
 import { CreatedResponse, ListResponse, PaginatedResponse, SuccessResponse } from '../responses';
 
 @Injectable()
@@ -22,19 +22,19 @@ export class ResponseInterceptor implements NestInterceptor {
         switch (mode) {
           case 'created':
             return new CreatedResponse(
-              TransformUtil.transformToDto(dto, data),
+              this.transformToDto(dto, data),
               message ?? 'Created'
             );
 
           case 'list':
             return new ListResponse(
-              TransformUtil.transformToDto(dto, data),
+              this.transformToDto(dto, data),
               message ?? 'OK'
             );
 
           case 'paginated':
             return new PaginatedResponse(
-              TransformUtil.transformToDto(dto, data.items),
+              this.transformToDto(dto, data.items),
               data.total,
               data.page,
               data.limit,
@@ -46,11 +46,29 @@ export class ResponseInterceptor implements NestInterceptor {
 
           default:
             return new SuccessResponse(
-              TransformUtil.transformToDto(dto, data),
+              this.transformToDto(dto, data),
               message ?? 'OK'
             );
         }
       }),
     );
+  }
+
+  private transformToDto<T>(dto: Type<T> | null, input: any): T | T[] | any {
+    if (!dto) return input;
+
+    if (Array.isArray(input)) {
+      return input.map(item =>
+        plainToInstance(dto, item, {
+          excludeExtraneousValues: true,
+          enableImplicitConversion: true,
+        }),
+      );
+    }
+
+    return plainToInstance(dto, input, {
+      excludeExtraneousValues: true,
+      enableImplicitConversion: true,
+    });
   }
 }
