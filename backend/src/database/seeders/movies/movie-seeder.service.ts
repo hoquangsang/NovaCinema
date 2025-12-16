@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Movie, MovieDocument } from 'src/modules/movies/schemas/movie.schema';
 import { UPCOMING_MOVIES_DATA, SHOWING_MOVIES_DATA } from './movie-seeder.data';
+import { Movie, MovieDocument } from 'src/modules/movies';
 
 @Injectable()
 export class MovieSeederService {

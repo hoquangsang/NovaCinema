@@ -1,5 +1,4 @@
-import { Types } from "mongoose";
-import { Seat } from "src/modules/theaters/schemas/seat.schema";
+import { Seat, SeatMap } from "src/modules/theaters";
 
 export const THEATERS_MOCK = [
   {
@@ -25,25 +24,23 @@ export const ROOMS_MOCK = [
   { roomName: 'Room 3', rowCount: 8, seatsPerRow: 10 },
 ];
 
-export function generateSeats(
-  theaterId: Types.ObjectId,
-  roomId: Types.ObjectId,
+export function generateSeatMap(
   rowCount: number,
   seatsPerRow: number
-): Partial<Seat>[] {
-  const seats: Partial<Seat>[] = [];
+): SeatMap {
+  const seatMap: SeatMap = [];
 
-  for (let row = 1; row <= rowCount; row++) {
-    for (let number = 1; number <= seatsPerRow; number++) {
-      seats.push({
-        theaterId,
-        roomId,
-        row,
-        number,
-        seatCode: `${String.fromCharCode(64 + row)}${number}`, // A1, B1, ...
+  for (let row = 0; row < rowCount; row++) {
+    const seatRow: (Seat | null)[] = [];
+    for (let col = 0; col < seatsPerRow; col++) {
+      seatRow.push({
+        seatCode: `${String.fromCharCode(65 + row)}${col + 1}`, // A1, B1, ...
+        seatType: 'NORMAL',
+        isActive: true,
       });
     }
+    seatMap.push(seatRow);
   }
 
-  return seats;
+  return seatMap;
 }
