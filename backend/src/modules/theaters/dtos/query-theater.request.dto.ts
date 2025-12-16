@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from "@nestjs/swagger";
 import { IsOptional, IsString } from "class-validator";
-import { QueryRequestDto } from "src/modules/base/dtos/query.request.dto";
+import { QueryRequestDto } from "src/modules/base/dtos";
 
 export class QueryTheatersRequestDto extends QueryRequestDto {
   @ApiPropertyOptional({ type: String, description: 'Filter by theater name' })

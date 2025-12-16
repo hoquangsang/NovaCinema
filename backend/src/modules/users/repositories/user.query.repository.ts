@@ -1,9 +1,14 @@
-import { ClientSession, Model } from "mongoose";
-import { Injectable } from "@nestjs/common";
-import { InjectModel } from "@nestjs/mongoose";
-import { QueryRepository } from "src/modules/base/repositories";
+import {ClientSession, Model } from "mongoose";
+import {Injectable } from "@nestjs/common";
+import {InjectModel } from "@nestjs/mongoose";
+import {
+  IncludeProjection, ExcludeProjection,
+  FlattenDocument, FlattenProjectionDocument
+} from "src/modules/base/repositories/query";
+import {
+  QueryRepository
+} from "src/modules/base/repositories/query";
 import { User, UserDocument } from "../schemas/user.schema";
-import { ExcludeProjection, FlattenDocument, FlattenProjectionDocument, IncludeProjection } from "src/modules/base/repositories/types";
 
 
 @Injectable()

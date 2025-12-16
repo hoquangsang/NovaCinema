@@ -1,7 +1,7 @@
 import { ApiPropertyOptional } from "@nestjs/swagger";
 import { IsIn, IsOptional, IsString } from "class-validator";
-import { QueryRequestDto } from "src/modules/base/dtos/query.request.dto";
 import { Transform } from "class-transformer";
+import { QueryRequestDto } from "src/modules/base/dtos";
 import { ROOM_TYPES, RoomType } from "../constants";
 
 export class QueryRoomsRequestDto extends QueryRequestDto {

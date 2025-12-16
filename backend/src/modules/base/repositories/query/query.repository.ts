@@ -1,6 +1,16 @@
-import { ClientSession, FilterQuery, HydratedDocument, isValidObjectId, Model, ObjectIdToString } from "mongoose";
-import { LeanDocument, ExcludeProjection, IncludeProjection, SortOptions, FlattenDocument, FlattenProjectionDocument, PaginationResult } from "./types";
-import { mapObjectIdsToStrings } from "../mappers";
+import {
+  isValidObjectId,
+  HydratedDocument, Model,
+  ClientSession, FilterQuery,
+} from "mongoose";
+import {
+  mapObjectIdsToStrings
+} from "../../mappers";
+import {
+  ExcludeProjection, IncludeProjection,
+  LeanDocument, FlattenDocument, FlattenProjectionDocument,
+  SortOptions, PaginationResult
+} from "./query.type";
 
 export abstract class QueryRepository<
   T extends object,

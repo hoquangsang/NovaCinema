@@ -1,11 +1,19 @@
-import { ClientSession, FilterQuery, HydratedDocument, isValidObjectId, Model, UpdateQuery } from "mongoose";
 import {
-  LeanDocument, FlattenDocument,
+  isValidObjectId,
+  HydratedDocument, Model,
+  ClientSession, FilterQuery,
+} from "mongoose";
+import {
+  FlattenDocument, LeanDocument
+} from "../query";
+import {
+  mapObjectIdsToStrings
+} from "../../mappers";
+import {
   CreateResult, CreateOneResult, CreateManyResult,
   UpdateOneResult, UpdateManyResult,
   DeleteOneResult, DeleteManyResult
-} from "./types";
-import { mapObjectIdsToStrings } from "../mappers";
+} from "./command.type";
 
 export abstract class CommandRepository<
   T extends object,

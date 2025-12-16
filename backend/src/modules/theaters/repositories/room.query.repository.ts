@@ -1,7 +1,7 @@
 import { Model } from "mongoose";
 import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { QueryRepository } from "src/modules/base/repositories";
+import { QueryRepository } from "src/modules/base/repositories/query";
 import { Room, RoomDocument } from "../schemas/room.schema";
 
 @Injectable()

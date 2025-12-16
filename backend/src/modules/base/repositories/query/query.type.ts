@@ -8,10 +8,10 @@ export type WithVersion<T> = Default__v<T>;
 
 
 /** Sort options for document fields */
+export type SortOrder = -1 | 1 | 'asc' | 'ascending' | 'desc' | 'descending';
 export type SortOptions<T> = {
   [K in keyof T]?: SortOrder
 };
-export type SortOrder = -1 | 1 | 'asc' | 'ascending' | 'desc' | 'descending';
 
 /** Boolean-like types for projection */
 export type TrueLike = 1 | true;

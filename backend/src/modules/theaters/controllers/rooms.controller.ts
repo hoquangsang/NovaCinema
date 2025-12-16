@@ -31,7 +31,7 @@ export class RoomsController {
   @Public()/////////////////// for test
   @Roles('ADMIN')
   @HttpCode(HttpStatus.OK)
-  @Get('theater/:theaterId')
+  @Get('theaters/:theaterId')
   public async getRoomsByTheaterId(
     @Param('theaterId', ParseObjectIdPipe) theaterId: string,
     @Query() query: PaginatedQueryRoomsRequestDto
@@ -44,7 +44,7 @@ export class RoomsController {
   @Public()/////////////////// for test
   @Roles('ADMIN')
   @HttpCode(HttpStatus.OK)
-  @Get('theater/:theaterId/list')
+  @Get('theaters/:theaterId/list')
   public async getAllRoomsByTheaterId(
     @Param('theaterId', ParseObjectIdPipe) theaterId: string,
     @Query() query: QueryRoomsRequestDto

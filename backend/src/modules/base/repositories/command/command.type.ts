@@ -17,12 +17,6 @@ export type CreateOneResult<T> =
       readonly insertedItem: Readonly<T>;
     });
 
-// export type CreateOneResult<T> = CreateResult & {
-//   /** The inserted document */
-//   readonly insertedItem: Readonly<T>;
-// };
-
-
 /** Result of creating multiple documents */
 export type CreateManyResult<T> = CreateResult & {
   /** The inserted documents */
