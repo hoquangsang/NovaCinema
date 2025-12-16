@@ -5,14 +5,20 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
-  "scripts": {
+  "scripts": {  
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "seed": "ts-node -r tsconfig-paths/register src/scripts/run-seed.ts",
+    
+    "seed:users": "ts-node -r tsconfig-paths/register src/scripts/seeders/seed.ts users",
+    "seed:movies": "ts-node -r tsconfig-paths/register src/scripts/seeders/seed.ts movies",
+    "seed:theaters": "ts-node -r tsconfig-paths/register src/scripts/seeders/seed.ts theaters",
+    "seed:all": "ts-node -r tsconfig-paths/register src/scripts/seeders/seed.ts all",
+    
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
+    
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",

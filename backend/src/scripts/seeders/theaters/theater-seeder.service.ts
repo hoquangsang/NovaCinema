@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Room, RoomDocument, Theater, TheaterDocument } from 'src/modules/theaters';
@@ -6,6 +6,8 @@ import { THEATERS_MOCK, ROOMS_MOCK, generateSeatMap } from './theater-seeder.dat
 
 @Injectable()
 export class TheaterSeederService {
+  private readonly logger = new Logger(TheaterSeederService.name);
+
   constructor(
     @InjectModel(Theater.name)
     private readonly theaterModel: Model<TheaterDocument>,
@@ -15,11 +17,13 @@ export class TheaterSeederService {
   ) {}
 
   async seed() {
+    this.logger.log('Clearing theaters...');
     await Promise.all([
       this.roomModel.deleteMany(),
       this.theaterModel.deleteMany(),
     ]);
 
+    this.logger.log('Inserting theaters...');
     const theaters = await this.theaterModel.insertMany(THEATERS_MOCK);
 
     for (const theater of theaters) {
@@ -35,5 +39,7 @@ export class TheaterSeederService {
         });
       }
     }
+
+    this.logger.log(`Users theaters!`);
   }
 }

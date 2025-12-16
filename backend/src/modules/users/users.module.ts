@@ -11,7 +11,9 @@ import { UserController } from "./controllers/users.controller";
 @Module({
   imports: [
     ConfigModule,
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }])
+    MongooseModule.forFeature([
+      { name: User.name, schema: UserSchema }
+    ])
   ],
   controllers: [
     UserController
