@@ -1,3 +1,2 @@
-export { jwtAccessConfig } from "./jwt.access.config";
-export { refreshTokenOptions } from "./jwt.refresh.config";
+export { jwtAccessConfig, refreshTokenOptions } from "./jwt.config";
 export { swaggerConfig } from "./swagger.config";

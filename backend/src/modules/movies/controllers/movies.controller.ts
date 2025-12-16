@@ -1,98 +1,99 @@
-import { Body, Controller, Delete, Get, HttpCode, NotFoundException, Param, Patch, Post, Query } from '@nestjs/common';
+import {Body, Controller, Delete, Get, HttpCode, HttpStatus, NotFoundException, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ParseObjectIdPipe } from '@nestjs/mongoose';
 import { Public, Roles, WrapCreatedResponse, WrapNoContentResponse, WrapOkResponse, WrapPaginatedResponse } from 'src/common/decorators';
 import { MovieService } from '../services/movie.service';
-import { CreateMovieDto, MovieDto, QueryMoviesDto, UpdateMovieDto } from '../dtos';
+import {
+  PaginatedQueryRangeMoviesRequestDto, PaginatedQueryMoviesRequestDto,
+  CreateMovieRequestDto, UpdateMovieRequestDto,
+  MovieResponseDto
+} from '../dtos';
 
-@ApiTags('movies')
+@Public()/////////////////// for test
+@ApiTags('Movies')
 @Controller('movies')
 export class MoviesController {
   constructor(
-    private readonly service: MovieService
+    private readonly movieService: MovieService
   ) {}
 
-  @ApiOperation({ description: 'get showing movies' })
-  @WrapPaginatedResponse({ dto: MovieDto })
+  @ApiOperation({ description: 'Query movies' })
+  @WrapPaginatedResponse({ dto: MovieResponseDto })
   @Public()
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
+  @Get()
+  public async getMovies(
+    @Query() query: PaginatedQueryRangeMoviesRequestDto
+  ) {
+    return this.movieService.findMoviesPaginated(query);
+  }
+
+  @ApiOperation({ description: 'Query showing movies' })
+  @WrapPaginatedResponse({ dto: MovieResponseDto })
+  @Public()
+  @HttpCode(HttpStatus.OK)
   @Get('showing')
-  async getShowingMovies(
-    @Query() query: QueryMoviesDto
+  public async getShowingMovies(
+    @Query() query: PaginatedQueryMoviesRequestDto
   ) {
-    const { page = 1, limit = 10 } = query;
-    const { items, total } = await this.service.findShowingMovies(page, limit);
-    return {
-      items,
-      total,
-      page,
-      limit
-    }
+    return this.movieService.findShowingMoviesPaginated(query);
   }
 
-  @ApiOperation({ description: 'get upcoming movies' })
-  @WrapPaginatedResponse({ dto: MovieDto })
+  @ApiOperation({ description: 'Query upcoming movies' })
+  @WrapPaginatedResponse({ dto: MovieResponseDto })
   @Public()
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @Get('upcoming')
-  async getUpcomingMovies(
-    @Query() query: QueryMoviesDto
+  public async getUpcomingMovies(
+    @Query() query: PaginatedQueryMoviesRequestDto
   ) {
-    const { page = 1, limit = 10 } = query;
-    const { items, total } = await this.service.findUpcomingMovies(page, limit);
-    return {
-      items,
-      total,
-      page,
-      limit
-    }
+    return this.movieService.findUpcomingMoviesPaginated(query);
   }
 
-  @ApiOperation({ description: 'get movie by ID' })
-  @WrapOkResponse({ dto: MovieDto })
+  @ApiOperation({ description: 'Get movie by ID' })
+  @WrapOkResponse({ dto: MovieResponseDto })
   @Public()
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @Get(':id')
-  async getMovieById(
+  public async getMovieById(
     @Param('id', ParseObjectIdPipe) id: string
   ) {
-    const result = await this.service.findById(id);
-    if (!result)
-      throw new NotFoundException('Movie not found');
-    return result;
+    const existed = await this.movieService.findMovieById(id);
+    if (!existed) throw new NotFoundException('Movie not found');
+    return existed;
   }
 
-  @ApiOperation({ description: 'create new movie'})
-  @WrapCreatedResponse({ dto: MovieDto })
-  @Roles('admin')
-  @HttpCode(200)
+  @ApiOperation({ description: 'Create new movie'})
+  @WrapCreatedResponse({ dto: MovieResponseDto, message: 'Movie created successfully' })
+  @Roles('ADMIN')
+  @HttpCode(HttpStatus.CREATED)
   @Post()
-  async createMovie(
-    @Body() dto: CreateMovieDto
+  public async createMovie(
+    @Body() dto: CreateMovieRequestDto
   ) {
-    return this.service.createMovie(dto)
+    return this.movieService.createMovie(dto)
   }
 
-  @ApiOperation({ description: 'update movie by ID' })
-  @WrapOkResponse({ dto: MovieDto, message: 'Movie updated successfully' })
-  @Roles('admin')
-  @HttpCode(200)
+  @ApiOperation({ description: 'Update movie by ID' })
+  @WrapOkResponse({ dto: MovieResponseDto, message: 'Movie updated successfully' })
+  @Roles('ADMIN')
+  @HttpCode(HttpStatus.OK)
   @Patch(':id')
-  async updateMovie(
+  public async updateMovie(
     @Param('id', ParseObjectIdPipe) id: string,
-    @Body() dto: UpdateMovieDto
+    @Body() dto: UpdateMovieRequestDto
   ) {
-    return this.service.updateById(id, dto);
+    return this.movieService.updateMovieById(id, dto);
   }
 
-  @ApiOperation({ description: 'delete movie'})
+  @ApiOperation({ description: 'Hard delete movie'})
   @WrapNoContentResponse({ message: 'Movie deleted successfully' })
-  @Roles('admin')
-  @HttpCode(204)
+  @Roles('ADMIN')
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
-  async deleteMovie(
+  public async deleteMovie(
     @Param('id', ParseObjectIdPipe) id: string
   ) {
-    return this.service.deleteById(id);
+    return this.movieService.deleteMovieById(id);
   }
 }

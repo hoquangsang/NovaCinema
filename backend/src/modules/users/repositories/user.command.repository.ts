@@ -1,0 +1,15 @@
+import { Model } from "mongoose";
+import { Injectable } from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
+import { CommandRepository } from "src/modules/base/repositories";
+import { User, UserDocument } from "../schemas/user.schema";
+
+@Injectable()
+export class UserCommandRepository extends CommandRepository<User, UserDocument> {
+  public constructor(
+    @InjectModel(User.name)
+    protected readonly theaterModel: Model<UserDocument>
+  ) {
+    super(theaterModel);
+  }
+}

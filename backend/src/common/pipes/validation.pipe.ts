@@ -9,6 +9,9 @@ export class ValidationPipe extends VP {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
+      transformOptions: {
+        exposeUnsetFields: false,
+      },
       exceptionFactory: (errors) => {
         return new BadRequestException({
           message: "Validation failed",
