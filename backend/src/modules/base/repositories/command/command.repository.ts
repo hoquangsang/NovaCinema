@@ -1,27 +1,27 @@
 import {
   isValidObjectId,
-  HydratedDocument, Model,
-  ClientSession, FilterQuery,
-} from "mongoose";
+  HydratedDocument,
+  Model,
+  ClientSession,
+  FilterQuery,
+} from 'mongoose';
+import { FlattenDocument, LeanDocument } from '../query';
+import { mapObjectIdsToStrings } from '../../mappers';
 import {
-  FlattenDocument, LeanDocument
-} from "../query";
-import {
-  mapObjectIdsToStrings
-} from "../../mappers";
-import {
-  CreateResult, CreateOneResult, CreateManyResult,
-  UpdateOneResult, UpdateManyResult,
-  DeleteOneResult, DeleteManyResult
-} from "./command.type";
+  CreateResult,
+  CreateOneResult,
+  CreateManyResult,
+  UpdateOneResult,
+  UpdateManyResult,
+  DeleteOneResult,
+  DeleteManyResult,
+} from './command.type';
 
 export abstract class CommandRepository<
   T extends object,
-  TDoc extends HydratedDocument<T>
+  TDoc extends HydratedDocument<T>,
 > {
-  protected constructor(
-    private readonly model: Model<TDoc>,
-  ) {}
+  protected constructor(private readonly model: Model<TDoc>) {}
 
   /**
    * Create a single document
@@ -35,7 +35,7 @@ export abstract class CommandRepository<
     const { data, session } = options;
     const doc = new this.model(data);
     await doc.save({ session });
-    
+
     const flatDoc = doc.toObject({
       flattenMaps: true,
       flattenObjectIds: true,
@@ -43,7 +43,7 @@ export abstract class CommandRepository<
 
     return {
       insertedCount: 1,
-      insertedItem: flatDoc
+      insertedItem: flatDoc,
     };
   }
 
@@ -80,10 +80,10 @@ export abstract class CommandRepository<
   public async createMany(options: {
     data: Partial<T>[];
     session?: ClientSession;
-    raw?: boolean
+    raw?: boolean;
   }): Promise<CreateManyResult<FlattenDocument<T>> | CreateResult> {
     const { data, session, raw } = options;
-    if (!data.length) throw new Error("Data must not be empty");
+    if (!data.length) throw new Error('Data must not be empty');
 
     if (raw) {
       const { insertedCount } = await this.model.insertMany(data, {
@@ -93,23 +93,23 @@ export abstract class CommandRepository<
       });
       return { insertedCount };
     }
-    
+
     const docs = await this.model.insertMany(data, {
       ordered: true,
       session: session,
     });
 
-    const flatDocs = docs.map(doc => {
+    const flatDocs = docs.map((doc) => {
       return doc.toObject({
         flattenMaps: true,
-        flattenObjectIds: true
-      })
-    })
+        flattenObjectIds: true,
+      });
+    });
 
     return {
       insertedCount: flatDocs.length,
-      insertedItems: flatDocs
-    }
+      insertedItems: flatDocs,
+    };
   }
 
   /**
@@ -145,14 +145,14 @@ export abstract class CommandRepository<
     filter: FilterQuery<TDoc>;
     update: Partial<T>;
     session?: ClientSession;
-  }): Promise<UpdateOneResult<FlattenDocument<T>>>  {
+  }): Promise<UpdateOneResult<FlattenDocument<T>>> {
     const { filter, update: rawUpdate, session } = options;
     const update = this.buildUpdateQuery(rawUpdate);
     if (!update) {
       return {
         matchedCount: 0,
         modifiedCount: 0,
-        modifiedItem: null
+        modifiedItem: null,
       };
     }
 
@@ -164,20 +164,20 @@ export abstract class CommandRepository<
       })
       .lean<LeanDocument<T>>()
       .exec();
-    
+
     if (!leanDoc) {
       return {
         matchedCount: 0,
         modifiedCount: 0,
-        modifiedItem: null
-      }
+        modifiedItem: null,
+      };
     }
-    
+
     return {
       matchedCount: 1,
       modifiedCount: 1,
-      modifiedItem: mapObjectIdsToStrings(leanDoc)
-    }
+      modifiedItem: mapObjectIdsToStrings(leanDoc),
+    };
   }
 
   /**
@@ -199,15 +199,15 @@ export abstract class CommandRepository<
       return {
         matchedCount: 0,
         modifiedCount: 0,
-        modifiedItem: null
+        modifiedItem: null,
       };
     }
-    
+
     const leanDoc: LeanDocument<T> | null = await this.model
       .findByIdAndUpdate(id, update, {
         runValidators: true,
         new: true,
-        session: session
+        session: session,
       })
       .lean<LeanDocument<T>>()
       .exec();
@@ -216,15 +216,15 @@ export abstract class CommandRepository<
       return {
         matchedCount: 0,
         modifiedCount: 0,
-        modifiedItem: null
-      }
+        modifiedItem: null,
+      };
     }
-    
+
     return {
       matchedCount: 1,
       modifiedCount: 1,
-      modifiedItem: mapObjectIdsToStrings(leanDoc)
-    }
+      modifiedItem: mapObjectIdsToStrings(leanDoc),
+    };
   }
 
   /**
@@ -243,7 +243,7 @@ export abstract class CommandRepository<
     if (!update) {
       return {
         matchedCount: 0,
-        modifiedCount: 0
+        modifiedCount: 0,
       };
     }
 
@@ -251,14 +251,14 @@ export abstract class CommandRepository<
       .updateMany(filter, update, {
         runValidators: true,
         raw: false,
-        session: session
+        session: session,
       })
       .exec();
 
     return {
       matchedCount: result.matchedCount,
       modifiedCount: result.modifiedCount,
-    }
+    };
   }
 
   /**
@@ -274,7 +274,7 @@ export abstract class CommandRepository<
     const { deletedCount } = await this.model
       .deleteOne(filter, { session })
       .exec();
-    
+
     return { deletedCount };
   }
 
@@ -288,12 +288,11 @@ export abstract class CommandRepository<
     session?: ClientSession;
   }): Promise<DeleteOneResult> {
     const { id, session } = options;
-    if (!isValidObjectId(id))
-      throw new TypeError('Invalid ObjectId');
-    
+    if (!isValidObjectId(id)) throw new TypeError('Invalid ObjectId');
+
     return this.deleteOne({
       filter: { _id: id },
-      session: session
+      session: session,
     });
   }
 
@@ -310,7 +309,7 @@ export abstract class CommandRepository<
     const { deletedCount } = await this.model
       .deleteMany(filter, { session })
       .exec();
-    
+
     return { deletedCount };
   }
 }

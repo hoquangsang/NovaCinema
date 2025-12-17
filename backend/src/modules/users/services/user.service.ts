@@ -1,23 +1,25 @@
 import escapeStringRegexp from 'escape-string-regexp';
 import { FilterQuery } from 'mongoose';
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { pickSortableFields } from 'src/modules/base/helpers';
-import { UserRepository } from '../repositories/user.repository';
-import { UserDocument } from '../schemas/user.schema';
-import { UserRoleType } from '../constants';
+import { UserDocument } from '../schemas';
+import { UserRepository } from '../repositories';
 import { UserInputTypes as InputTypes } from './user.service.type';
 import { UserQueryFields as QUERY_FIELDS } from './user.service.constant';
 
 @Injectable()
 export class UserService {
-  constructor(
-    private readonly userRepo: UserRepository
-  ) {}
+  constructor(private readonly userRepo: UserRepository) {}
 
   /** */
   public async findUserById(id: string) {
-    return this.userRepo.query.findOneById({ id,
-      exclusion: { password: false }
+    return this.userRepo.query.findOneById({
+      id,
+      exclusion: { password: false },
     });
   }
 
@@ -30,31 +32,35 @@ export class UserService {
     // search fields
     if (search) {
       const r = new RegExp(escapeStringRegexp(search), 'i');
-      filter.$or = QUERY_FIELDS.SEARCHABLE.map(f => ({ [f]: r }));
+      filter.$or = QUERY_FIELDS.SEARCHABLE.map((f) => ({ [f]: r }));
     }
 
     // regex fields
-    QUERY_FIELDS.REGEX_MATCH.forEach(f => {
-      if (rest[f] !== undefined) filter[f] = new RegExp(escapeStringRegexp(rest[f]), 'i');
+    QUERY_FIELDS.REGEX_MATCH.forEach((f) => {
+      if (rest[f] !== undefined)
+        filter[f] = new RegExp(escapeStringRegexp(rest[f]), 'i');
     });
 
     // array fields
-    QUERY_FIELDS.ARRAY_MATCH.forEach(f => {
+    QUERY_FIELDS.ARRAY_MATCH.forEach((f) => {
       if (rest[f]?.length) filter[f] = { $in: rest[f] };
     });
 
     // exact match fields
-    QUERY_FIELDS.EXACT_MATCH.forEach(f => {
+    QUERY_FIELDS.EXACT_MATCH.forEach((f) => {
       if (rest[f] !== undefined) filter[f] = rest[f];
     });
 
     // safe sort
     const safeSort = pickSortableFields(options.sort, QUERY_FIELDS.SORTABLE);
-    
+
     //
     const result = await this.userRepo.query.findManyPaginated({
-      filter, page, limit, sort: safeSort,
-      exclusion: { password: false }
+      filter,
+      page,
+      limit,
+      sort: safeSort,
+      exclusion: { password: false },
     });
 
     return {
@@ -69,10 +75,9 @@ export class UserService {
   public async updateUserById(id: string, update: InputTypes.Update) {
     const result = await this.userRepo.command.updateOneById({
       id,
-      update
+      update,
     });
-    if (!result.matchedCount)
-      throw new NotFoundException('User not found');
+    if (!result.matchedCount) throw new NotFoundException('User not found');
 
     return result.modifiedItem;
   }
@@ -86,14 +91,11 @@ export class UserService {
     return this.updateUserStatusById(id, false);
   }
 
-  private async updateUserStatusById(
-    id: string,
-    active: boolean
-  ) {
+  private async updateUserStatusById(id: string, active: boolean) {
     const result = await this.userRepo.command.updateOneById({
       id,
-      update: { active }
-    })
+      update: { active },
+    });
     if (!result.matchedCount || !result.modifiedCount)
       throw new NotFoundException('User not found');
   }
@@ -101,8 +103,7 @@ export class UserService {
   /** */
   public async deleteUserById(id: string) {
     const exists = await this.userRepo.query.exists({ filter: { _id: id } });
-    if (!exists)
-      throw new NotFoundException('User not found');
+    if (!exists) throw new NotFoundException('User not found');
 
     const result = await this.userRepo.command.deleteOneById({ id });
     if (!result.deletedCount)

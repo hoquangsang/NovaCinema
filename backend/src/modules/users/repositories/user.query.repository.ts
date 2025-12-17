@@ -1,27 +1,26 @@
-import {ClientSession, Model } from "mongoose";
-import {Injectable } from "@nestjs/common";
-import {InjectModel } from "@nestjs/mongoose";
+import { ClientSession, Model } from 'mongoose';
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
 import {
-  IncludeProjection, ExcludeProjection,
-  FlattenDocument, FlattenProjectionDocument
-} from "src/modules/base/repositories/query";
-import {
-  QueryRepository
-} from "src/modules/base/repositories/query";
-import { User, UserDocument } from "../schemas/user.schema";
-
+  IncludeProjection,
+  ExcludeProjection,
+  FlattenDocument,
+  FlattenProjectionDocument,
+} from 'src/modules/base/repositories/query';
+import { QueryRepository } from 'src/modules/base/repositories/query';
+import { User, UserDocument } from '../schemas';
 
 @Injectable()
 export class UserQueryRepository extends QueryRepository<User, UserDocument> {
   public constructor(
     @InjectModel(User.name)
-    protected readonly theaterModel: Model<UserDocument>
+    protected readonly theaterModel: Model<UserDocument>,
   ) {
     super(theaterModel);
   }
 
   /**
-   * @param options 
+   * @param options
    */
   public async findOneByEmail(options: {
     email: string;
@@ -29,7 +28,7 @@ export class UserQueryRepository extends QueryRepository<User, UserDocument> {
   }): Promise<FlattenDocument<User> | null>;
 
   public async findOneByEmail<
-    P extends IncludeProjection<FlattenDocument<User>>
+    P extends IncludeProjection<FlattenDocument<User>>,
   >(options: {
     email: string;
     inclusion: P;
@@ -37,7 +36,7 @@ export class UserQueryRepository extends QueryRepository<User, UserDocument> {
   }): Promise<FlattenProjectionDocument<User, P> | null>;
 
   public async findOneByEmail<
-    P extends ExcludeProjection<FlattenDocument<User>>
+    P extends ExcludeProjection<FlattenDocument<User>>,
   >(options: {
     email: string;
     exclusion: P;

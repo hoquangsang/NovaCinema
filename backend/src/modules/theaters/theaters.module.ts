@@ -1,20 +1,17 @@
-import { Module } from "@nestjs/common";
-import { ConfigModule } from "@nestjs/config";
-import { MongooseModule } from "@nestjs/mongoose";
-
-import { Theater, TheaterSchema } from "./schemas/theater.schema";
-import { TheaterQueryRepository } from "./repositories/theater.query.repository";
-import { TheaterCommandRepository } from "./repositories/theater.command.repository";
-import { TheaterRepository } from "./repositories/theater.repository";
-import { TheaterService } from "./services/theater.service";
-import { TheatersController } from "./controllers/theaters.controller";
-
-import { Room, RoomSchema } from "./schemas/room.schema";
-import { RoomQueryRepository } from "./repositories/room.query.repository";
-import { RoomCommandRepository } from "./repositories/room.command.repository";
-import { RoomRepository } from "./repositories/room.repository";
-import { RoomService } from "./services/room.service";
-import { RoomsController } from "./controllers/rooms.controller";
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Room, RoomSchema, Theater, TheaterSchema } from './schemas';
+import {
+  RoomCommandRepository,
+  RoomQueryRepository,
+  RoomRepository,
+  TheaterCommandRepository,
+  TheaterQueryRepository,
+  TheaterRepository,
+} from './repositories';
+import { RoomService, TheaterService } from './services';
+import { RoomsController, TheatersController } from './controllers';
 
 @Module({
   imports: [
@@ -22,12 +19,9 @@ import { RoomsController } from "./controllers/rooms.controller";
     MongooseModule.forFeature([
       { name: Theater.name, schema: TheaterSchema },
       { name: Room.name, schema: RoomSchema },
-    ])
+    ]),
   ],
-  controllers: [
-    TheatersController,
-    RoomsController,
-  ],
+  controllers: [TheatersController, RoomsController],
   providers: [
     TheaterQueryRepository,
     TheaterCommandRepository,
@@ -49,6 +43,6 @@ import { RoomsController } from "./controllers/rooms.controller";
     RoomRepository,
     RoomCommandRepository,
     RoomQueryRepository,
-  ]
+  ],
 })
 export class TheatersModule {}

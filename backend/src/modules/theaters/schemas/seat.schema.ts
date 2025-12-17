@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { SEAT_TYPES, SeatType } from "../constants";
+import { SEAT_TYPES } from "../constants";
+import { SeatType } from "../types";
 
 export type SeatMap = (Seat | null)[][];
 

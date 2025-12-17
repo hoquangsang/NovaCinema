@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Otp, OtpDocument } from '../schemas/otp.schema';
+import { Otp, OtpDocument } from 'src/modules/auth/schemas';
 
 @Injectable()
 export class OtpRepository {
@@ -11,18 +11,22 @@ export class OtpRepository {
   ) {}
 
   async upsertOtp(email: string, otpHash: string, expiresAt: Date) {
-    return this.otpModel.findOneAndUpdate(
-      { email },
-      { email, otpHash, expiresAt, updatedAt: new Date() },
-      { upsert: true, new: true, setDefaultsOnInsert: true }
-    ).exec();
+    return this.otpModel
+      .findOneAndUpdate(
+        { email },
+        { email, otpHash, expiresAt, updatedAt: new Date() },
+        { upsert: true, new: true, setDefaultsOnInsert: true },
+      )
+      .exec();
   }
 
   async findValidOtp(email: string) {
-    return this.otpModel.findOne({
-      email,
-      expiresAt: { $gte: new Date() }
-    }).exec();
+    return this.otpModel
+      .findOne({
+        email,
+        expiresAt: { $gte: new Date() },
+      })
+      .exec();
   }
 
   async deleteByEmail(email: string) {

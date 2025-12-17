@@ -4,8 +4,7 @@ import { hashSync } from 'bcrypt';
 const randomInt = (min: number, max: number) =>
   Math.floor(Math.random() * (max - min + 1)) + min;
 
-const pickOne = <T>(arr: T[]) =>
-  arr[randomInt(0, arr.length - 1)];
+const pickOne = <T>(arr: T[]) => arr[randomInt(0, arr.length - 1)];
 
 const randomDateOfBirth = () => {
   const year = randomInt(1985, 2005);
@@ -14,11 +13,9 @@ const randomDateOfBirth = () => {
   return new Date(year, month, day);
 };
 
-const randomPhone = () =>
-  '0' + randomInt(300000000, 999999999).toString();
+const randomPhone = () => '0' + randomInt(300000000, 999999999).toString();
 
-const randomEmailVerified = () =>
-  Math.random() < 0.9;
+const randomEmailVerified = () => Math.random() < 0.9;
 
 const FULL_NAMES = [
   'Nguyễn Văn An',
@@ -50,15 +47,10 @@ const FULL_NAMES = [
   'Ngô Minh Tuấn',
   'Vũ Thị Ngọc',
   'Trần Nhật Nam',
-  'Phan Thị Bích'
+  'Phan Thị Bích',
 ];
 
-const EMAIL_DOMAINS = [
-  'gmail.com',
-  'outlook.com',
-  'yahoo.com',
-  'hotmail.com'
-];
+const EMAIL_DOMAINS = ['gmail.com', 'outlook.com', 'yahoo.com', 'hotmail.com'];
 
 const normalize = (str: string) =>
   str

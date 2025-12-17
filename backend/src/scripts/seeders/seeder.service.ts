@@ -10,10 +10,10 @@ export class SeederService {
   constructor(
     private readonly userSeeder: UserSeederService,
     private readonly movieSeeder: MovieSeederService,
-    private readonly theaterSeeder: TheaterSeederService
+    private readonly theaterSeeder: TheaterSeederService,
   ) {}
 
-  async seedAll() {
+  async seed() {
     await this.userSeeder.seed();
 
     await this.movieSeeder.seed();

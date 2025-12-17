@@ -1,16 +1,20 @@
 import {
   isValidObjectId,
-  HydratedDocument, Model,
-  ClientSession, FilterQuery,
-} from "mongoose";
+  HydratedDocument,
+  Model,
+  ClientSession,
+  FilterQuery,
+} from 'mongoose';
+import { mapObjectIdsToStrings } from '../../mappers';
 import {
-  mapObjectIdsToStrings
-} from "../../mappers";
-import {
-  ExcludeProjection, IncludeProjection,
-  LeanDocument, FlattenDocument, FlattenProjectionDocument,
-  SortOptions, PaginationResult
-} from "./query.type";
+  ExcludeProjection,
+  IncludeProjection,
+  LeanDocument,
+  FlattenDocument,
+  FlattenProjectionDocument,
+  SortOptions,
+  PaginationResult,
+} from './query.type';
 
 export abstract class QueryRepository<
   T extends object,
@@ -20,9 +24,7 @@ export abstract class QueryRepository<
    * Constructor
    * @param model Mongoose model
    */
-  protected constructor(
-    private readonly model: Model<TDoc>
-  ) {}
+  protected constructor(private readonly model: Model<TDoc>) {}
 
   /**
    * Check if any document matches the filter
@@ -34,10 +36,7 @@ export abstract class QueryRepository<
     session?: ClientSession;
   }): Promise<boolean> {
     const { filter = {}, session = null } = options;
-    const x = await this.model
-      .exists(filter)
-      .session(session)
-      .exec();
+    const x = await this.model.exists(filter).session(session).exec();
     return !!x;
   }
 
@@ -51,11 +50,8 @@ export abstract class QueryRepository<
     session?: ClientSession;
   }): Promise<number> {
     const { filter = {}, session } = options;
-    return this.model
-      .countDocuments(filter, { session })
-      .exec();
+    return this.model.countDocuments(filter, { session }).exec();
   }
-
 
   /********************************
    * @overload
@@ -112,7 +108,9 @@ export abstract class QueryRepository<
   /**
    * @overload
    */
-  public async findOneById<P extends IncludeProjection<LeanDocument<T>>>(options: {
+  public async findOneById<
+    P extends IncludeProjection<LeanDocument<T>>,
+  >(options: {
     id: string;
     inclusion: P;
     session?: ClientSession;
@@ -121,7 +119,9 @@ export abstract class QueryRepository<
   /**
    * @overload
    */
-  public async findOneById<P extends ExcludeProjection<LeanDocument<T>>>(options: {
+  public async findOneById<
+    P extends ExcludeProjection<LeanDocument<T>>,
+  >(options: {
     id: string;
     exclusion: P;
     session?: ClientSession;
@@ -145,7 +145,6 @@ export abstract class QueryRepository<
 
     return mapObjectIdsToStrings(leanDoc);
   }
-
 
   /********************************
    * @overload
@@ -188,11 +187,13 @@ export abstract class QueryRepository<
     const { filter = {}, sort, inclusion, exclusion, session } = options;
     const projection = inclusion ?? exclusion ?? undefined;
     const leanDocs = await this.findLean({
-      filter, projection, sort, session
+      filter,
+      projection,
+      sort,
+      session,
     });
     return mapObjectIdsToStrings(leanDocs);
   }
-
 
   /********************************
    * @overload
@@ -208,7 +209,9 @@ export abstract class QueryRepository<
   /**
    * @overload
    */
-  public async findManyPaginated<P extends IncludeProjection<LeanDocument<T>>>(options: {
+  public async findManyPaginated<
+    P extends IncludeProjection<LeanDocument<T>>,
+  >(options: {
     filter?: FilterQuery<TDoc>;
     sort?: SortOptions<T>;
     page?: number;
@@ -220,7 +223,9 @@ export abstract class QueryRepository<
   /**
    * @overload
    */
-  public async findManyPaginated<P extends ExcludeProjection<LeanDocument<T>>>(options: {
+  public async findManyPaginated<
+    P extends ExcludeProjection<LeanDocument<T>>,
+  >(options: {
     filter?: FilterQuery<TDoc>;
     sort?: SortOptions<T>;
     page?: number;
@@ -240,15 +245,29 @@ export abstract class QueryRepository<
    * @param options.session Optional Mongo session
    */
   public async findManyPaginated(options: any = {}): Promise<any> {
-    const { filter = {}, sort, page = 1, limit = 10, inclusion, exclusion, session } = options;
+    const {
+      filter = {},
+      sort,
+      page = 1,
+      limit = 10,
+      inclusion,
+      exclusion,
+      session,
+    } = options;
     const projection = inclusion ?? exclusion ?? undefined;
     const skip = Math.max((page - 1) * limit, 0);
     const [leanDocs, total] = await Promise.all([
       this.findLean({
-        filter, projection, sort, skip, limit, session
+        filter,
+        projection,
+        sort,
+        skip,
+        limit,
+        session,
       }),
       this.count({
-        filter, session
+        filter,
+        session,
       }),
     ]);
     const items = mapObjectIdsToStrings(leanDocs);
@@ -275,7 +294,10 @@ export abstract class QueryRepository<
     const { filter = {}, projection, sort, skip, limit, session } = options;
     return this.model
       .find(filter, projection, {
-        sort, skip, limit, session
+        sort,
+        skip,
+        limit,
+        session,
       })
       .lean<LeanDocument<T>[]>()
       .exec();

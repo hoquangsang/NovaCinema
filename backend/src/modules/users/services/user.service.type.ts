@@ -1,5 +1,8 @@
-import { PaginatedQueryInput, QueryInput } from "src/modules/base/services/types";
-import { UserRoleType } from "../constants";
+import {
+  PaginatedQueryInput,
+  QueryInput,
+} from 'src/modules/base/services/types';
+import { UserRoleType } from 'src/modules/users/types';
 
 export namespace UserInputTypes {
   type Filter = {

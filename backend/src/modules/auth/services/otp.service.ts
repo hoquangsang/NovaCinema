@@ -1,7 +1,7 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
-import { HashUtil } from "src/common/utils";
-import { MailService } from "src/mail";
-import { OtpRepository } from "../repositories/otp.repository";
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { HashUtil } from 'src/common/utils';
+import { MailService } from 'src/modules/notifications';
+import { OtpRepository } from '../repositories';
 
 @Injectable()
 export class OtpService {

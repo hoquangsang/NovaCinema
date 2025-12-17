@@ -1,1 +1,1 @@
-export { mapObjectIdsToStrings } from "./document.mapper";
+export { mapObjectIdsToStrings } from './document.mapper';

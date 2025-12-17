@@ -1,4 +1,5 @@
-export type { UserDocument } from './schemas/user.schema';
-export { User } from './schemas/user.schema';
-export { UserService } from './services/user.service';
+export type { UserDocument } from './schemas';
+export { User, UserSchema } from './schemas';
+export { UserRepository } from './repositories';
+export { UserService } from './services';
 export { UsersModule } from './users.module';

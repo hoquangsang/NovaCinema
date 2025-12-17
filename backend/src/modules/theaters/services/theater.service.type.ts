@@ -1,4 +1,7 @@
-import { PaginatedQueryInput, QueryInput } from 'src/modules/base/services/types';
+import {
+  PaginatedQueryInput,
+  QueryInput,
+} from 'src/modules/base/services/types';
 
 export namespace TheaterInputTypes {
   /** Filterable fields for theaters */

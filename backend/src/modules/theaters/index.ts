@@ -1,11 +1,8 @@
-export { Seat } from './schemas/seat.schema';
-export { Room } from './schemas/room.schema';
-export { Theater } from './schemas/theater.schema';
-export type { SeatMap } from './schemas/seat.schema'
-export type { RoomDocument } from 'src/modules/theaters/schemas/room.schema';
-export type { TheaterDocument } from 'src/modules/theaters/schemas/theater.schema';
+export type { SeatMap, RoomDocument, TheaterDocument } from './schemas';
+export { Seat, Room, Theater } from './schemas';
 
-export { TheaterService } from './services/theater.service';
-export { RoomService } from './services/room.service';
+export { RoomRepository, TheaterRepository } from './repositories';
+export { RoomService, TheaterService } from './services';
+export { RoomsController, TheatersController } from './controllers';
 
 export { TheatersModule } from './theaters.module';

@@ -1,1 +1,1 @@
-export type * from './auth.type';
+export type { JwtPayload } from './auth.type';

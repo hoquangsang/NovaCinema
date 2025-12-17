@@ -1,4 +1,4 @@
-import { Seat, SeatMap } from "src/modules/theaters";
+import { Seat, SeatMap } from 'src/modules/theaters';
 
 export const THEATERS_MOCK = [
   {
@@ -15,7 +15,7 @@ export const THEATERS_MOCK = [
     theaterName: 'NovaCinema Vincom Đồng Khởi',
     address: '72 Đồng Khởi, Quận 1, TP.HCM',
     hotline: '1900 3333',
-  }
+  },
 ];
 
 export const ROOMS_MOCK = [
@@ -26,7 +26,7 @@ export const ROOMS_MOCK = [
 
 export function generateSeatMap(
   rowCount: number,
-  seatsPerRow: number
+  seatsPerRow: number,
 ): SeatMap {
   const seatMap: SeatMap = [];
 

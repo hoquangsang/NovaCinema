@@ -1,12 +1,17 @@
-import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { refreshTokenOptions } from "src/config";
-import { HashUtil } from "src/common/utils";
-import { UserRepository } from "src/modules/users/repositories/user.repository";
-import { UserRoleType } from "src/modules/users/constants";
-import { JwtPayload } from "../types";
-import { OtpService } from "./otp.service";
+import { ConfigService } from '@nestjs/config';
+import { refreshTokenOptions } from 'src/config';
+import { HashUtil } from 'src/common/utils';
+import { UserRepository } from 'src/modules/users';
+import { UserRoleType } from 'src/modules/users/types';
+import { JwtPayload } from '../types';
+import { OtpService } from './otp.service';
 
 type RegisterInput = {
   email: string;
@@ -26,17 +31,22 @@ export class AuthService {
     private readonly usersRepo: UserRepository,
     private readonly otpService: OtpService,
     private jwtService: JwtService,
-    private cfgService: ConfigService
+    private cfgService: ConfigService,
   ) {
-    this.accessExpiresIn = Number(this.cfgService.getOrThrow('JWT_ACCESS_EXPIRES'));
-    this.refreshExpiresIn = Number(this.cfgService.getOrThrow('JWT_REFRESH_EXPIRES'));
+    this.accessExpiresIn = Number(
+      this.cfgService.getOrThrow('JWT_ACCESS_EXPIRES'),
+    );
+    this.refreshExpiresIn = Number(
+      this.cfgService.getOrThrow('JWT_REFRESH_EXPIRES'),
+    );
   }
 
   /** */
   public async login(email: string, password: string) {
     const existed = await this.usersRepo.query.findOneByEmail({ email });
     if (!existed) throw new UnauthorizedException('User not found');
-    if (!existed.emailVerified) throw new ForbiddenException('Email is not verified');
+    if (!existed.emailVerified)
+      throw new ForbiddenException('Email is not verified');
 
     const { password: hashedPass, ...user } = existed;
     const isMatch = await HashUtil.compare(password, hashedPass);
@@ -46,8 +56,8 @@ export class AuthService {
     const updateResult = await this.usersRepo.command.updateOneById({
       id: user._id,
       update: {
-        lastLoginAt: now
-      }
+        lastLoginAt: now,
+      },
     });
     const loggedInUser = user;
     if (updateResult.matchedCount && updateResult.modifiedCount)
@@ -61,19 +71,19 @@ export class AuthService {
       accessToken: accessToken,
       expiresIn: this.accessExpiresIn,
       refreshToken: refreshToken,
-      refreshExpiresIn: this.refreshExpiresIn
-    }
+      refreshExpiresIn: this.refreshExpiresIn,
+    };
   }
-  
+
   private signAccessToken(user: {
-    _id: string,
-    email: string,
-    roles: UserRoleType[],
+    _id: string;
+    email: string;
+    roles: UserRoleType[];
   }) {
     const payload: JwtPayload = {
       sub: user._id,
       email: user.email,
-      roles: user.roles
+      roles: user.roles,
     };
     return this.jwtService.sign(payload);
   }
@@ -81,13 +91,14 @@ export class AuthService {
   private signRefreshToken(userId: string) {
     return this.jwtService.sign(
       { sub: userId },
-      refreshTokenOptions(this.cfgService)
+      refreshTokenOptions(this.cfgService),
     );
   }
 
   /** */
   public async register(payload: RegisterInput) {
-    const { email, password, username, fullName, phoneNumber, dateOfBirth } = payload;
+    const { email, password, username, fullName, phoneNumber, dateOfBirth } =
+      payload;
     const existed = await this.usersRepo.query.findOneByEmail({ email });
     if (existed) throw new BadRequestException('Email already exists');
 
@@ -100,62 +111,66 @@ export class AuthService {
         phoneNumber: phoneNumber,
         fullName: fullName,
         dateOfBirth: dateOfBirth,
-      }
+      },
     });
-    if(!result.insertedCount) throw new BadRequestException('Registration failed');
+    if (!result.insertedCount)
+      throw new BadRequestException('Registration failed');
     const user = result.insertedItem;
 
     await this.otpService.send(user.email);
     return true;
   }
 
-
   /** */
   public async refreshToken(refreshToken: string) {
-    if (!refreshToken) throw new BadRequestException('Refresh token is required');
+    if (!refreshToken)
+      throw new BadRequestException('Refresh token is required');
 
     let payload: any;
     try {
       payload = this.jwtService.verify(refreshToken, {
-        secret: this.cfgService.getOrThrow('JWT_REFRESH_SECRET')
+        secret: this.cfgService.getOrThrow('JWT_REFRESH_SECRET'),
       });
     } catch (err) {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
 
-    const user = await this.usersRepo.query.findOneById({ id: payload.sub,
+    const user = await this.usersRepo.query.findOneById({
+      id: payload.sub,
       inclusion: {
         _id: true,
         email: true,
-        roles: true
-      }
+        roles: true,
+      },
     });
     if (!user) throw new UnauthorizedException('User not found');
 
     return {
       accessToken: this.signAccessToken(user),
-      expiresIn: this.accessExpiresIn
+      expiresIn: this.accessExpiresIn,
     };
   }
 
   /** */
   public async verifyEmail(email: string, otp: string) {
-    const existed = await this.usersRepo.query.findOneByEmail({ email,
+    const existed = await this.usersRepo.query.findOneByEmail({
+      email,
       inclusion: {
         _id: true,
         email: true,
-        emailVerified: true
-      }
+        emailVerified: true,
+      },
     });
     if (!existed) throw new BadRequestException('User not found');
-    if (existed.emailVerified) throw new BadRequestException('Email already verified');
+    if (existed.emailVerified)
+      throw new BadRequestException('Email already verified');
 
     await this.otpService.verify(existed.email, otp);
     await this.usersRepo.command.updateOneById({
       id: existed._id,
       update: {
-        emailVerified: true
-      }
+        emailVerified: true,
+      },
     });
 
     return true;
@@ -163,14 +178,16 @@ export class AuthService {
 
   /** */
   public async resendOtp(email: string) {
-    const existed = await this.usersRepo.query.findOneByEmail({ email,
+    const existed = await this.usersRepo.query.findOneByEmail({
+      email,
       inclusion: {
         email: true,
         emailVerified: true,
-      }
+      },
     });
     if (!existed) throw new BadRequestException('User not found');
-    if (existed.emailVerified) throw new BadRequestException('Email already verified');
+    if (existed.emailVerified)
+      throw new BadRequestException('Email already verified');
 
     await this.otpService.send(existed.email);
     return true;

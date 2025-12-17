@@ -1,4 +1,4 @@
-import { SortByInput, SortDirection } from "../services/types/sort.type";
+import { SortByInput, SortDirection } from '../services/types/sort.type';
 
 export const pickSortableFields = <T extends object>(
   sort: Record<string, SortDirection> | undefined,

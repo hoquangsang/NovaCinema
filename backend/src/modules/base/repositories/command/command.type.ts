@@ -2,10 +2,10 @@
 export interface CreateResult {
   /** The number of document(s) that were inserted */
   readonly insertedCount: number;
-};
+}
 
 /** Result of creating a single document */
-export type CreateOneResult<T> = 
+export type CreateOneResult<T> =
   | (CreateResult & {
       readonly insertedCount: 0;
       /** No document was created */
@@ -29,27 +29,27 @@ export interface UpdateResult {
   readonly matchedCount: number;
   /** The number of document(s) that were modified */
   readonly modifiedCount: number;
-};
+}
 
 /** Result of updating a single document */
-export type UpdateOneResult<T> = 
+export type UpdateOneResult<T> =
   | (UpdateResult & {
       readonly matchedCount: 0;
       readonly modifiedCount: 0;
       /** No document was modified */
-      readonly modifiedItem: null
+      readonly modifiedItem: null;
     })
   | (UpdateResult & {
       readonly matchedCount: 1;
       readonly modifiedCount: 0;
       /** No document was modified */
-      readonly modifiedItem: null
+      readonly modifiedItem: null;
     })
   | (UpdateResult & {
       readonly matchedCount: 1;
       /** The updated document */
       readonly modifiedCount: 1;
-      readonly modifiedItem: Readonly<T>
+      readonly modifiedItem: Readonly<T>;
     });
 
 /** Result of updating multiple documents */
@@ -61,7 +61,7 @@ export type UpdateManyResult<T = undefined> = UpdateResult & {
 export interface DeleteResult {
   /** Number of documents deleted */
   readonly deletedCount: number;
-};
+}
 
 /** Result of deleting a single document */
 export type DeleteOneResult = DeleteResult & {

@@ -7,15 +7,9 @@ import { MovieSeederService } from './movie-seeder.service';
 @Module({
   imports: [
     DatabaseModule,
-    MongooseModule.forFeature([
-      { name: Movie.name, schema: MovieSchema }
-    ]),
+    MongooseModule.forFeature([{ name: Movie.name, schema: MovieSchema }]),
   ],
-  providers: [
-    MovieSeederService
-  ],
-  exports: [
-    MovieSeederService
-  ]
+  providers: [MovieSeederService],
+  exports: [MovieSeederService],
 })
 export class MoviesSeederModule {}

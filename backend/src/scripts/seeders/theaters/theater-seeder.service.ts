@@ -1,8 +1,17 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Room, RoomDocument, Theater, TheaterDocument } from 'src/modules/theaters';
-import { THEATERS_MOCK, ROOMS_MOCK, generateSeatMap } from './theater-seeder.data';
+import {
+  Room,
+  RoomDocument,
+  Theater,
+  TheaterDocument,
+} from 'src/modules/theaters';
+import {
+  THEATERS_MOCK,
+  ROOMS_MOCK,
+  generateSeatMap,
+} from './theater-seeder.data';
 
 @Injectable()
 export class TheaterSeederService {
@@ -35,7 +44,7 @@ export class TheaterSeederService {
         const room = await this.roomModel.create({
           theaterId,
           roomName: r.roomName,
-          seatMap
+          seatMap,
         });
       }
     }

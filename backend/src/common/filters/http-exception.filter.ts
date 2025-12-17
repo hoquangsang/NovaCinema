@@ -3,9 +3,9 @@ import {
   ArgumentsHost,
   ExceptionFilter,
   HttpException,
-} from "@nestjs/common";
-import { Response, Request } from "express";
-import { ErrorResponse } from "../responses";
+} from '@nestjs/common';
+import { Response, Request } from 'express';
+import { ErrorResponse } from '../responses';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -19,7 +19,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       const body = exception.getResponse() as any;
 
       const err = new ErrorResponse(
-        body?.message || exception.message || "Error occurred",
+        body?.message || exception.message || 'Error occurred',
         status,
         req.url,
         body?.error || null,
@@ -29,7 +29,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     }
 
     const err = new ErrorResponse(
-      exception?.message || "Internal Server Error",
+      exception?.message || 'Internal Server Error',
       500,
       req.url,
       exception,

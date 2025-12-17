@@ -1,4 +1,8 @@
-import { DateRangeInput, PaginatedQueryInput, QueryInput } from "src/modules/base/services/types";
+import {
+  DateRangeInput,
+  PaginatedQueryInput,
+  QueryInput,
+} from 'src/modules/base/services/types';
 
 export namespace MovieInputTypes {
   /** Filterable fields for movies */
@@ -14,7 +18,7 @@ export namespace MovieInputTypes {
   };
 
   /** Date range fields for movies */
-  export type ReleaseWindow  = {
+  export type ReleaseWindow = {
     releaseDate?: { $gte?: Date; $lte?: Date };
     endDate?: { $gte?: Date; $lte?: Date };
   };

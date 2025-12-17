@@ -1,37 +1,30 @@
-import { ObjectIdToString } from "mongoose";
-import { Types } from "mongoose";
+import { ObjectIdToString } from 'mongoose';
+import { Types } from 'mongoose';
 
 export function mapObjectIdsToStrings<T>(
-  value: readonly T[]
+  value: readonly T[],
 ): ObjectIdToString<T>[];
 
-export function mapObjectIdsToStrings<T>(
-  value: T
-): ObjectIdToString<T>;
+export function mapObjectIdsToStrings<T>(value: T): ObjectIdToString<T>;
 
 /** Map ObjectIds in a value to strings, preserving structure */
 export function mapObjectIdsToStrings(value: unknown): unknown {
-  if (value == null)
-    return value;
-  
-  if (value instanceof Types.ObjectId)
-    return value.toHexString();
+  if (value == null) return value;
 
-  if (value instanceof Date)
-    return value;
+  if (value instanceof Types.ObjectId) return value.toHexString();
 
-  if (Buffer.isBuffer(value))
-    return value;
+  if (value instanceof Date) return value;
 
-  if (value instanceof RegExp)
-    return value;
+  if (Buffer.isBuffer(value)) return value;
+
+  if (value instanceof RegExp) return value;
 
   if (value instanceof Map) {
     return new Map(
       Array.from(value.entries()).map(([k, v]) => [
         mapObjectIdsToStrings(k),
         mapObjectIdsToStrings(v),
-      ])
+      ]),
     );
   }
 
@@ -55,7 +48,7 @@ export function mapObjectIdsToStrings(value: unknown): unknown {
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
-  if (typeof value !== "object" || value === null) return false;
+  if (typeof value !== 'object' || value === null) return false;
   const proto = Object.getPrototypeOf(value);
   return proto === Object.prototype || proto === null;
 }

@@ -7,15 +7,9 @@ import { UserSeederService } from './user-seeder.service';
 @Module({
   imports: [
     DatabaseModule,
-    MongooseModule.forFeature([
-      { name: User.name, schema: UserSchema }
-    ]),
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
   ],
-  providers: [
-    UserSeederService
-  ],
-  exports: [
-    UserSeederService
-  ],
+  providers: [UserSeederService],
+  exports: [UserSeederService],
 })
 export class UsersSeederModule {}

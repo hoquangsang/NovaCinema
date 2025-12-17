@@ -1,5 +1,5 @@
-import { ConfigModule, ConfigService } from "@nestjs/config";
-import { JwtSignOptions } from "@nestjs/jwt";
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { JwtSignOptions } from '@nestjs/jwt';
 
 export const jwtAccessConfig = {
   imports: [ConfigModule],

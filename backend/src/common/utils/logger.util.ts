@@ -1,7 +1,7 @@
-import { Logger } from "@nestjs/common";
+import { Logger } from '@nestjs/common';
 
 export const LoggerUtil = {
-  logger: new Logger("App"),
+  logger: new Logger('App'),
 
   info: (msg: unknown): void => {
     LoggerUtil.logger.log(LoggerUtil.format(msg));
@@ -20,7 +20,7 @@ export const LoggerUtil = {
   },
 
   format: (msg: unknown): string => {
-    if (typeof msg === "string") return msg;
+    if (typeof msg === 'string') return msg;
     try {
       return JSON.stringify(msg, null, 2);
     } catch {

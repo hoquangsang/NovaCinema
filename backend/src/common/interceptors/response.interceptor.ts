@@ -1,19 +1,29 @@
 import { Reflector } from '@nestjs/core';
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor, Type } from '@nestjs/common';
+import {
+  CallHandler,
+  ExecutionContext,
+  Injectable,
+  NestInterceptor,
+  Type,
+} from '@nestjs/common';
 import { Observable, map } from 'rxjs';
 import { plainToInstance } from 'class-transformer';
 import { METADATA_KEYS } from '../constants';
-import { CreatedResponse, ListResponse, PaginatedResponse, SuccessResponse } from '../responses';
+import {
+  CreatedResponse,
+  ListResponse,
+  PaginatedResponse,
+  SuccessResponse,
+} from '../responses';
 
 @Injectable()
 export class ResponseInterceptor implements NestInterceptor {
   constructor(private reflector: Reflector) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    const meta = this.reflector.get(
-      METADATA_KEYS.RESPONSE_META,
-      context.getHandler()
-    ) ?? {};
+    const meta =
+      this.reflector.get(METADATA_KEYS.RESPONSE_META, context.getHandler()) ??
+      {};
 
     const { mode, message, dto } = meta;
 
@@ -23,13 +33,13 @@ export class ResponseInterceptor implements NestInterceptor {
           case 'created':
             return new CreatedResponse(
               this.transformToDto(dto, data),
-              message ?? 'Created'
+              message ?? 'Created',
             );
 
           case 'list':
             return new ListResponse(
               this.transformToDto(dto, data),
-              message ?? 'OK'
+              message ?? 'OK',
             );
 
           case 'paginated':
@@ -38,7 +48,7 @@ export class ResponseInterceptor implements NestInterceptor {
               data.total,
               data.page,
               data.limit,
-              message ?? 'OK'
+              message ?? 'OK',
             );
 
           case 'noContent':
@@ -47,7 +57,7 @@ export class ResponseInterceptor implements NestInterceptor {
           default:
             return new SuccessResponse(
               this.transformToDto(dto, data),
-              message ?? 'OK'
+              message ?? 'OK',
             );
         }
       }),
@@ -58,7 +68,7 @@ export class ResponseInterceptor implements NestInterceptor {
     if (!dto) return input;
 
     if (Array.isArray(input)) {
-      return input.map(item =>
+      return input.map((item) =>
         plainToInstance(dto, item, {
           excludeExtraneousValues: true,
           enableImplicitConversion: true,

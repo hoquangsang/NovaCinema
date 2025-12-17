@@ -1,5 +1,8 @@
-import { PaginatedQueryInput, QueryInput } from "src/modules/base/services/types";
-import { RoomType, SeatType } from "../constants";
+import {
+  PaginatedQueryInput,
+  QueryInput,
+} from 'src/modules/base/services/types';
+import { RoomType, SeatType } from '../types';
 
 export namespace RoomInputTypes {
   /** Filterable fields for rooms */
