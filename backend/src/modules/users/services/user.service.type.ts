@@ -18,7 +18,7 @@ export namespace UserInputTypes {
 
   export type PaginatedQuery = PaginatedQueryInput & Filter;
 
-  export type Update = {
+  export type UpdateInfo = {
     username?: string;
     fullName?: string;
     phoneNumber?: string;

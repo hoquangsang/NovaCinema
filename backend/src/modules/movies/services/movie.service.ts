@@ -174,8 +174,8 @@ export class MovieService {
       },
     });
 
-    if (!result.matchedCount || !result.modifiedCount)
-      throw new BadRequestException('Update failed');
+    if (!result.matchedCount)
+      throw new BadRequestException('Update failed unexpectedly');
     return result.modifiedItem;
   }
 
@@ -185,7 +185,7 @@ export class MovieService {
 
     const result = await this.movieRepo.command.deleteOneById({ id });
     if (!result.deletedCount)
-      throw new InternalServerErrorException('Deletion failed');
+      throw new InternalServerErrorException('Deletion failed unexpectedly');
 
     // TODO: deactivate all showtime
   }

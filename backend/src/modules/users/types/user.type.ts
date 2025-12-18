@@ -1,3 +1,3 @@
-import { USERROLE_TYPES } from '../constants';
+import { USER_ROLES } from '../constants';
 
-export type UserRoleType = (typeof USERROLE_TYPES)[number];
+export type UserRole = (typeof USER_ROLES)[keyof typeof USER_ROLES];

@@ -23,39 +23,47 @@ export type CreateManyResult<T> = CreateResult & {
   readonly insertedItems: ReadonlyArray<T>;
 };
 
-/** Result of an update operation */
-export interface UpdateResult {
+/** Result of updating a single document */
+export type UpdateOneResult<T> =
+  | {
+      readonly matchedCount: 0;
+      readonly modifiedItem: null;
+    }
+  | {
+      readonly matchedCount: 1;
+      readonly modifiedItem: Readonly<T>;
+    };
+
+/** Result of updating multiple documents */
+export type UpdateManyResult<T = undefined> = {
   /** The number of documents that matched the filter */
   readonly matchedCount: number;
   /** The number of document(s) that were modified */
   readonly modifiedCount: number;
-}
 
-/** Result of updating a single document */
-export type UpdateOneResult<T> =
-  | (UpdateResult & {
-      readonly matchedCount: 0;
-      readonly modifiedCount: 0;
-      /** No document was modified */
-      readonly modifiedItem: null;
-    })
-  | (UpdateResult & {
-      readonly matchedCount: 1;
-      readonly modifiedCount: 0;
-      /** No document was modified */
-      readonly modifiedItem: null;
-    })
-  | (UpdateResult & {
-      readonly matchedCount: 1;
-      /** The updated document */
-      readonly modifiedCount: 1;
-      readonly modifiedItem: Readonly<T>;
-    });
-
-/** Result of updating multiple documents */
-export type UpdateManyResult<T = undefined> = UpdateResult & {
   /** Extend with additional info if needed */
 };
+
+/** Result of an upsert operation */
+export interface UpsertResult {
+  /** True if a new document was inserted, false if an existing document was updated */
+  readonly upserted: boolean;
+}
+
+/** Result of upserting a single document */
+export type UpsertOneResult<T> =
+  | {
+      /** An existing document was created */
+      readonly created: true;
+      /** The newly inserted document */
+      readonly upsertedItem: Readonly<T>;
+    }
+  | {
+      /** An existing document was updated */
+      readonly created: false;
+      /** The updated existing document */
+      readonly upsertedItem: Readonly<T>;
+    };
 
 /** Result of a delete operation */
 export interface DeleteResult {

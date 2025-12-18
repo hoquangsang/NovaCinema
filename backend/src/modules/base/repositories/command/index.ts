@@ -2,7 +2,6 @@ export type {
   CreateResult,
   CreateOneResult,
   CreateManyResult,
-  UpdateResult,
   UpdateOneResult,
   UpdateManyResult,
   DeleteResult,

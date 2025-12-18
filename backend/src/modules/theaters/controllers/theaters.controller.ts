@@ -14,13 +14,13 @@ import {
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ParseObjectIdPipe } from '@nestjs/mongoose';
 import {
-  Public,
-  Roles,
+  RequireRoles,
   WrapListResponse,
   WrapNoContentResponse,
   WrapOkResponse,
   WrapPaginatedResponse,
 } from 'src/common/decorators';
+import { USER_ROLES } from 'src/modules/users/constants';
 import { TheaterService } from '../services/theater.service';
 import {
   CreateTheaterReqDto,
@@ -37,7 +37,7 @@ export class TheatersController {
 
   @ApiOperation({ description: 'Query theaters' })
   @WrapPaginatedResponse({ dto: TheaterResDto })
-  @Public()
+  @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.OK)
   @Get()
   public async paginatedQueryTheaters(
@@ -48,7 +48,7 @@ export class TheatersController {
 
   @ApiOperation({ description: 'Query all theaters' })
   @WrapListResponse({ dto: TheaterResDto })
-  @Public()
+  @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.OK)
   @Get('/list')
   public async queryTheaters(@Query() query: QueryTheatersReqDto) {
@@ -57,7 +57,7 @@ export class TheatersController {
 
   @ApiOperation({ description: 'Get theater by ID' })
   @WrapOkResponse({ dto: TheaterResDto })
-  @Public()
+  @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.OK)
   @Get(':id')
   public async getById(@Param('id', ParseObjectIdPipe) id: string) {
@@ -68,7 +68,7 @@ export class TheatersController {
 
   @ApiOperation({ description: 'Create new theater' })
   @WrapOkResponse({ dto: TheaterResDto, message: 'Created successfully' })
-  @Roles('ADMIN')
+  @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.CREATED)
   @Post()
   public async createTheater(@Body() dto: CreateTheaterReqDto) {
@@ -77,7 +77,7 @@ export class TheatersController {
 
   @ApiOperation({ description: 'Update theater' })
   @WrapOkResponse({ dto: TheaterResDto, message: 'Updated successfully' })
-  @Roles('ADMIN')
+  @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.OK)
   @Patch(':id')
   public async updateTheater(
@@ -89,7 +89,7 @@ export class TheatersController {
 
   @ApiOperation({ description: 'Hard delete theater' })
   @WrapNoContentResponse({ message: 'Deleted successfully' })
-  @Roles('ADMIN')
+  @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
   public async deleteTheater(@Param('id', ParseObjectIdPipe) id: string) {

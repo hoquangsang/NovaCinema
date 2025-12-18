@@ -1,3 +1,3 @@
-import { SEAT_TYPES } from "../constants";
+import { SEAT_TYPES } from '../constants';
 
-export type SeatType = typeof SEAT_TYPES[number];
+export type SeatType = (typeof SEAT_TYPES)[keyof typeof SEAT_TYPES];

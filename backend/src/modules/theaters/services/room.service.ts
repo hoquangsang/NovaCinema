@@ -8,7 +8,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { pickSortableFields } from 'src/modules/base/helpers';
-import { ROOM_LIMITS } from '../constants';
+import { ROOM_LIMITS, SEAT_TYPES } from '../constants';
 import { RoomType, SeatType } from '../types';
 import { RoomDocument, Seat, SeatMap } from '../schemas';
 import { RoomRepository } from '../repositories';
@@ -164,8 +164,8 @@ export class RoomService {
           continue;
         }
 
-        if (seatType === 'COUPLE') {
-          if (row[colIdx + 1] !== 'COUPLE') {
+        if (seatType === SEAT_TYPES.COUPLE) {
+          if (row[colIdx + 1] !== SEAT_TYPES.COUPLE) {
             throw new BadRequestException(
               `COUPLE seat at row ${rowIdx}, col ${colIdx} must be paired`,
             );
@@ -232,8 +232,8 @@ export class RoomService {
       },
     });
 
-    if (!result.matchedCount || !result.modifiedCount)
-      throw new BadRequestException('Nothing to update');
+    if (!result.matchedCount)
+      throw new InternalServerErrorException('Update failed unexpectedly');
     return result.modifiedItem;
   }
 
@@ -244,7 +244,7 @@ export class RoomService {
 
     const result = await this.roomRepo.command.deleteOneById({ id });
     if (!result.deletedCount)
-      throw new InternalServerErrorException('Deletion failed');
+      throw new InternalServerErrorException('Deletion failed unexpectedly');
 
     // TODO: deactivate all showtime
   }

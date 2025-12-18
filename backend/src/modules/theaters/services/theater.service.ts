@@ -124,8 +124,7 @@ export class TheaterService {
       update,
     });
 
-    if (!result.matchedCount || !result.modifiedCount)
-      throw new NotFoundException('Theater not found');
+    if (!result.matchedCount) throw new NotFoundException('Theater not found');
     return result.modifiedItem;
   }
 

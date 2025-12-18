@@ -1,10 +1,14 @@
 import escapeStringRegexp from 'escape-string-regexp';
 import { FilterQuery } from 'mongoose';
 import {
+  BadRequestException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
+import { HashUtil } from 'src/common/utils';
 import { pickSortableFields } from 'src/modules/base/helpers';
 import { UserDocument } from '../schemas';
 import { UserRepository } from '../repositories';
@@ -16,6 +20,32 @@ export class UserService {
   constructor(private readonly userRepo: UserRepository) {}
 
   /** */
+  private stripPassword<T extends { password?: string }>(user: T) {
+    const { password: _, ...userSafe } = user;
+    return userSafe;
+  }
+
+  public async verifyCredential(email: string, plainPassword: string) {
+    const user = await this.userRepo.query.findOneByEmail({ email });
+    if (!user) throw new UnauthorizedException('Email is not registered');
+
+    const isMatch = await HashUtil.compare(plainPassword, user.password);
+    if (!isMatch) throw new UnauthorizedException('Incorrect password');
+
+    return this.stripPassword(user);
+  }
+
+  public async verifyUserEmailById(id: string) {
+    const result = await this.userRepo.command.updateOneById({
+      id,
+      update: { emailVerified: true },
+    });
+
+    if (!result.matchedCount) throw new NotFoundException('User not found');
+
+    return this.stripPassword(result.modifiedItem);
+  }
+
   public async findUserById(id: string) {
     return this.userRepo.query.findOneById({
       id,
@@ -23,9 +53,14 @@ export class UserService {
     });
   }
 
-  /** */
+  public async findUserByEmail(email: string) {
+    return this.userRepo.query.findOneByEmail({
+      email: email,
+      exclusion: { password: false },
+    });
+  }
+
   public async findUsersPaginated(options: InputTypes.PaginatedQuery) {
-    console.log(options);
     const { search, page, limit, sort, ...rest } = options;
     const filter: FilterQuery<UserDocument> = {};
 
@@ -72,17 +107,101 @@ export class UserService {
   }
 
   /** */
-  public async updateUserById(id: string, update: InputTypes.Update) {
+  public async registerUser(data: {
+    email: string;
+    password: string;
+    username?: string;
+    fullName?: string;
+    phoneNumber?: string;
+    dateOfBirth?: Date;
+  }) {
+    const { email, password, username, fullName, phoneNumber, dateOfBirth } =
+      data;
+    const exists = await this.userRepo.query.exists({
+      filter: { email },
+    });
+    if (exists) throw new BadRequestException('Email already exists');
+
+    const hashedPassword = await HashUtil.hash(password);
+    const result = await this.userRepo.command.createOne({
+      data: {
+        email: email,
+        password: hashedPassword,
+        username: username,
+        phoneNumber: phoneNumber,
+        fullName: fullName,
+        dateOfBirth: dateOfBirth,
+      },
+    });
+
+    if (!result.insertedCount)
+      throw new InternalServerErrorException('Registration failed');
+
+    return this.stripPassword(result.insertedItem);
+  }
+
+  /** */
+  public async updateUserInfoById(id: string, update: InputTypes.UpdateInfo) {
     const result = await this.userRepo.command.updateOneById({
       id,
       update,
     });
+
     if (!result.matchedCount) throw new NotFoundException('User not found');
 
-    return result.modifiedItem;
+    return this.stripPassword(result.modifiedItem);
   }
 
-  /** */
+  public async changePassword(
+    id: string,
+    currentPassword: string,
+    newPassword: string,
+  ) {
+    if (currentPassword === newPassword)
+      throw new BadRequestException(
+        'New password must be different from current password',
+      );
+
+    const user = await this.userRepo.query.findOneById({ id });
+    if (!user) throw new NotFoundException('User not found');
+
+    const isMatch = await HashUtil.compare(currentPassword, user.password);
+    if (!isMatch) throw new ForbiddenException('Current password is incorrect');
+
+    const hashed = await HashUtil.hash(newPassword);
+    const result = await this.userRepo.command.updateOneById({
+      id,
+      update: { password: hashed },
+    });
+
+    if (!result.matchedCount) throw new NotFoundException('User not found');
+
+    return this.stripPassword(result.modifiedItem);
+  }
+
+  public async updateUserLastLoginById(id: string) {
+    const now = new Date();
+    const result = await this.userRepo.command.updateOneById({
+      id: id,
+      update: {
+        lastLoginAt: now,
+      },
+    });
+    if (!result.matchedCount) throw new NotFoundException('User not found');
+
+    return this.stripPassword(result.modifiedItem);
+  }
+
+  private async updateUserStatusById(id: string, active: boolean) {
+    const result = await this.userRepo.command.updateOneById({
+      id,
+      update: { active },
+    });
+    if (!result.matchedCount) throw new NotFoundException('User not found');
+
+    return this.stripPassword(result.modifiedItem);
+  }
+
   public async activateUserById(id: string) {
     return this.updateUserStatusById(id, true);
   }
@@ -91,18 +210,11 @@ export class UserService {
     return this.updateUserStatusById(id, false);
   }
 
-  private async updateUserStatusById(id: string, active: boolean) {
-    const result = await this.userRepo.command.updateOneById({
-      id,
-      update: { active },
-    });
-    if (!result.matchedCount || !result.modifiedCount)
-      throw new NotFoundException('User not found');
-  }
-
   /** */
   public async deleteUserById(id: string) {
-    const exists = await this.userRepo.query.exists({ filter: { _id: id } });
+    const exists = await this.userRepo.query.exists({
+      filter: { _id: id },
+    });
     if (!exists) throw new NotFoundException('User not found');
 
     const result = await this.userRepo.command.deleteOneById({ id });

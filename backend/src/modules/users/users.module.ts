@@ -17,11 +17,11 @@ import { UserController } from './controllers';
   ],
   controllers: [UserController],
   providers: [
-    UserService,
     UserQueryRepository,
     UserCommandRepository,
     UserRepository,
+    UserService,
   ],
-  exports: [UserService, UserRepository],
+  exports: [UserRepository, UserService],
 })
 export class UsersModule {}

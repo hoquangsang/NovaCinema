@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
-import { SEAT_TYPES } from 'src/modules/theaters/constants';
+import { SEAT_TYPE_VALUES, SEAT_TYPES } from 'src/modules/theaters/constants';
 import { SeatType } from 'src/modules/theaters/types';
 
 export class SeatResDto {
@@ -10,9 +10,9 @@ export class SeatResDto {
 
   @ApiProperty({
     type: String,
-    enum: SEAT_TYPES,
+    enum: SEAT_TYPE_VALUES,
     description: 'Seat type',
-    example: 'NORMAL',
+    example: SEAT_TYPES.NORMAL,
   })
   @Expose()
   seatType!: SeatType;

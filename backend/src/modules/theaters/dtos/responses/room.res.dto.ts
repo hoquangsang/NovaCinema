@@ -1,6 +1,10 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
-import { ROOM_TYPES } from 'src/modules/theaters/constants';
+import {
+  ROOM_TYPE_VALUES,
+  ROOM_TYPES,
+  SEAT_MAP_EXAMPLE,
+} from 'src/modules/theaters/constants';
 import { RoomType } from 'src/modules/theaters/types';
 import { SeatResDto } from './seat.res.dto';
 
@@ -27,32 +31,16 @@ export class RoomResDto {
 
   @ApiProperty({
     type: String,
-    enum: ROOM_TYPES,
+    enum: ROOM_TYPE_VALUES,
     description: 'Type of room',
-    example: '2D',
+    example: ROOM_TYPES._2D,
   })
   @Expose()
   roomType!: RoomType;
 
   @ApiProperty({
     description: '2D array of seats: NORMAL, VIP, COUPLE or null',
-    example: [
-      ...Array.from({ length: 8 }, () =>
-        Array.from({ length: 10 }, () => 'NORMAL'),
-      ),
-      [
-        'COUPLE',
-        'COUPLE',
-        null,
-        'VIP',
-        null,
-        null,
-        'VIP',
-        null,
-        'COUPLE',
-        'COUPLE',
-      ],
-    ],
+    example: SEAT_MAP_EXAMPLE,
   })
   @Expose()
   @Type(() => SeatResDto)
@@ -66,9 +54,7 @@ export class RoomResDto {
   @Expose()
   isActive?: boolean;
 
-  // @ApiPropertyOptional({ type: Number, description: 'Capacity', example: 80 })
-  // @Expose()
-  // get capacity(): number {
-  //   return this.seatMap?.flat(1).filter(seat => seat !== null).length ?? 0;
-  // }
+  @ApiPropertyOptional({ type: Number, description: 'Capacity', example: 84 })
+  @Expose()
+  capacity?: number;
 }

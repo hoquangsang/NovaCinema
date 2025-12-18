@@ -1,8 +1,8 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsIn, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { PaginatedQueryReqDto } from 'src/modules/base/dtos/requests';
-import { ROOM_TYPES } from 'src/modules/theaters/constants';
+import { ROOM_TYPE_VALUES, ROOM_TYPES } from 'src/modules/theaters/constants';
 import { RoomType } from 'src/modules/theaters/types';
 
 export class PaginatedQueryRoomsReqDto extends PaginatedQueryReqDto {
@@ -11,9 +11,14 @@ export class PaginatedQueryRoomsReqDto extends PaginatedQueryReqDto {
   @IsString()
   roomName?: string;
 
-  @ApiPropertyOptional({ type: [String], description: 'Filter by room type' })
+  @ApiPropertyOptional({
+    type: [String],
+    enum: ROOM_TYPE_VALUES,
+    description: 'Filter by room type',
+    example: ROOM_TYPES._2D,
+  })
   @IsOptional()
-  @IsIn(ROOM_TYPES, { each: true })
+  @IsEnum(ROOM_TYPE_VALUES, { each: true })
   @Transform(({ value }) =>
     Array.isArray(value) ? value : value ? [value] : undefined,
   )

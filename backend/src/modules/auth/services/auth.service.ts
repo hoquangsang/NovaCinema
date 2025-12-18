@@ -7,20 +7,10 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { refreshTokenOptions } from 'src/config';
-import { HashUtil } from 'src/common/utils';
-import { UserRepository } from 'src/modules/users';
+import { OtpService } from 'src/modules/notifications';
+import { UserService } from 'src/modules/users';
 import { UserRoleType } from 'src/modules/users/types';
 import { JwtPayload } from '../types';
-import { OtpService } from './otp.service';
-
-type RegisterInput = {
-  email: string;
-  password: string;
-  username?: string;
-  fullName?: string;
-  phoneNumber?: string;
-  dateOfBirth?: Date;
-};
 
 @Injectable()
 export class AuthService {
@@ -28,10 +18,10 @@ export class AuthService {
   private readonly refreshExpiresIn: number;
 
   constructor(
-    private readonly usersRepo: UserRepository,
+    private readonly cfgService: ConfigService,
+    private readonly jwtService: JwtService,
     private readonly otpService: OtpService,
-    private jwtService: JwtService,
-    private cfgService: ConfigService,
+    private readonly userService: UserService,
   ) {
     this.accessExpiresIn = Number(
       this.cfgService.getOrThrow('JWT_ACCESS_EXPIRES'),
@@ -43,28 +33,16 @@ export class AuthService {
 
   /** */
   public async login(email: string, password: string) {
-    const existed = await this.usersRepo.query.findOneByEmail({ email });
-    if (!existed) throw new UnauthorizedException('User not found');
-    if (!existed.emailVerified)
+    const user = await this.userService.verifyCredential(email, password);
+    if (!user.emailVerified)
       throw new ForbiddenException('Email is not verified');
 
-    const { password: hashedPass, ...user } = existed;
-    const isMatch = await HashUtil.compare(password, hashedPass);
-    if (!isMatch) throw new UnauthorizedException('Invalid credentials');
+    const loggedInUser = await this.userService.updateUserLastLoginById(
+      user._id,
+    );
 
-    const now = new Date();
-    const updateResult = await this.usersRepo.command.updateOneById({
-      id: user._id,
-      update: {
-        lastLoginAt: now,
-      },
-    });
-    const loggedInUser = user;
-    if (updateResult.matchedCount && updateResult.modifiedCount)
-      loggedInUser.lastLoginAt = updateResult.modifiedItem.lastLoginAt;
-
-    const accessToken = this.signAccessToken(user);
-    const refreshToken = this.signRefreshToken(user._id);
+    const accessToken = this.signAccessToken(loggedInUser);
+    const refreshToken = this.signRefreshToken(loggedInUser);
 
     return {
       user: loggedInUser,
@@ -88,36 +66,25 @@ export class AuthService {
     return this.jwtService.sign(payload);
   }
 
-  private signRefreshToken(userId: string) {
+  private signRefreshToken(user: { _id: string }) {
     return this.jwtService.sign(
-      { sub: userId },
+      { sub: user._id },
       refreshTokenOptions(this.cfgService),
     );
   }
 
   /** */
-  public async register(payload: RegisterInput) {
-    const { email, password, username, fullName, phoneNumber, dateOfBirth } =
-      payload;
-    const existed = await this.usersRepo.query.findOneByEmail({ email });
-    if (existed) throw new BadRequestException('Email already exists');
+  public async register(payload: {
+    email: string;
+    password: string;
+    username?: string;
+    fullName?: string;
+    phoneNumber?: string;
+    dateOfBirth?: Date;
+  }) {
+    const { email } = await this.userService.registerUser(payload);
 
-    const hashed = await HashUtil.hash(password);
-    const result = await this.usersRepo.command.createOne({
-      data: {
-        email: email,
-        password: hashed,
-        username: username,
-        phoneNumber: phoneNumber,
-        fullName: fullName,
-        dateOfBirth: dateOfBirth,
-      },
-    });
-    if (!result.insertedCount)
-      throw new BadRequestException('Registration failed');
-    const user = result.insertedItem;
-
-    await this.otpService.send(user.email);
+    await this.otpService.send(email);
     return true;
   }
 
@@ -135,14 +102,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
 
-    const user = await this.usersRepo.query.findOneById({
-      id: payload.sub,
-      inclusion: {
-        _id: true,
-        email: true,
-        roles: true,
-      },
-    });
+    const userId = payload.sub;
+    if (!userId) throw new UnauthorizedException('Invalid refresh token');
+
+    const user = await this.userService.findUserById(userId);
     if (!user) throw new UnauthorizedException('User not found');
 
     return {
@@ -153,43 +116,25 @@ export class AuthService {
 
   /** */
   public async verifyEmail(email: string, otp: string) {
-    const existed = await this.usersRepo.query.findOneByEmail({
-      email,
-      inclusion: {
-        _id: true,
-        email: true,
-        emailVerified: true,
-      },
-    });
-    if (!existed) throw new BadRequestException('User not found');
-    if (existed.emailVerified)
+    const user = await this.userService.findUserByEmail(email);
+    if (!user) throw new BadRequestException('User not found');
+    if (user.emailVerified)
       throw new BadRequestException('Email already verified');
 
-    await this.otpService.verify(existed.email, otp);
-    await this.usersRepo.command.updateOneById({
-      id: existed._id,
-      update: {
-        emailVerified: true,
-      },
-    });
+    await this.otpService.verify(user.email, otp);
+    await this.userService.verifyUserEmailById(user._id);
 
     return true;
   }
 
   /** */
   public async resendOtp(email: string) {
-    const existed = await this.usersRepo.query.findOneByEmail({
-      email,
-      inclusion: {
-        email: true,
-        emailVerified: true,
-      },
-    });
-    if (!existed) throw new BadRequestException('User not found');
-    if (existed.emailVerified)
+    const user = await this.userService.findUserByEmail(email);
+    if (!user) throw new BadRequestException('User not found');
+    if (user.emailVerified)
       throw new BadRequestException('Email already verified');
 
-    await this.otpService.send(existed.email);
+    await this.otpService.send(user.email);
     return true;
   }
 }

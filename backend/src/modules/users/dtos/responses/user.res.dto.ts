@@ -1,5 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
+import { USER_ROLES } from '../../constants';
+import { UserRoleType } from '../../types';
 
 export class UserResDto {
   @ApiProperty({ type: String, description: 'User unique ID' })
@@ -33,10 +35,10 @@ export class UserResDto {
   @ApiProperty({
     type: [String],
     description: 'Roles assigned to the user',
-    example: ['user'],
+    example: [USER_ROLES.USER],
   })
   @Expose()
-  roles!: string[];
+  roles!: UserRoleType[];
 
   @ApiPropertyOptional({ type: Boolean, description: 'User active status' })
   @Expose()

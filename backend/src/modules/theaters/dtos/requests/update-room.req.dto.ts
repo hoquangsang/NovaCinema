@@ -4,28 +4,14 @@ import {
   IsOptional,
   IsString,
   IsBoolean,
-  IsIn,
+  IsEnum,
 } from 'class-validator';
-import { ROOM_TYPES } from 'src/modules/theaters/constants';
+import {
+  ROOM_TYPE_VALUES,
+  ROOM_TYPES,
+  SEAT_MAP_EXAMPLE,
+} from 'src/modules/theaters/constants';
 import { RoomType, SeatType } from 'src/modules/theaters/types';
-
-const SEAT_MAP_EXAMPLE = [
-  ...Array.from({ length: 8 }, () =>
-    Array.from({ length: 10 }, () => 'NORMAL'),
-  ),
-  [
-    'COUPLE',
-    'COUPLE',
-    null,
-    'VIP',
-    null,
-    null,
-    'VIP',
-    null,
-    'COUPLE',
-    'COUPLE',
-  ],
-];
 
 export class UpdateRoomReqDto {
   @ApiPropertyOptional({
@@ -38,9 +24,13 @@ export class UpdateRoomReqDto {
   @IsString()
   roomName?: string;
 
-  @ApiPropertyOptional({ type: String, enum: ROOM_TYPES })
+  @ApiPropertyOptional({
+    type: String,
+    enum: ROOM_TYPE_VALUES,
+    example: ROOM_TYPES._2D,
+  })
   @IsOptional()
-  @IsIn(ROOM_TYPES, { each: true })
+  @IsEnum(ROOM_TYPE_VALUES, { each: true })
   roomType?: RoomType;
 
   @ApiPropertyOptional({

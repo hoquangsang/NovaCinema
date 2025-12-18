@@ -15,12 +15,13 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ParseObjectIdPipe } from '@nestjs/mongoose';
 import {
   Public,
-  Roles,
+  RequireRoles,
   WrapCreatedResponse,
   WrapNoContentResponse,
   WrapOkResponse,
   WrapPaginatedResponse,
 } from 'src/common/decorators';
+import { USER_ROLES } from 'src/modules/users/constants';
 import { MovieService } from '../services';
 import {
   PaginatedQueryRangeMoviesReqDto,
@@ -78,7 +79,7 @@ export class MoviesController {
     dto: MovieResDto,
     message: 'Movie created successfully',
   })
-  @Roles('ADMIN')
+  @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.CREATED)
   @Post()
   public async createMovie(@Body() dto: CreateMovieReqDto) {
@@ -90,7 +91,7 @@ export class MoviesController {
     dto: MovieResDto,
     message: 'Movie updated successfully',
   })
-  @Roles('ADMIN')
+  @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.OK)
   @Patch(':id')
   public async updateMovie(
@@ -102,7 +103,7 @@ export class MoviesController {
 
   @ApiOperation({ description: 'Hard delete movie' })
   @WrapNoContentResponse({ message: 'Movie deleted successfully' })
-  @Roles('ADMIN')
+  @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
   public async deleteMovie(@Param('id', ParseObjectIdPipe) id: string) {

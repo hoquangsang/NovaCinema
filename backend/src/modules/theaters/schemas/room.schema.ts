@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
-import { ROOM_TYPES } from '../constants';
+import { ROOM_TYPE_VALUES, ROOM_TYPES } from '../constants';
 import { RoomType } from '../types';
 import { Theater } from './theater.schema';
 import { SeatMap, SeatSchema } from './seat.schema';
@@ -15,7 +15,7 @@ export class Room {
   @Prop({ required: true })
   roomName!: string;
 
-  @Prop({ type: String, enum: ROOM_TYPES, default: '2D' })
+  @Prop({ type: String, enum: ROOM_TYPE_VALUES, default: ROOM_TYPES._2D })
   roomType?: RoomType;
 
   @Prop({ type: [[{ type: SeatSchema }]], required: true })

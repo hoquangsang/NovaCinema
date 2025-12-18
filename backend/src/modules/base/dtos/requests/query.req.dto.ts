@@ -13,7 +13,7 @@ export class QueryReqDto {
   @ApiPropertyOptional({
     type: [String],
     description: 'Sort rules. Each item: field:asc|desc|1|-1.',
-    example: ['field1:asc', 'field2:desc,field3:1'],
+    example: ['field1:asc', 'field2:-1'],
   })
   @IsOptional()
   @Transform(({ value }) => parseSortArray(value))

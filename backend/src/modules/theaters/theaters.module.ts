@@ -23,26 +23,16 @@ import { RoomsController, TheatersController } from './controllers';
   ],
   controllers: [TheatersController, RoomsController],
   providers: [
-    TheaterQueryRepository,
     TheaterCommandRepository,
+    TheaterQueryRepository,
     TheaterRepository,
     TheaterService,
 
-    RoomQueryRepository,
     RoomCommandRepository,
+    RoomQueryRepository,
     RoomRepository,
     RoomService,
   ],
-  exports: [
-    TheaterService,
-    TheaterRepository,
-    TheaterCommandRepository,
-    TheaterQueryRepository,
-
-    RoomService,
-    RoomRepository,
-    RoomCommandRepository,
-    RoomQueryRepository,
-  ],
+  exports: [TheaterRepository, TheaterService, RoomRepository, RoomService],
 })
 export class TheatersModule {}

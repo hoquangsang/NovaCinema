@@ -14,14 +14,14 @@ import {
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ParseObjectIdPipe } from '@nestjs/mongoose';
 import {
-  Public,
-  Roles,
+  RequireRoles,
   WrapCreatedResponse,
   WrapListResponse,
   WrapNoContentResponse,
   WrapOkResponse,
   WrapPaginatedResponse,
 } from 'src/common/decorators';
+import { USER_ROLES } from 'src/modules/users/constants';
 import { RoomService } from '../services';
 import {
   CreateRoomReqDto,
@@ -38,7 +38,7 @@ export class RoomsController {
 
   @ApiOperation({ description: 'Get room by ID' })
   @WrapOkResponse({ dto: RoomResDto })
-  @Public()
+  @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.OK)
   @Get(':id')
   public async getById(@Param('id', ParseObjectIdPipe) id: string) {
@@ -49,7 +49,7 @@ export class RoomsController {
 
   @ApiOperation({ description: 'Query rooms by theater ID' })
   @WrapPaginatedResponse({ dto: RoomResDto })
-  @Public()
+  @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.OK)
   @Get('theaters/:theaterId')
   public async getRoomsByTheaterId(
@@ -61,7 +61,7 @@ export class RoomsController {
 
   @ApiOperation({ description: 'Query all rooms by theater ID' })
   @WrapListResponse({ dto: RoomResDto })
-  @Public()
+  @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.OK)
   @Get('theaters/:theaterId/list')
   public async getAllRoomsByTheaterId(
@@ -73,8 +73,7 @@ export class RoomsController {
 
   @ApiOperation({ description: 'Create room' })
   @WrapCreatedResponse({ dto: RoomResDto, message: 'Created successfully' })
-  @Roles('ADMIN')
-  @Public()
+  @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.CREATED)
   @Post('/theaters/:theaterId')
   public async createRoom(
@@ -86,8 +85,7 @@ export class RoomsController {
 
   @ApiOperation({ description: 'Update room by Id' })
   @WrapOkResponse({ dto: RoomResDto })
-  @Roles('ADMIN')
-  @Public()
+  @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.OK)
   @Patch(':id')
   public async updateRoom(
@@ -99,8 +97,7 @@ export class RoomsController {
 
   @ApiOperation({ description: 'Hard delete room by ID' })
   @WrapNoContentResponse({ message: 'Deleted successfully' })
-  @Roles('ADMIN')
-  @Public()
+  @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
   public async deleteRoomById(@Param('id', ParseObjectIdPipe) id: string) {
