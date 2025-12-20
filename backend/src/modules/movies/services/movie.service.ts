@@ -7,6 +7,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+import { DateUtil } from 'src/common/utils';
 import { pickSortableFields } from 'src/modules/base/helpers';
 import { MovieRepository } from 'src/modules/movies/repositories';
 import { MovieDocument } from 'src/modules/movies/schemas';
@@ -72,12 +73,7 @@ export class MovieService {
       limit,
       sort: safeSort,
     });
-    result.items.forEach((i) => {
-      console.log(`${i.releaseDate} -> ${i.endDate}`);
-    });
-    console.log('-------------');
-    console.log(filter);
-    console.log('-------------');
+
     return {
       items: result.items,
       total: result.total,
@@ -86,16 +82,27 @@ export class MovieService {
     };
   }
 
-  public async findMoviesPaginated(options: InputTypes.PaginatedRangeQuery) {
-    const { start, end, ...rest } = options;
-    if (start && end && start > end)
+  public async findMoviesPaginated(
+    options: InputTypes.PaginatedDateRangeQuery,
+  ) {
+    const { startDate: rawStart, endDate: rawEnd, ...rest } = options;
+
+    let startDate: Date | undefined;
+    if (rawStart) startDate = DateUtil.startOfDay(rawStart);
+
+    let endDate: Date | undefined;
+    if (rawEnd) endDate = DateUtil.endOfDay(rawEnd);
+
+    if (startDate && endDate && startDate > endDate) {
       throw new ConflictException(
         'Start date must be before or equal to end date',
       );
+    }
 
     const releaseWindow: InputTypes.ReleaseWindow = {};
-    if (end) releaseWindow.releaseDate = { $lte: end };
-    if (start) releaseWindow.endDate = { $gte: start };
+    if (endDate) releaseWindow.releaseDate = { $lte: endDate };
+    if (startDate) releaseWindow.endDate = { $gte: startDate };
+
     return this.findMoviesByQuery({
       ...rest,
       ...releaseWindow,
@@ -103,19 +110,20 @@ export class MovieService {
   }
 
   public async findShowingMoviesPaginated(options: InputTypes.PaginatedQuery) {
-    const now = new Date();
+    const now = DateUtil.now();
+    const today = DateUtil.startOfDay(now);
 
     return this.findMoviesByQuery({
       ...options,
-      releaseDate: { $lte: now },
-      endDate: { $gte: now },
+      releaseDate: { $lte: today },
+      endDate: { $gte: today },
     });
   }
 
   public async findUpcomingMoviesPaginated(options: InputTypes.PaginatedQuery) {
-    const tomorrow = new Date();
+    const now = DateUtil.now();
+    const tomorrow = DateUtil.startOfDay(now);
     tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 0);
 
     return this.findMoviesByQuery({
       ...options,
@@ -131,22 +139,20 @@ export class MovieService {
         'Start date must be before or equal to end date',
       );
 
-    const releaseDate = new Date(rawRelease);
-    releaseDate.setHours(0, 0, 0, 0);
+    const releaseDate = DateUtil.startOfDay(rawRelease);
+    const endDate = rawEnd ? DateUtil.endOfDay(rawEnd) : undefined;
 
-    const endDate = rawEnd ? new Date(rawEnd) : undefined;
-    if (endDate) endDate.setHours(23, 59, 59, 999);
+    const { insertedItem: createdMovie } =
+      await this.movieRepo.command.createOne({
+        data: {
+          ...rest,
+          releaseDate,
+          endDate,
+        },
+      });
 
-    const result = await this.movieRepo.command.createOne({
-      data: {
-        ...rest,
-        releaseDate,
-        endDate,
-      },
-    });
-
-    if (!result.insertedItem) throw new BadRequestException('Creation failed');
-    return result.insertedItem;
+    if (!createdMovie) throw new BadRequestException('Creation failed');
+    return createdMovie;
   }
 
   public async updateMovieById(id: string, update: InputTypes.Update) {
@@ -154,29 +160,30 @@ export class MovieService {
     if (!existed) throw new NotFoundException('Movie not found');
 
     const { releaseDate: rawRelease, endDate: rawEnd, ...rest } = update;
-    const nextRelease = rawRelease ? new Date(rawRelease) : existed.releaseDate;
-    const nextEnd = rawEnd ? new Date(rawEnd) : existed.endDate;
 
-    if (nextRelease) nextRelease.setHours(0, 0, 0, 0);
-    if (nextEnd) nextEnd.setHours(23, 59, 59, 999);
+    const nextRelease = rawRelease
+      ? DateUtil.startOfDay(rawRelease)
+      : existed.releaseDate;
+    const nextEnd = rawEnd ? DateUtil.endOfDay(rawEnd) : existed.endDate;
 
     if (nextEnd && nextRelease > nextEnd)
       throw new ConflictException(
         'Start date must be before or equal to end date',
       );
 
-    const result = await this.movieRepo.command.updateOneById({
-      id,
-      update: {
-        ...rest,
-        ...(rawRelease && { releaseDate: nextRelease }),
-        ...(rawEnd && { endDate: nextEnd }),
-      },
-    });
+    const { modifiedItem: updatedMovie } =
+      await this.movieRepo.command.updateOneById({
+        id,
+        update: {
+          ...rest,
+          ...(rawRelease && { releaseDate: nextRelease }),
+          ...(rawEnd && { endDate: nextEnd }),
+        },
+      });
 
-    if (!result.matchedCount)
-      throw new BadRequestException('Update failed unexpectedly');
-    return result.modifiedItem;
+    if (!updatedMovie)
+      throw new InternalServerErrorException('Update failed unexpectedly');
+    return updatedMovie;
   }
 
   public async deleteMovieById(id: string) {

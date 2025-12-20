@@ -8,7 +8,6 @@ import {
 import { FlattenDocument, LeanDocument } from '../query';
 import { mapObjectIdsToStrings } from '../../mappers';
 import {
-  CreateResult,
   CreateOneResult,
   CreateManyResult,
   UpdateOneResult,
@@ -43,34 +42,9 @@ export abstract class CommandRepository<
     });
 
     return {
-      insertedCount: 1,
       insertedItem: flatDoc,
     };
   }
-
-  /**
-   * @overload
-   * Create multiple documents, returns full inserted items
-   * @param options.data Array of document data
-   * @param options.session Optional Mongo session
-   */
-  public async createMany(options: {
-    data: Partial<T>[];
-    session?: ClientSession;
-  }): Promise<CreateManyResult<FlattenDocument<T>>>;
-
-  /**
-   * @overload
-   * Create multiple documents, returns only insertedCount
-   * @param options.data Array of document data
-   * @param options.session Optional Mongo session
-   * @param options.raw If true, returns only insertedCount
-   */
-  public async createMany(options: {
-    data: Partial<T>[];
-    session?: ClientSession;
-    raw: true;
-  }): Promise<CreateResult>;
 
   /**
    * Create multiple documents
@@ -81,19 +55,9 @@ export abstract class CommandRepository<
   public async createMany(options: {
     data: Partial<T>[];
     session?: ClientSession;
-    raw?: boolean;
-  }): Promise<CreateManyResult<FlattenDocument<T>> | CreateResult> {
-    const { data, session, raw } = options;
+  }): Promise<CreateManyResult<FlattenDocument<T>>> {
+    const { data, session } = options;
     if (!data.length) throw new Error('Data must not be empty');
-
-    if (raw) {
-      const { insertedCount } = await this.model.insertMany(data, {
-        ordered: true,
-        session: session,
-        rawResult: true,
-      });
-      return { insertedCount };
-    }
 
     const docs = await this.model.insertMany(data, {
       ordered: true,
@@ -140,56 +104,6 @@ export abstract class CommandRepository<
   }
 
   /**
-   * Find one document and update it, optionally upserting
-   * @param options.filter Filter query
-   * @param options.update Partial update data
-   * @param options.upsert Whether to create the document if not exists
-   * @param options.session Optional Mongo session
-   * @returns Updated document and created flag if upserted
-   */
-  private async findOneAndUpdate(options: {
-    filter: FilterQuery<TDoc>;
-    update: Partial<T>;
-    upsert?: boolean;
-    session?: ClientSession;
-  }): Promise<{
-    doc: FlattenDocument<T> | null;
-    created?: boolean;
-  }> {
-    const { filter, update: rawUpdate, upsert, session } = options;
-
-    const update = this.buildUpdateQueryFromUpdate(rawUpdate);
-    if (!update) {
-      return { doc: null };
-    }
-
-    const result = await this.model
-      .findOneAndUpdate(filter, update, {
-        new: true,
-        runValidators: true,
-        upsert: upsert ?? false,
-        session,
-        rawResult: !!upsert,
-      })
-      .lean<LeanDocument<T> | any>()
-      .exec();
-
-    if (!result) return { doc: null };
-
-    if (upsert) {
-      const created = !result.lastErrorObject?.updatedExisting;
-      return {
-        created,
-        doc: mapObjectIdsToStrings(result.value),
-      };
-    }
-
-    return {
-      doc: mapObjectIdsToStrings(result),
-    };
-  }
-
-  /**
    * Update a single document by filter
    * @param options.filter Filter query
    * @param options.update Update query
@@ -200,23 +114,21 @@ export abstract class CommandRepository<
     update: Partial<T>;
     session?: ClientSession;
   }): Promise<UpdateOneResult<FlattenDocument<T>>> {
-    const { filter, update, session } = options;
-    const { doc } = await this.findOneAndUpdate({
-      filter,
-      update,
-      session,
-    });
+    const { filter, update: rawUpdate, session } = options;
+    const update = this.buildUpdateQueryFromUpdate(rawUpdate);
+    if (!update) throw new Error('Missing data for update');
 
-    if (!doc) {
-      return {
-        matchedCount: 0,
-        modifiedItem: null,
-      };
-    }
+    const doc = await this.model
+      .findOneAndUpdate(filter, update, {
+        new: true,
+        runValidators: true,
+        session,
+      })
+      .lean<LeanDocument<T>>()
+      .exec();
 
     return {
-      matchedCount: 1,
-      modifiedItem: doc,
+      modifiedItem: mapObjectIdsToStrings(doc),
     };
   }
 
@@ -239,34 +151,6 @@ export abstract class CommandRepository<
       update,
       session,
     });
-  }
-
-  /**
-   * Upsert a single document (update if exists, otherwise create)
-   * @param options.filter Filter query to find document
-   * @param options.update Update data
-   * @param options.session Optional Mongo session
-   * @returns Upserted document and whether it was created
-   */
-  public async upsertOne(options: {
-    filter: FilterQuery<TDoc>;
-    update: Partial<T>;
-    session?: ClientSession;
-  }): Promise<UpsertOneResult<FlattenDocument<T>>> {
-    const { filter, update, session } = options;
-
-    const result = await this.findOneAndUpdate({
-      filter,
-      update,
-      upsert: true,
-      session,
-    });
-    if (!result.doc) throw new Error('Upsert failed unexpectedly');
-
-    return {
-      created: result.created!,
-      upsertedItem: result.doc,
-    };
   }
 
   /**
@@ -304,6 +188,42 @@ export abstract class CommandRepository<
   }
 
   /**
+   * Upsert a single document (update if exists, otherwise create)
+   * @param options.filter Filter query to find document
+   * @param options.update Update data
+   * @param options.session Optional Mongo session
+   * @returns Upserted document and whether it was created
+   */
+  public async upsertOne(options: {
+    filter: FilterQuery<TDoc>;
+    update: Partial<T>;
+    session?: ClientSession;
+  }): Promise<UpsertOneResult<FlattenDocument<T>>> {
+    const { filter, update: rawUpdate, session } = options;
+
+    const update = this.buildUpdateQueryFromUpdate(rawUpdate);
+    if (!update) throw new Error('Missing data for upsert');
+
+    const doc = await this.model
+      .findOneAndUpdate(filter, update ?? {}, {
+        new: true,
+        upsert: true,
+        runValidators: true,
+        session,
+        strict: true,
+        setDefaultsOnInsert: true,
+      })
+      // .lean<LeanDocument<T>>()
+      .exec();
+
+    if (!doc) throw new Error('Upsert failed unexpectedly');
+
+    return {
+      upsertedItem: mapObjectIdsToStrings(doc),
+    };
+  }
+
+  /**
    * Delete a single document by filter
    * @param options.filter Filter query
    * @param options.session Optional Mongo session
@@ -317,7 +237,7 @@ export abstract class CommandRepository<
       .deleteOne(filter, { session })
       .exec();
 
-    return { deletedCount };
+    return { deletedCount: deletedCount > 0 ? 1 : 0 };
   }
 
   /**

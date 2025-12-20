@@ -30,7 +30,7 @@ export namespace MovieInputTypes {
   export type PaginatedQuery = PaginatedQueryInput & Filter;
 
   /** Input for paginated range movie queries */
-  export type PaginatedRangeQuery = PaginatedQuery & DateRangeInput;
+  export type PaginatedDateRangeQuery = PaginatedQuery & DateRangeInput;
 
   /** Input for creating a movie */
   export type Create = {

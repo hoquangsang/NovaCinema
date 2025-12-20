@@ -118,17 +118,19 @@ export class RoomService {
     if (exists) throw new ConflictException(`Room ${roomName} already exists`);
 
     //
-    const result = await this.roomRepo.command.createOne({
-      data: {
-        theaterId: new Types.ObjectId(theaterId),
-        roomName: roomName,
-        roomType: roomType,
-        seatMap: this.buildSeatMap(seatMapRaw),
+    const { insertedItem: createdRoom } = await this.roomRepo.command.createOne(
+      {
+        data: {
+          theaterId: new Types.ObjectId(theaterId),
+          roomName: roomName,
+          roomType: roomType,
+          seatMap: this.buildSeatMap(seatMapRaw),
+        },
       },
-    });
+    );
 
-    if (!result.insertedCount) throw new BadRequestException('Creation failed');
-    return result.insertedItem;
+    if (!createdRoom) throw new BadRequestException('Creation failed');
+    return createdRoom;
   }
 
   private buildSeatMap(seatMapRaw: (SeatType | null)[][]): SeatMap {
@@ -206,15 +208,15 @@ export class RoomService {
   public async updateRoomById(id: string, update: InputTypes.Update) {
     const { roomName, roomType, seatMap: seatMapRaw, isActive } = update;
 
-    const existed = await this.roomRepo.query.findOneById({ id });
-    if (!existed) throw new NotFoundException('Room not found');
+    const existedRoom = await this.roomRepo.query.findOneById({ id });
+    if (!existedRoom) throw new NotFoundException('Room not found');
 
-    if (roomName && roomName !== existed.roomName) {
+    if (roomName && roomName !== existedRoom.roomName) {
       const duplicated = await this.roomRepo.query.findOne({
         filter: {
-          theaterId: new Types.ObjectId(existed.theaterId),
+          theaterId: new Types.ObjectId(existedRoom.theaterId),
           roomName: roomName,
-          _id: { $ne: existed._id },
+          _id: { $ne: existedRoom._id },
         },
       });
       if (duplicated)
@@ -222,19 +224,20 @@ export class RoomService {
     }
 
     const seatMap = seatMapRaw ? this.buildSeatMap(seatMapRaw) : undefined;
-    const result = await this.roomRepo.command.updateOneById({
-      id,
-      update: {
-        roomName,
-        roomType,
-        seatMap,
-        isActive,
-      },
-    });
+    const { modifiedItem: updatedRoom } =
+      await this.roomRepo.command.updateOneById({
+        id,
+        update: {
+          roomName,
+          roomType,
+          seatMap,
+          isActive,
+        },
+      });
 
-    if (!result.matchedCount)
+    if (!updatedRoom)
       throw new InternalServerErrorException('Update failed unexpectedly');
-    return result.modifiedItem;
+    return updatedRoom;
   }
 
   /** */

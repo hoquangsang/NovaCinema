@@ -17,6 +17,12 @@ export type PaginatedQueryInput = QueryInput & PaginationInput;
 
 /** */
 export type DateRangeInput = {
-  start?: Date;
-  end?: Date;
+  startDate?: Date;
+  endDate?: Date;
+};
+
+/** */
+export type DatetimeRangeInput = {
+  startDatetime?: Date;
+  endDatetime?: Date;
 };

@@ -104,10 +104,11 @@ export class TheaterService {
     address?: string;
     hotline?: string;
   }) {
-    const result = await this.theaterRepo.command.createOne({ data });
+    const { insertedItem: createdTheater } =
+      await this.theaterRepo.command.createOne({ data });
 
-    if (!result.insertedCount) throw new BadRequestException('Creation failed');
-    return result.insertedItem;
+    if (!createdTheater) throw new BadRequestException('Creation failed');
+    return createdTheater;
   }
 
   /** */
@@ -119,13 +120,14 @@ export class TheaterService {
       hotline?: string;
     },
   ) {
-    const result = await this.theaterRepo.command.updateOneById({
-      id,
-      update,
-    });
+    const { modifiedItem: updatedTheater } =
+      await this.theaterRepo.command.updateOneById({
+        id,
+        update,
+      });
 
-    if (!result.matchedCount) throw new NotFoundException('Theater not found');
-    return result.modifiedItem;
+    if (!updatedTheater) throw new NotFoundException('Theater not found');
+    return updatedTheater;
   }
 
   /** */
