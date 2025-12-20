@@ -197,7 +197,7 @@ export class UserService {
     const { modifiedItem: updatedUser } =
       await this.userRepo.command.updateOneById({
         id,
-        update: { active },
+        update: { isActive: active },
       });
 
     if (!updatedUser) throw new NotFoundException('User not found');

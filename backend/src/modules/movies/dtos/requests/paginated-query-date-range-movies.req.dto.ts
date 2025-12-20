@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDate, IsISO8601, IsOptional } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsDate, IsOptional } from 'class-validator';
+import { ToDateOnlyEnd, ToDateOnlyStart } from 'src/common/decorators';
 import { PaginatedQueryMoviesReqDto } from './paginated-query-movies.req.dto';
 
 export class PaginatedQueryDateRangeMoviesReqDto extends PaginatedQueryMoviesReqDto {
@@ -9,8 +9,8 @@ export class PaginatedQueryDateRangeMoviesReqDto extends PaginatedQueryMoviesReq
     example: '2025-12-12',
   })
   @IsOptional()
-  @IsDate()
-  @Type(() => Date)
+  @ToDateOnlyStart()
+  @IsDate({ message: 'startDate must be yyyy-MM-dd' })
   startDate?: Date;
 
   @ApiPropertyOptional({
@@ -19,7 +19,7 @@ export class PaginatedQueryDateRangeMoviesReqDto extends PaginatedQueryMoviesReq
     example: '2025-12-20',
   })
   @IsOptional()
-  @IsDate()
-  @Type(() => Date)
+  @IsDate({ message: 'endDate must be yyyy-MM-dd' })
+  @ToDateOnlyEnd()
   endDate?: Date;
 }

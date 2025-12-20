@@ -9,7 +9,9 @@ export class DailyTimeRangeTicketPricingModifierReqDto {
     example: '18:00',
     pattern: TIME_HH_MM_REGEX.source,
   })
-  @Matches(TIME_HH_MM_REGEX)
+  @Matches(TIME_HH_MM_REGEX, {
+    message: 'startTime must be in HH:mm format (00:00 - 23:59)',
+  })
   @IsString()
   startTime!: TimeHHmm;
 
@@ -19,7 +21,9 @@ export class DailyTimeRangeTicketPricingModifierReqDto {
     example: '22:00',
     pattern: TIME_HH_MM_REGEX.source,
   })
-  @Matches(TIME_HH_MM_REGEX)
+  @Matches(TIME_HH_MM_REGEX, {
+    message: 'endTime must be in HH:mm format (00:00 - 23:59)',
+  })
   @IsString()
   endTime!: TimeHHmm;
 

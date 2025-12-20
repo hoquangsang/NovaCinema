@@ -1,9 +1,15 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsString } from 'class-validator';
-import { Transform } from 'class-transformer';
+import {
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsOptional,
+  IsString,
+} from 'class-validator';
+import { ToArray, ToBoolean } from 'src/common/decorators';
 import { PaginatedQueryReqDto } from 'src/modules/base/dtos/requests';
-import { ROOM_TYPE_VALUES, ROOM_TYPES } from 'src/modules/theaters/constants';
-import { RoomType } from 'src/modules/theaters/types';
+import { ROOM_TYPE_VALUES, ROOM_TYPES } from '../../constants';
+import { RoomType } from '../../types';
 
 export class PaginatedQueryRoomsReqDto extends PaginatedQueryReqDto {
   @ApiPropertyOptional({ type: String, description: 'Filter by room name' })
@@ -19,9 +25,8 @@ export class PaginatedQueryRoomsReqDto extends PaginatedQueryReqDto {
   })
   @IsOptional()
   @IsEnum(ROOM_TYPE_VALUES, { each: true })
-  @Transform(({ value }) =>
-    Array.isArray(value) ? value : value ? [value] : undefined,
-  )
+  @IsArray()
+  @ToArray()
   roomType?: RoomType[];
 
   @ApiPropertyOptional({
@@ -29,5 +34,7 @@ export class PaginatedQueryRoomsReqDto extends PaginatedQueryReqDto {
     description: 'Filter by active status',
   })
   @IsOptional()
+  @IsBoolean({ message: 'isActive must be true or false' })
+  @ToBoolean()
   isActive?: boolean;
 }

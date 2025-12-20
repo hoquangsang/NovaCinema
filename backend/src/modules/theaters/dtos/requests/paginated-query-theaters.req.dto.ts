@@ -1,5 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { ToBoolean } from 'src/common/decorators';
 import { PaginatedQueryReqDto } from 'src/modules/base/dtos/requests';
 
 export class PaginatedQueryTheatersReqDto extends PaginatedQueryReqDto {
@@ -29,5 +30,7 @@ export class PaginatedQueryTheatersReqDto extends PaginatedQueryReqDto {
     description: 'Filter by active status',
   })
   @IsOptional()
+  @IsBoolean({ message: 'isActive must be true or false' })
+  @ToBoolean()
   isActive?: boolean;
 }

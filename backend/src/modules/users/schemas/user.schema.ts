@@ -36,7 +36,7 @@ export class User {
   roles!: UserRoleType[];
 
   @Prop({ default: true })
-  active?: boolean;
+  isActive?: boolean;
 
   @Prop()
   lastLoginAt?: Date;

@@ -74,7 +74,7 @@ export class UserResDto {
     example: true,
   })
   @Expose()
-  active?: boolean;
+  isActive?: boolean;
 
   @ApiPropertyOptional({
     type: String,

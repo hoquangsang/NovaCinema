@@ -12,8 +12,8 @@ import {
   ROOM_TYPE_VALUES,
   ROOM_TYPES,
   SEAT_MAP_EXAMPLE,
-} from 'src/modules/theaters/constants';
-import { RoomType, SeatType } from 'src/modules/theaters/types';
+} from '../../constants';
+import { RoomType, SeatType } from '../../types';
 
 export class CreateRoomReqDto {
   @ApiProperty({ type: String, description: 'Room name', example: 'Room 1' })

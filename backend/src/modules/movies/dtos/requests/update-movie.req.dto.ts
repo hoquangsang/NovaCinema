@@ -6,7 +6,7 @@ import {
   IsArray,
   IsDate,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { ToDateOnlyStart } from 'src/common/decorators';
 
 export class UpdateMovieReqDto {
   @ApiPropertyOptional({
@@ -67,21 +67,21 @@ export class UpdateMovieReqDto {
   @ApiPropertyOptional({
     type: String,
     description: 'Release date',
-    example: '2010-07-16T00:00:00Z',
+    example: '2025-12-12',
   })
   @IsOptional()
-  @IsDate()
-  @Type(() => Date)
+  @IsDate({ message: 'releaseDate must be yyyy-MM-dd' })
+  @ToDateOnlyStart()
   releaseDate?: Date;
 
   @ApiPropertyOptional({
     type: String,
     description: 'End date for showing',
-    example: '2010-10-16T00:00:00Z',
+    example: '2025-12-31',
   })
   @IsOptional()
-  @IsDate()
-  @Type(() => Date)
+  @IsOptional()
+  @IsDate({ message: 'endDate must be yyyy-MM-dd' })
   endDate?: Date;
 
   @ApiPropertyOptional({

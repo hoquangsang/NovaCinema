@@ -1,6 +1,12 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsString } from 'class-validator';
-import { Transform } from 'class-transformer';
+import {
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsOptional,
+  IsString,
+} from 'class-validator';
+import { ToArray, ToBoolean } from 'src/common/decorators';
 import { QueryReqDto } from 'src/modules/base/dtos/requests';
 import { ROOM_TYPE_VALUES, ROOM_TYPES } from 'src/modules/theaters/constants';
 import { RoomType } from 'src/modules/theaters/types';
@@ -18,10 +24,9 @@ export class QueryRoomsReqDto extends QueryReqDto {
     example: ROOM_TYPES._2D,
   })
   @IsOptional()
+  @IsArray()
   @IsEnum(ROOM_TYPE_VALUES, { each: true })
-  @Transform(({ value }) =>
-    Array.isArray(value) ? value : value ? [value] : undefined,
-  )
+  @ToArray()
   roomType?: RoomType[];
 
   @ApiPropertyOptional({
@@ -29,5 +34,7 @@ export class QueryRoomsReqDto extends QueryReqDto {
     description: 'Filter by active status',
   })
   @IsOptional()
+  @IsBoolean({ message: 'isActive must be true or false' })
+  @ToBoolean()
   isActive?: boolean;
 }

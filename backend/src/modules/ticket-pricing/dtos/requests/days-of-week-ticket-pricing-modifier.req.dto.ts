@@ -14,7 +14,10 @@ export class DaysOfWeekTicketPricingModifierReqDto {
     example: [DAYS_OF_WEEK.SAT, DAYS_OF_WEEK.SUN],
   })
   @IsArray()
-  @IsEnum(DAYS_OF_WEEK_VALUES, { each: true })
+  @IsEnum(DAYS_OF_WEEK_VALUES, {
+    each: true,
+    message: `Each value must be one of: ${DAYS_OF_WEEK_VALUES.join(', ')}`,
+  })
   applicableDays!: DaysOfWeek[];
 
   @ApiProperty({

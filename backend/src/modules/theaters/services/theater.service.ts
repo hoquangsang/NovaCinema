@@ -60,6 +60,11 @@ export class TheaterService {
   /** */
   public async findTheatersPaginated(options: InputTypes.PaginatedQuery) {
     const { search, page, limit, sort: rawSort, ...rest } = options;
+    console.log(
+      'rest.isActive =',
+      rest.isActive,
+      typeof rest.isActive === 'boolean',
+    );
     const filter: FilterQuery<TheaterDocument> = {};
 
     // search fields

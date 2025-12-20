@@ -26,8 +26,9 @@ export const DateUtil = {
   },
 
   minutesToHHmm(totalMinutes: number): TimeHHmm {
-    const h = Math.floor(totalMinutes / 60) % 24;
-    const m = totalMinutes % 60;
+    const normalized = DateUtil.normalizeMinutesOfDay(totalMinutes);
+    const h = Math.floor(normalized / 60);
+    const m = normalized % 60;
     return `${h.toString().padStart(2, '0')}:${m
       .toString()
       .padStart(2, '0')}` as TimeHHmm;
@@ -36,6 +37,18 @@ export const DateUtil = {
   roundHHmm(time: TimeHHmm, step = 5): TimeHHmm {
     const total = DateUtil.hhmmToMinutes(time);
     const rounded = Math.round(total / step) * step;
+    return DateUtil.minutesToHHmm(rounded);
+  },
+
+  roundDownHHmm(time: TimeHHmm, step = 5): TimeHHmm {
+    const total = DateUtil.hhmmToMinutes(time);
+    const rounded = Math.floor(total / step) * step;
+    return DateUtil.minutesToHHmm(rounded);
+  },
+
+  roundUpHHmm(time: TimeHHmm, step = 5): TimeHHmm {
+    const total = DateUtil.hhmmToMinutes(time);
+    const rounded = Math.ceil(total / step) * step;
     return DateUtil.minutesToHHmm(rounded);
   },
 
@@ -63,6 +76,27 @@ export const DateUtil = {
     const d = new Date(date);
     d.setHours(23, 59, 59, 999);
     return d;
+  },
+
+  roundUpDate(date: Date, stepMinutes = 5): Date {
+    const totalMinutes = date.getHours() * 60 + date.getMinutes();
+    const roundedMinutes = Math.ceil(totalMinutes / stepMinutes) * stepMinutes;
+    const d = new Date(date);
+    d.setHours(Math.floor(roundedMinutes / 60), roundedMinutes % 60, 0, 0);
+    return d;
+  },
+
+  roundDownDate(date: Date, stepMinutes = 5): Date {
+    const totalMinutes = date.getHours() * 60 + date.getMinutes();
+    const roundedMinutes = Math.floor(totalMinutes / stepMinutes) * stepMinutes;
+    const d = new Date(date);
+    d.setHours(Math.floor(roundedMinutes / 60), roundedMinutes % 60, 0, 0);
+    return d;
+  },
+
+  normalizeMinutesOfDay(minutes: number): number {
+    const m = minutes % 1440;
+    return m < 0 ? m + 1440 : m;
   },
 
   minutesOfDay(date: Date): number {

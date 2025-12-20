@@ -1,5 +1,4 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
 import {
   IsArray,
   IsDate,
@@ -8,6 +7,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
+import { ToDateOnlyEnd, ToDateOnlyStart } from 'src/common/decorators';
 
 export class CreateMovieReqDto {
   @ApiProperty({
@@ -69,8 +69,8 @@ export class CreateMovieReqDto {
     example: '2025-01-01',
   })
   @IsOptional()
-  @Type(() => Date)
-  @IsDate()
+  @IsDate({ message: 'releaseDate must be yyyy-MM-dd' })
+  @ToDateOnlyStart()
   releaseDate!: Date;
 
   @ApiPropertyOptional({
@@ -79,8 +79,8 @@ export class CreateMovieReqDto {
     example: '2025-03-01',
   })
   @IsOptional()
-  @Type(() => Date)
-  @IsDate()
+  @IsDate({ message: 'endDate must be yyyy-MM-dd' })
+  @ToDateOnlyEnd()
   endDate?: Date;
 
   @ApiPropertyOptional({
@@ -89,7 +89,7 @@ export class CreateMovieReqDto {
     example: 'P',
   })
   @IsOptional()
-  @IsNumber()
+  @IsString()
   ratingAge?: string;
 
   @ApiPropertyOptional({ type: String, description: 'Country', example: 'USA' })

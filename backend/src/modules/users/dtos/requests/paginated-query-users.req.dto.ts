@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
-import { Transform } from 'class-transformer';
+import { ToArray, ToBoolean } from 'src/common/decorators';
 import { PaginatedQueryReqDto } from 'src/modules/base/dtos/requests';
 import { USER_ROLE_VALUES, USER_ROLES } from '../../constants';
 import { UserRoleType } from '../../types';
@@ -34,9 +34,7 @@ export class PaginatedQueryUsersReqDto extends PaginatedQueryReqDto {
   })
   @IsOptional()
   @IsEnum(USER_ROLE_VALUES, { each: true })
-  @Transform(({ value }) =>
-    Array.isArray(value) ? value : value ? [value] : undefined,
-  )
+  @ToArray()
   roles?: UserRoleType[];
 
   @ApiPropertyOptional({
@@ -44,6 +42,7 @@ export class PaginatedQueryUsersReqDto extends PaginatedQueryReqDto {
     description: 'Filter by active status',
   })
   @IsOptional()
-  @IsBoolean()
-  active?: boolean;
+  @IsBoolean({ message: 'isActive must be true or false' })
+  @ToBoolean()
+  isActive?: boolean;
 }

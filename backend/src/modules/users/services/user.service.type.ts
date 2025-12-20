@@ -11,7 +11,7 @@ export namespace UserInputTypes {
     username?: string;
     fullName?: string;
     roles?: UserRoleType[];
-    active?: boolean;
+    isActive?: boolean;
   };
 
   export type Query = QueryInput & Filter;

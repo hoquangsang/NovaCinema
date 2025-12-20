@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString, IsOptional } from 'class-validator';
-import { Transform } from 'class-transformer';
+import { ToArray } from 'src/common/decorators';
 import { PaginatedQueryReqDto } from 'src/modules/base/dtos/requests';
 
 export class PaginatedQueryMoviesReqDto extends PaginatedQueryReqDto {
@@ -25,16 +25,12 @@ export class PaginatedQueryMoviesReqDto extends PaginatedQueryReqDto {
     example: ['Action', 'Sci-Fi'],
   })
   @IsOptional()
-  @Transform(({ value }) =>
-    Array.isArray(value) ? value : value ? [value] : undefined,
-  )
+  @ToArray()
   genres?: string[];
 
   @ApiPropertyOptional({ type: [String], description: 'Filter by actors' })
   @IsOptional()
-  @Transform(({ value }) =>
-    Array.isArray(value) ? value : value ? [value] : undefined,
-  )
+  @ToArray()
   actors?: string[];
 
   @ApiPropertyOptional({

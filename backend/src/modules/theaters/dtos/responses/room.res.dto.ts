@@ -57,4 +57,20 @@ export class RoomResDto {
   @ApiPropertyOptional({ type: Number, description: 'Capacity', example: 84 })
   @Expose()
   capacity?: number;
+
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Creation timestamp',
+    example: '2023-07-01T12:00:00Z',
+  })
+  @Expose()
+  createdAt?: Date;
+
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Last update timestamp',
+    example: '2023-07-15T12:00:00Z',
+  })
+  @Expose()
+  updatedAt?: Date;
 }

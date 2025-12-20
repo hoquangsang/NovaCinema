@@ -1,3 +1,4 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsDate,
   IsEmail,
@@ -6,8 +7,7 @@ import {
   IsString,
   MinLength,
 } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { ToDateOnlyStart } from 'src/common/decorators';
 
 export class RegisterReqDto {
   @ApiProperty({
@@ -63,7 +63,7 @@ export class RegisterReqDto {
     example: '1990-01-01',
   })
   @IsOptional()
-  @IsDate()
-  @Type(() => Date)
+  @IsDate({ message: 'dateOfBirth must be yyyy-MM-dd' })
+  @ToDateOnlyStart()
   dateOfBirth?: Date;
 }
