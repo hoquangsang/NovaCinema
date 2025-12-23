@@ -22,7 +22,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
         body?.message || exception.message || 'Error occurred',
         status,
         req.url,
-        body?.error || null,
+        body?.errors || body?.error || null,
       );
 
       return res.status(status).json(err);

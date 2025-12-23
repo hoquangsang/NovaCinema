@@ -1,122 +1,78 @@
-// date.util.ts
-import {
-  DAYS_OF_WEEK_ORDER,
-  DAYS_OF_WEEK_VALUES,
-  DaysOfWeek,
-  TIME_HH_MM_REGEX,
-  TimeHHmm,
-} from '../types';
+// import { TimeHHmm } from '../types';
+// import { TimeUtil } from './datetime.util';
 
-export const DateUtil = {
-  /* ===================== */
-  /* HH:mm helpers */
-  /* ===================== */
-  isValidHHmm(value: string): value is TimeHHmm {
-    return TIME_HH_MM_REGEX.test(value);
-  },
+// export const DateUtil = {
+//   now(): Date {
+//     return new Date();
+//   },
 
-  parseHHmm(time: TimeHHmm): { hours: number; minutes: number } {
-    const [h, m] = time.split(':').map(Number);
-    return { hours: h, minutes: m };
-  },
+//   startOfDay(date: Date): Date {
+//     const d = new Date(date);
+//     d.setHours(0, 0, 0, 0);
+//     return d;
+//   },
 
-  hhmmToMinutes(time: TimeHHmm): number {
-    const { hours, minutes } = DateUtil.parseHHmm(time);
-    return hours * 60 + minutes;
-  },
+//   endOfDay(date: Date): Date {
+//     const d = new Date(date);
+//     d.setHours(23, 59, 59, 999);
+//     return d;
+//   },
 
-  minutesToHHmm(totalMinutes: number): TimeHHmm {
-    const normalized = DateUtil.normalizeMinutesOfDay(totalMinutes);
-    const h = Math.floor(normalized / 60);
-    const m = normalized % 60;
-    return `${h.toString().padStart(2, '0')}:${m
-      .toString()
-      .padStart(2, '0')}` as TimeHHmm;
-  },
+//   minutesOfDay(date: Date): number {
+//     return date.getHours() * 60 + date.getMinutes();
+//   },
 
-  roundHHmm(time: TimeHHmm, step = 5): TimeHHmm {
-    const total = DateUtil.hhmmToMinutes(time);
-    const rounded = Math.round(total / step) * step;
-    return DateUtil.minutesToHHmm(rounded);
-  },
+//   fromMinutesOfDay(baseDate: Date, minutes: number): Date {
+//     const d = new Date(baseDate);
+//     d.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0);
+//     return d;
+//   },
 
-  roundDownHHmm(time: TimeHHmm, step = 5): TimeHHmm {
-    const total = DateUtil.hhmmToMinutes(time);
-    const rounded = Math.floor(total / step) * step;
-    return DateUtil.minutesToHHmm(rounded);
-  },
+//   roundDown(date: Date, stepMinutes = 5): Date {
+//     const total = DateUtil.minutesOfDay(date);
+//     const rounded = Math.floor(total / stepMinutes) * stepMinutes;
+//     return DateUtil.fromMinutesOfDay(date, rounded);
+//   },
 
-  roundUpHHmm(time: TimeHHmm, step = 5): TimeHHmm {
-    const total = DateUtil.hhmmToMinutes(time);
-    const rounded = Math.ceil(total / step) * step;
-    return DateUtil.minutesToHHmm(rounded);
-  },
+//   roundUp(date: Date, stepMinutes = 5): Date {
+//     const total = DateUtil.minutesOfDay(date);
+//     const rounded = Math.ceil(total / stepMinutes) * stepMinutes;
+//     return DateUtil.fromMinutesOfDay(date, rounded);
+//   },
 
-  setTime(date: Date, time: TimeHHmm): Date {
-    const d = new Date(date);
-    const { hours, minutes } = DateUtil.parseHHmm(time);
-    d.setHours(hours, minutes, 0, 0);
-    return d;
-  },
+//   add(
+//     date: Date,
+//     options: {
+//       days?: number;
+//       hours?: number;
+//       minutes?: number;
+//       seconds?: number;
+//       milliseconds?: number;
+//     },
+//   ): Date {
+//     const {
+//       days = 0,
+//       hours = 0,
+//       minutes = 0,
+//       seconds = 0,
+//       milliseconds = 0,
+//     } = options;
 
-  /* ===================== */
-  /* Date helpers */
-  /* ===================== */
-  now(): Date {
-    return new Date();
-  },
+//     const d = new Date(date);
 
-  startOfDay(date: Date): Date {
-    const d = new Date(date);
-    d.setHours(0, 0, 0, 0);
-    return d;
-  },
+//     if (days) d.setDate(d.getDate() + days);
+//     if (hours) d.setHours(d.getHours() + hours);
+//     if (minutes) d.setMinutes(d.getMinutes() + minutes);
+//     if (seconds) d.setSeconds(d.getSeconds() + seconds);
+//     if (milliseconds) d.setMilliseconds(d.getMilliseconds() + milliseconds);
 
-  endOfDay(date: Date): Date {
-    const d = new Date(date);
-    d.setHours(23, 59, 59, 999);
-    return d;
-  },
+//     return d;
+//   },
 
-  roundUpDate(date: Date, stepMinutes = 5): Date {
-    const totalMinutes = date.getHours() * 60 + date.getMinutes();
-    const roundedMinutes = Math.ceil(totalMinutes / stepMinutes) * stepMinutes;
-    const d = new Date(date);
-    d.setHours(Math.floor(roundedMinutes / 60), roundedMinutes % 60, 0, 0);
-    return d;
-  },
-
-  roundDownDate(date: Date, stepMinutes = 5): Date {
-    const totalMinutes = date.getHours() * 60 + date.getMinutes();
-    const roundedMinutes = Math.floor(totalMinutes / stepMinutes) * stepMinutes;
-    const d = new Date(date);
-    d.setHours(Math.floor(roundedMinutes / 60), roundedMinutes % 60, 0, 0);
-    return d;
-  },
-
-  normalizeMinutesOfDay(minutes: number): number {
-    const m = minutes % 1440;
-    return m < 0 ? m + 1440 : m;
-  },
-
-  minutesOfDay(date: Date): number {
-    return date.getHours() * 60 + date.getMinutes();
-  },
-
-  fromMinutesOfDay(baseDate: Date, minutes: number): Date {
-    const d = new Date(baseDate);
-    d.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0);
-    return d;
-  },
-
-  /* ===================== */
-  /* DayOfWeek helpers */
-  /* ===================== */
-  isValidDayOfWeek(value: string): value is DaysOfWeek {
-    return DAYS_OF_WEEK_VALUES.includes(value as DaysOfWeek);
-  },
-
-  dayOfWeek(date: Date): DaysOfWeek {
-    return DAYS_OF_WEEK_ORDER[date.getDay()];
-  },
-};
+//   setTime(date: Date, time: TimeHHmm): Date {
+//     const { hours, minutes } = TimeUtil.parse(time);
+//     const d = new Date(date);
+//     d.setHours(hours, minutes, 0, 0);
+//     return d;
+//   },
+// };
