@@ -4,10 +4,10 @@ import {
   ExecutionContext,
   CallHandler,
   Logger,
-} from "@nestjs/common";
-import { Observable } from "rxjs";
-import { tap } from "rxjs/operators";
-import { LoggerUtil } from "../utils";
+} from '@nestjs/common';
+import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
+import { LoggerUtil } from '../utils';
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
@@ -26,8 +26,8 @@ export class LoggingInterceptor implements NestInterceptor {
         },
         error: (err) => {
           LoggerUtil.error(`Error: ${method} ${url} (${err.message || err})`);
-        }
-      })
+        },
+      }),
     );
   }
 }

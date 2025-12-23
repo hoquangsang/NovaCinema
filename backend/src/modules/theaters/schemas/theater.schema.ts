@@ -1,5 +1,5 @@
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { HydratedDocument, Types } from "mongoose";
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 
 export type TheaterDocument = HydratedDocument<Theater>;
 
@@ -7,7 +7,7 @@ export type TheaterDocument = HydratedDocument<Theater>;
 export class Theater {
   @Prop({ required: true })
   theaterName!: string;
-  
+
   @Prop()
   address?: string;
 

@@ -1,6 +1,17 @@
 import { applyDecorators, SetMetadata, Type } from '@nestjs/common';
-import { ApiCreatedResponse, ApiExtraModels, ApiNoContentResponse, ApiOkResponse, getSchemaPath } from '@nestjs/swagger';
-import { CreatedResponse, ListResponse, PaginatedResponse, SuccessResponse } from '../responses';
+import {
+  ApiCreatedResponse,
+  ApiExtraModels,
+  ApiNoContentResponse,
+  ApiOkResponse,
+  getSchemaPath,
+} from '@nestjs/swagger';
+import {
+  CreatedResponse,
+  ListResponse,
+  PaginatedResponse,
+  SuccessResponse,
+} from '../responses';
 import { METADATA_KEYS } from '../constants';
 
 export interface ApiResponseOptions {
@@ -12,13 +23,18 @@ export interface InternalOptions extends ApiResponseOptions {
   mode: 'ok' | 'created' | 'list' | 'paginated' | 'noContent';
 }
 
-function buildSchema(response: Type<any>, dto?: Type<any>, isArray = false, message?: string) {
+function buildSchema(
+  response: Type<any>,
+  dto?: Type<any>,
+  isArray = false,
+  message?: string,
+) {
   const baseProperties: Record<string, any> = {
     success: { type: 'boolean' },
     timestamp: { type: 'string', format: 'date-time' },
     message: { type: 'string', example: message ?? 'OK' },
   };
-  
+
   if (dto) {
     baseProperties.data = isArray
       ? { type: 'array', items: { $ref: getSchemaPath(dto) } }

@@ -1,4 +1,4 @@
-export const TheaterQueryFields = {
+export const THEATER_QUERY_FIELDS = {
   SEARCHABLE: ['theaterName', 'address'] as const,
   REGEX_MATCH: ['theaterName', 'address', 'hotline'] as const,
   ARRAY_MATCH: [] as const,

@@ -11,9 +11,8 @@ export class Movie {
   @Prop({ type: [String], required: true })
   genres!: string[];
 
-  @Prop({ required: true })
+  @Prop({ required: true, min: 1 })
   duration!: number;
-
 
   @Prop()
   description?: string;
@@ -23,7 +22,6 @@ export class Movie {
 
   @Prop()
   trailerUrl?: string;
-
 
   @Prop({ required: true })
   releaseDate!: Date;
@@ -39,7 +37,7 @@ export class Movie {
 
   @Prop()
   language?: string;
-  
+
   @Prop({ type: [String] })
   actors?: string[];
 

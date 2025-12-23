@@ -1,2 +1,6 @@
-export const USERROLE_TYPES = ['USER', 'ADMIN'] as const;
-export type UserRoleType = typeof USERROLE_TYPES[number];
+export const USER_ROLES = {
+  USER: 'USER',
+  ADMIN: 'ADMIN',
+} as const;
+
+export const USER_ROLE_VALUES = Object.values(USER_ROLES);

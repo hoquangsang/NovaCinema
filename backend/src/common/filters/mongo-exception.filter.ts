@@ -1,7 +1,7 @@
-import { Catch, ExceptionFilter, ArgumentsHost } from "@nestjs/common";
-import { MongoServerError } from "mongodb";
-import { Response } from "express";
-import { ErrorResponse } from "../responses";
+import { Catch, ExceptionFilter, ArgumentsHost } from '@nestjs/common';
+import { MongoServerError } from 'mongodb';
+import { Response } from 'express';
+import { ErrorResponse } from '../responses';
 
 @Catch(MongoServerError)
 export class MongoExceptionFilter implements ExceptionFilter {
@@ -11,7 +11,7 @@ export class MongoExceptionFilter implements ExceptionFilter {
 
     if (exception.code === 11000) {
       const error = new ErrorResponse(
-        "Duplicate key error",
+        'Duplicate key error',
         400,
         undefined,
         exception.keyValue,

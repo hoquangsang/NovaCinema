@@ -1,33 +1,22 @@
-import { Module } from "@nestjs/common";
-import { JwtModule } from "@nestjs/jwt";
-import { ConfigModule } from "@nestjs/config";
-import { MongooseModule } from "@nestjs/mongoose";
-import { jwtAccessConfig } from "src/config";
-import { MailService } from "src/mail";
-import { UsersModule } from "src/modules/users";
-import { Otp, OtpSchema } from "./schemas/otp.schema";
-import { OtpRepository } from "./repositories/otp.repository";
-import { AuthController } from "./controllers/auth.controller";
-import { AuthService } from "./services/auth.service";
-import { OtpService } from "./services/otp.service";
-import { JwtStrategy } from "./strategies/jwt.strategy";
+import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule } from '@nestjs/config';
+import { jwtAccessConfig } from 'src/config';
+import { UsersModule } from 'src/modules/users';
+import { NotificationsModule, OtpService } from 'src/modules/notifications';
+import { JwtStrategy } from './strategies';
+import { AuthService } from './services';
+import { AuthController } from './controllers';
 
 @Module({
   imports: [
     ConfigModule,
-    MongooseModule.forFeature([{ name: Otp.name, schema: OtpSchema }]),
     JwtModule.registerAsync(jwtAccessConfig),
     UsersModule,
+    NotificationsModule,
   ],
-  controllers: [
-    AuthController
-  ],
-  providers: [
-    AuthService,
-    MailService,
-    JwtStrategy,
-    OtpRepository,
-    OtpService
-  ]
+  controllers: [AuthController],
+  providers: [AuthService, JwtStrategy],
+  exports: [AuthService],
 })
 export class AuthModule {}

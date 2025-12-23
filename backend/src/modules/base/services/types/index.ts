@@ -1,10 +1,8 @@
-export type {
-  SortByInput
-} from './sort.type';
+export type { SortByInput } from './sort.type';
 
 export type {
-  QueryInput,
-  PaginationInput,
   PaginatedQueryInput,
-  DateRangeInput
- } from './input.type';
+  PaginatedQueryRangeInput,
+  QueryInput,
+  QueryRangeInput,
+} from './input.type';

@@ -4,13 +4,13 @@ export class ErrorResponse {
   message: string;
   code?: number;
   path?: string;
-  error?: any[];
+  errors?: any[];
 
   constructor(message: string, code?: number, path?: string, error?: any[]) {
     this.timestamp = new Date().toISOString();
     this.message = message;
     this.code = code;
     this.path = path;
-    this.error = error;
+    this.errors = error;
   }
 }

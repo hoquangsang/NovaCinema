@@ -1,6 +1,6 @@
-export { SEAT_TYPES } from './seat.constant';
-export type { SeatType } from './seat.constant';
-
-export { ROOM_TYPES, ROOM_LIMITS } from './room.constant';
-export type { RoomType } from './room.constant';
-
+export {
+  SEAT_TYPES,
+  SEAT_TYPE_VALUES,
+  SEAT_MAP_EXAMPLE,
+} from './seat.constant';
+export { ROOM_TYPES, ROOM_TYPE_VALUES, ROOM_LIMITS } from './room.constant';

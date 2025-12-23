@@ -1,2 +1,1 @@
-export { USERROLE_TYPES } from "./user.constant";
-export type { UserRoleType } from "./user.constant";
+export { USER_ROLES, USER_ROLE_VALUES } from './user.constant';

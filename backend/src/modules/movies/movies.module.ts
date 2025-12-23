@@ -1,30 +1,27 @@
-import { Module } from "@nestjs/common";
-import { ConfigModule } from "@nestjs/config";
-import { MongooseModule } from "@nestjs/mongoose";
-import { Movie, MovieSchema } from './schemas/movie.schema';
-import { MovieRepository } from "./repositories/movie.repository";
-import { MovieQueryRepository } from "./repositories/movie.query.repository";
-import { MovieCommandRepository } from "./repositories/movie.command.repository";
-import { MovieService } from "./services/movie.service";
-import { MoviesController } from "./controllers/movies.controller";
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Movie, MovieSchema } from './schemas';
+import {
+  MovieCommandRepository,
+  MovieQueryRepository,
+  MovieRepository,
+} from './repositories';
+import { MovieService } from './services';
+import { MoviesController } from './controllers';
 
 @Module({
   imports: [
     ConfigModule,
-    MongooseModule.forFeature([{ name: Movie.name, schema: MovieSchema}])
+    MongooseModule.forFeature([{ name: Movie.name, schema: MovieSchema }]),
   ],
-  controllers: [
-    MoviesController
-  ],
+  controllers: [MoviesController],
   providers: [
     MovieService,
     MovieRepository,
     MovieQueryRepository,
     MovieCommandRepository,
   ],
-  exports: [
-    MovieService,
-    MovieRepository,
-  ]
+  exports: [MovieService],
 })
 export class MoviesModule {}

@@ -1,4 +1,4 @@
-import { UserRoleType } from "src/modules/users/constants";
+import { UserRoleType } from 'src/modules/users/types';
 
 export interface JwtPayload {
   readonly sub: string;

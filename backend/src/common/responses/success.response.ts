@@ -31,12 +31,13 @@ export class ListResponse<T> extends BaseResponse {
     options?: {
       sort?: Record<string, any>;
       filters?: Record<string, any>;
-    }) {
+    },
+  ) {
     super(message);
     this.data = items;
     this.meta = {
       count: items.length,
-      ...options
+      ...options,
     };
   }
 }
@@ -64,7 +65,7 @@ export class PaginatedResponse<T> extends BaseResponse {
     options?: {
       sort?: Record<string, any>;
       filters?: Record<string, any>;
-    }
+    },
   ) {
     super(message);
     this.data = items;
@@ -77,7 +78,7 @@ export class PaginatedResponse<T> extends BaseResponse {
       totalPages,
       hasNextPage: page < totalPages,
       hasPrevPage: page > 1,
-      ...options
+      ...options,
     };
   }
 }
