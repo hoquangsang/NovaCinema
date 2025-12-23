@@ -10,8 +10,8 @@ export class PaginatedQueryReqDto extends QueryReqDto {
     example: 1,
   })
   @IsOptional()
-  @Type(() => Number)
   @IsNumber()
+  @Type(() => Number)
   page?: number = 1;
 
   @ApiPropertyOptional({

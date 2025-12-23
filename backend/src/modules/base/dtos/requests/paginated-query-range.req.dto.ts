@@ -1,16 +1,17 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsNumber } from 'class-validator';
+import { IsNumber, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
+import { QueryRangeReqDto } from './query-range.req.dto';
 
-export class PaginationReqDto {
+export class PaginatedQueryRangeReqDto extends QueryRangeReqDto {
   @ApiPropertyOptional({
     type: Number,
     description: 'Page number for pagination',
     example: 1,
   })
   @IsOptional()
-  @Type(() => Number)
   @IsNumber()
+  @Type(() => Number)
   page?: number = 1;
 
   @ApiPropertyOptional({

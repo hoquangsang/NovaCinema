@@ -15,6 +15,7 @@ import {
   UpsertOneResult,
   DeleteOneResult,
   DeleteManyResult,
+  Creatable,
 } from './command.type';
 
 export abstract class CommandRepository<
@@ -29,7 +30,7 @@ export abstract class CommandRepository<
    * @param options.session Optional Mongo session
    */
   public async createOne(options: {
-    data: Partial<T>; // TODO: create strict type
+    data: Creatable<T>;
     session?: ClientSession;
   }): Promise<CreateOneResult<FlattenDocument<T>>> {
     const { data, session } = options;
@@ -53,7 +54,7 @@ export abstract class CommandRepository<
    * @param options.raw If true, returns only insertedCount
    */
   public async createMany(options: {
-    data: Partial<T>[];
+    data: Creatable<T>[];
     session?: ClientSession;
   }): Promise<CreateManyResult<FlattenDocument<T>>> {
     const { data, session } = options;
