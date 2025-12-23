@@ -1,4 +1,4 @@
-export const RoomQueryFields = {
+export const ROOM_QUERY_FIELDS = {
   SEARCHABLE: ['roomName'] as const,
   REGEX_MATCH: ['roomName'] as const,
   ARRAY_MATCH: ['roomType'] as const,

@@ -7,7 +7,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { ToDateOnlyEnd, ToDateOnlyStart } from 'src/common/decorators';
+import { ToDateTime } from 'src/common/decorators';
 
 export class CreateMovieReqDto {
   @ApiProperty({
@@ -70,7 +70,7 @@ export class CreateMovieReqDto {
   })
   @IsOptional()
   @IsDate({ message: 'releaseDate must be yyyy-MM-dd' })
-  @ToDateOnlyStart()
+  @ToDateTime()
   releaseDate!: Date;
 
   @ApiPropertyOptional({
@@ -80,7 +80,7 @@ export class CreateMovieReqDto {
   })
   @IsOptional()
   @IsDate({ message: 'endDate must be yyyy-MM-dd' })
-  @ToDateOnlyEnd()
+  @ToDateTime()
   endDate?: Date;
 
   @ApiPropertyOptional({

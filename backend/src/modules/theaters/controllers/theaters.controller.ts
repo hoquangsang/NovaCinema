@@ -14,6 +14,7 @@ import {
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ParseObjectIdPipe } from '@nestjs/mongoose';
 import {
+  Public,
   RequireRoles,
   WrapListResponse,
   WrapNoContentResponse,
@@ -37,7 +38,7 @@ export class TheatersController {
 
   @ApiOperation({ description: 'Query theaters' })
   @WrapPaginatedResponse({ dto: TheaterResDto })
-  @RequireRoles(USER_ROLES.ADMIN)
+  @Public()
   @HttpCode(HttpStatus.OK)
   @Get()
   public async paginatedQueryTheaters(
@@ -48,7 +49,7 @@ export class TheatersController {
 
   @ApiOperation({ description: 'Query all theaters' })
   @WrapListResponse({ dto: TheaterResDto })
-  @RequireRoles(USER_ROLES.ADMIN)
+  @Public()
   @HttpCode(HttpStatus.OK)
   @Get('/list')
   public async queryTheaters(@Query() query: QueryTheatersReqDto) {
@@ -57,7 +58,7 @@ export class TheatersController {
 
   @ApiOperation({ description: 'Get theater by ID' })
   @WrapOkResponse({ dto: TheaterResDto })
-  @RequireRoles(USER_ROLES.ADMIN)
+  @Public()
   @HttpCode(HttpStatus.OK)
   @Get(':id')
   public async getById(@Param('id', ParseObjectIdPipe) id: string) {

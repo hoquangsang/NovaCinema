@@ -1,7 +1,7 @@
 import { DaysOfWeek, TimeHHmm } from 'src/common/types';
 import { RoomType, SeatType } from 'src/modules/theaters/types';
 
-export namespace TicketPricingInputTypes {
+export namespace TicketPricingCriteria {
   export type SeatTypeModifiers = {
     seatType: SeatType;
     deltaPrice: number;
@@ -40,4 +40,8 @@ export namespace TicketPricingInputTypes {
     roomType: RoomType;
     datetime: Date;
   };
+}
+
+export namespace TicketPricingResult {
+  /** */
 }

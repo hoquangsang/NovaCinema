@@ -24,7 +24,7 @@ import {
 import { USER_ROLES } from 'src/modules/users/constants';
 import { MovieService } from '../services';
 import {
-  PaginatedQueryDateRangeMoviesReqDto,
+  PaginatedQueryRangeMoviesReqDto,
   PaginatedQueryMoviesReqDto,
   CreateMovieReqDto,
   UpdateMovieReqDto,
@@ -41,7 +41,7 @@ export class MoviesController {
   @Public()
   @HttpCode(HttpStatus.OK)
   @Get()
-  public async getMovies(@Query() query: PaginatedQueryDateRangeMoviesReqDto) {
+  public async getMovies(@Query() query: PaginatedQueryRangeMoviesReqDto) {
     return this.movieService.findMoviesPaginated(query);
   }
 

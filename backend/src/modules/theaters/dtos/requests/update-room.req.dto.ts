@@ -5,6 +5,9 @@ import {
   IsString,
   IsBoolean,
   IsEnum,
+  IsArray,
+  ArrayMinSize,
+  ArrayMaxSize,
 } from 'class-validator';
 import {
   ROOM_TYPE_VALUES,
@@ -47,5 +50,8 @@ export class UpdateRoomReqDto {
     example: SEAT_MAP_EXAMPLE,
   })
   @IsOptional()
+  @IsArray()
+  @ArrayMinSize(5)
+  @ArrayMaxSize(40)
   seatMap?: (SeatType | null)[][];
 }

@@ -4,12 +4,12 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { DaysOfWeek, TimeHHmm } from 'src/common/types';
-import { DateUtil } from 'src/common/utils';
+import { CalendarUtil, DateUtil, TimeUtil } from 'src/common/utils';
 import { SeatType, RoomType } from 'src/modules/theaters/types';
 import { PRICING_LIMITS } from '../constants';
 import { TicketPricingRepository } from '../repositories';
 import { TicketPricing } from '../schemas';
-import { TicketPricingInputTypes as InputTypes } from './ticket-pricing.service.type';
+import { TicketPricingCriteria as Criteria } from './ticket-pricing.service.type';
 
 @Injectable()
 export class TicketPricingService {
@@ -23,7 +23,7 @@ export class TicketPricingService {
     return pricing;
   }
 
-  public async getTicketPrice(input: InputTypes.Calculate) {
+  public async getTicketPrice(input: Criteria.Calculate) {
     const pricing = await this.getTicketPricing();
 
     const raw = this.calculatePrice(pricing, input);
@@ -34,7 +34,7 @@ export class TicketPricingService {
     );
   }
 
-  public async upsertTicketPricing(data: InputTypes.Upsert) {
+  public async upsertTicketPricing(data: Criteria.Upsert) {
     this.assertUpsertInputValid(data);
     const { basePrice: nextBasePrice, modifiers: nextModifiers } = data;
 
@@ -79,13 +79,13 @@ export class TicketPricingService {
   /** */
   private calculatePrice(
     pricing: TicketPricing,
-    input: InputTypes.Calculate,
+    input: Criteria.Calculate,
   ): number {
     const { roomType, seatType, datetime } = input;
     const { basePrice, modifiers } = pricing;
 
-    const currentDayOfWeek = DateUtil.dayOfWeek(datetime);
-    const minuteOfDay = DateUtil.minutesOfDay(datetime);
+    const currentDayOfWeek = CalendarUtil.dayOfWeek(datetime);
+    const minuteOfDay = DateUtil.localMinutesOfDay(datetime);
 
     const seatTypeModifier = modifiers.seatTypes.find(
       (x) => x.seatType === seatType,
@@ -112,15 +112,15 @@ export class TicketPricingService {
   }
 
   private matchTimeRange(time: number, startTime: TimeHHmm, endTime: TimeHHmm) {
-    const start = DateUtil.hhmmToMinutes(startTime);
-    const end = DateUtil.hhmmToMinutes(endTime);
+    const start = TimeUtil.toMinutes(startTime);
+    const end = TimeUtil.toMinutes(endTime);
 
     return start <= end
       ? time >= start && time < end
       : time >= start || time < end;
   }
 
-  private assertUpsertInputValid(data: InputTypes.Upsert) {
+  private assertUpsertInputValid(data: Criteria.Upsert) {
     const { basePrice, modifiers } = data;
     if (basePrice === undefined && !modifiers)
       throw new BadRequestException('Nothing to update');
@@ -138,7 +138,7 @@ export class TicketPricingService {
     }
   }
 
-  private assertPricingModifiersValid(modifiers: InputTypes.PricingModifier) {
+  private assertPricingModifiersValid(modifiers: Criteria.PricingModifier) {
     if (modifiers.seatTypes)
       this.assertSeatTypeModifiersValid(modifiers.seatTypes);
     if (modifiers.roomTypes)
@@ -158,7 +158,7 @@ export class TicketPricingService {
     }
   }
 
-  private assertSeatTypeModifiersValid(arr: InputTypes.SeatTypeModifiers[]) {
+  private assertSeatTypeModifiersValid(arr: Criteria.SeatTypeModifiers[]) {
     const used = new Set<SeatType>();
     for (const m of arr) {
       if (used.has(m.seatType))
@@ -168,7 +168,7 @@ export class TicketPricingService {
     }
   }
 
-  private validateRoomTypeModifiersValid(arr: InputTypes.RoomTypeModifiers[]) {
+  private validateRoomTypeModifiersValid(arr: Criteria.RoomTypeModifiers[]) {
     const used = new Set<RoomType>();
     for (const m of arr) {
       if (used.has(m.roomType))
@@ -178,7 +178,7 @@ export class TicketPricingService {
     }
   }
 
-  private assertDayOfWeekModifiersValid(arr: InputTypes.DaysOfWeekModifiers[]) {
+  private assertDayOfWeekModifiersValid(arr: Criteria.DaysOfWeekModifiers[]) {
     const used = new Set<DaysOfWeek>();
     for (const m of arr) {
       this.assertDeltaPriceValid(m.deltaPrice);
@@ -190,21 +190,21 @@ export class TicketPricingService {
   }
 
   private assertDailyTimeRangeModifiersValid(
-    arr: InputTypes.DailyTimeRangeModifiers[],
+    arr: Criteria.DailyTimeRangeModifiers[],
   ) {
     const ranges: { start: number; end: number; original: string }[] = [];
 
     for (const m of arr) {
-      if (!DateUtil.isValidHHmm(m.startTime)) {
+      if (!TimeUtil.isValidHHmm(m.startTime)) {
         throw new BadRequestException(`Invalid startTime [${m.startTime}]`);
       }
 
-      if (!DateUtil.isValidHHmm(m.endTime)) {
+      if (!TimeUtil.isValidHHmm(m.endTime)) {
         throw new BadRequestException(`Invalid endTime [${m.endTime}]`);
       }
 
-      const startTime = DateUtil.roundHHmm(m.startTime);
-      const endTime = DateUtil.roundHHmm(m.endTime);
+      const startTime = TimeUtil.roundDown(m.startTime);
+      const endTime = TimeUtil.roundUp(m.endTime);
 
       if (startTime === endTime) {
         throw new BadRequestException(
@@ -214,8 +214,8 @@ export class TicketPricingService {
 
       this.assertDeltaPriceValid(m.deltaPrice);
 
-      const start = DateUtil.hhmmToMinutes(startTime);
-      const end = DateUtil.hhmmToMinutes(endTime);
+      const start = TimeUtil.toMinutes(startTime);
+      const end = TimeUtil.toMinutes(endTime);
 
       // normalize
       if (start < end) {

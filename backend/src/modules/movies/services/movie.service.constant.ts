@@ -1,4 +1,4 @@
-export const MovieQueryFields = {
+export const MOVIE_QUERY_FIELDS = {
   SEARCHABLE: ['title', 'director', 'producer', 'genres', 'actors'],
   REGEX_MATCH: ['title', 'director', 'producer'],
   ARRAY_MATCH: ['genres', 'actors'],

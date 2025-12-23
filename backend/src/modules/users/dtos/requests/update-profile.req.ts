@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsDate, IsNotEmpty, IsString } from 'class-validator';
-import { ToDateOnlyStart } from 'src/common/decorators';
+import { ToDateTime } from 'src/common/decorators';
 
 export class UpdateProfileReqDto {
   @ApiPropertyOptional({
@@ -40,6 +40,6 @@ export class UpdateProfileReqDto {
   })
   @IsOptional()
   @IsDate({ message: 'dateOfBirth must be a valid date string' })
-  @ToDateOnlyStart()
+  @ToDateTime()
   dateOfBirth?: Date;
 }

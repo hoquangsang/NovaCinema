@@ -7,7 +7,7 @@ import {
   IsString,
   MinLength,
 } from 'class-validator';
-import { ToDateOnlyStart } from 'src/common/decorators';
+import { ToDateTime } from 'src/common/decorators';
 
 export class RegisterReqDto {
   @ApiProperty({
@@ -64,6 +64,6 @@ export class RegisterReqDto {
   })
   @IsOptional()
   @IsDate({ message: 'dateOfBirth must be yyyy-MM-dd' })
-  @ToDateOnlyStart()
+  @ToDateTime()
   dateOfBirth?: Date;
 }

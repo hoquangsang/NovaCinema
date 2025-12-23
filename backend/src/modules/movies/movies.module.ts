@@ -22,6 +22,6 @@ import { MoviesController } from './controllers';
     MovieQueryRepository,
     MovieCommandRepository,
   ],
-  exports: [MovieService, MovieRepository],
+  exports: [MovieService],
 })
 export class MoviesModule {}

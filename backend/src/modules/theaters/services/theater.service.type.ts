@@ -3,7 +3,7 @@ import {
   QueryInput,
 } from 'src/modules/base/services/types';
 
-export namespace TheaterInputTypes {
+export namespace TheaterCriteria {
   /** Filterable fields for theaters */
   export type Filter = {
     theaterName?: string;
@@ -28,4 +28,8 @@ export namespace TheaterInputTypes {
 
   /** Input for updating a theater */
   export type Update = Partial<Create>;
+}
+
+export namespace TheaterResult {
+  /** */
 }

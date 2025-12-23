@@ -29,7 +29,7 @@ import {
   QueryRoomsReqDto,
   UpdateRoomReqDto,
 } from '../dtos/requests';
-import { RoomResDto } from '../dtos/responses';
+import { RoomDetailResDto, RoomResDto } from '../dtos/responses';
 
 @ApiTags('Theaters')
 @Controller('rooms')
@@ -37,7 +37,7 @@ export class RoomsController {
   constructor(private readonly roomService: RoomService) {}
 
   @ApiOperation({ description: 'Get room by ID' })
-  @WrapOkResponse({ dto: RoomResDto })
+  @WrapOkResponse({ dto: RoomDetailResDto })
   @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.OK)
   @Get(':id')
@@ -84,7 +84,7 @@ export class RoomsController {
   }
 
   @ApiOperation({ description: 'Update room by Id' })
-  @WrapOkResponse({ dto: RoomResDto })
+  @WrapOkResponse({ dto: RoomDetailResDto })
   @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.OK)
   @Patch(':id')

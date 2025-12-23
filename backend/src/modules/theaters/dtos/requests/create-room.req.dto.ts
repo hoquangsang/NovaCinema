@@ -36,9 +36,7 @@ export class CreateRoomReqDto {
     example: SEAT_MAP_EXAMPLE,
   })
   @IsArray()
-  @IsArray({ each: true })
-  @IsNotEmpty()
-  @ArrayMinSize(10)
-  @ArrayMaxSize(30)
+  @ArrayMinSize(5)
+  @ArrayMaxSize(40)
   seatMap!: (SeatType | null)[][];
 }

@@ -8,12 +8,13 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { HashUtil } from 'src/common/utils';
+import { DateUtil, HashUtil } from 'src/common/utils';
 import { pickSortableFields } from 'src/modules/base/helpers';
+import { USER_ROLES } from '../constants';
 import { UserDocument } from '../schemas';
 import { UserRepository } from '../repositories';
-import { UserInputTypes as InputTypes } from './user.service.type';
-import { UserQueryFields as QUERY_FIELDS } from './user.service.constant';
+import { USER_QUERY_FIELDS as QUERY_FIELDS } from './user.service.constant';
+import { UserCriteria as Criteria } from './user.service.type';
 
 @Injectable()
 export class UserService {
@@ -58,7 +59,7 @@ export class UserService {
     });
   }
 
-  public async findUsersPaginated(options: InputTypes.PaginatedQuery) {
+  public async findUsersPaginated(options: Criteria.PaginatedQuery) {
     const { search, page, limit, sort, ...rest } = options;
     const filter: FilterQuery<UserDocument> = {};
 
@@ -113,12 +114,22 @@ export class UserService {
     phoneNumber?: string;
     dateOfBirth?: Date;
   }) {
-    const { email, password, username, fullName, phoneNumber, dateOfBirth } =
-      data;
+    const {
+      email,
+      password,
+      username,
+      fullName,
+      phoneNumber,
+      dateOfBirth: rawDate,
+    } = data;
     const exists = await this.userRepo.query.exists({
       filter: { email },
     });
     if (exists) throw new BadRequestException('Email already exists');
+
+    const dateOfBirth = rawDate
+      ? DateUtil.localStartOfDay(new Date(rawDate))
+      : rawDate;
 
     const hashedPassword = await HashUtil.hash(password);
     const { insertedItem: createdUser } = await this.userRepo.command.createOne(
@@ -130,6 +141,8 @@ export class UserService {
           phoneNumber: phoneNumber,
           fullName: fullName,
           dateOfBirth: dateOfBirth,
+          emailVerified: false,
+          roles: [USER_ROLES.USER],
         },
       },
     );
@@ -141,7 +154,7 @@ export class UserService {
   }
 
   /** */
-  public async updateUserInfoById(id: string, update: InputTypes.UpdateInfo) {
+  public async updateUserInfoById(id: string, update: Criteria.UpdateInfo) {
     const { modifiedItem: updatedUser } =
       await this.userRepo.command.updateOneById({
         id,

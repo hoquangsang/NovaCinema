@@ -4,7 +4,7 @@ import {
 } from 'src/modules/base/services/types';
 import { UserRoleType } from 'src/modules/users/types';
 
-export namespace UserInputTypes {
+export namespace UserCriteria {
   type Filter = {
     email?: string;
     phoneNumber?: string;
@@ -24,4 +24,8 @@ export namespace UserInputTypes {
     phoneNumber?: string;
     dateOfBirth?: Date;
   };
+}
+
+export namespace UserResult {
+  /** */
 }

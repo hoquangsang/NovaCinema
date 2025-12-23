@@ -33,6 +33,6 @@ import { RoomsController, TheatersController } from './controllers';
     RoomRepository,
     RoomService,
   ],
-  exports: [TheaterRepository, TheaterService, RoomRepository, RoomService],
+  exports: [TheaterService, RoomService],
 })
 export class TheatersModule {}

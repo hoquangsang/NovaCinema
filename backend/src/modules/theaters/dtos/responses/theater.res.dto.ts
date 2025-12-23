@@ -53,4 +53,12 @@ export class TheaterResDto {
   })
   @Expose()
   updatedAt?: Date;
+
+  @ApiPropertyOptional({
+    type: Number,
+    description: 'Rooms count',
+    example: 84,
+  })
+  @Expose()
+  roomsCount?: number;
 }

@@ -1,12 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Expose, Type } from 'class-transformer';
-import {
-  ROOM_TYPE_VALUES,
-  ROOM_TYPES,
-  SEAT_MAP_EXAMPLE,
-} from 'src/modules/theaters/constants';
+import { Expose } from 'class-transformer';
+import { ROOM_TYPE_VALUES, ROOM_TYPES } from 'src/modules/theaters/constants';
 import { RoomType } from 'src/modules/theaters/types';
-import { SeatResDto } from './seat.res.dto';
 
 export class RoomResDto {
   @ApiProperty({
@@ -37,14 +32,6 @@ export class RoomResDto {
   })
   @Expose()
   roomType!: RoomType;
-
-  @ApiProperty({
-    description: '2D array of seats: NORMAL, VIP, COUPLE or null',
-    example: SEAT_MAP_EXAMPLE,
-  })
-  @Expose()
-  @Type(() => SeatResDto)
-  seatMap!: (SeatResDto | null)[][];
 
   @ApiPropertyOptional({
     type: Boolean,

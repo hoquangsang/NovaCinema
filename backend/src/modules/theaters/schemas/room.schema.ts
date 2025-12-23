@@ -9,14 +9,24 @@ export type RoomDocument = HydratedDocument<Room>;
 
 @Schema({ timestamps: true })
 export class Room {
-  @Prop({ type: Types.ObjectId, ref: Theater.name, required: true })
+  @Prop({
+    type: Types.ObjectId,
+    ref: Theater.name,
+    required: true,
+    immutable: true,
+  })
   theaterId!: Types.ObjectId;
 
   @Prop({ required: true })
   roomName!: string;
 
-  @Prop({ type: String, enum: ROOM_TYPE_VALUES, default: ROOM_TYPES._2D })
-  roomType?: RoomType;
+  @Prop({
+    type: String,
+    enum: ROOM_TYPE_VALUES,
+    default: ROOM_TYPES._2D,
+    immutable: true,
+  })
+  roomType!: RoomType;
 
   @Prop({ type: [[{ type: SeatSchema }]], required: true })
   seatMap!: SeatMap;

@@ -1,10 +1,10 @@
 import {
-  DateRangeInput,
   PaginatedQueryInput,
+  PaginatedQueryRangeInput,
   QueryInput,
 } from 'src/modules/base/services/types';
 
-export namespace MovieInputTypes {
+export namespace MovieCriteria {
   /** Filterable fields for movies */
   type Filter = {
     title?: string;
@@ -30,7 +30,7 @@ export namespace MovieInputTypes {
   export type PaginatedQuery = PaginatedQueryInput & Filter;
 
   /** Input for paginated range movie queries */
-  export type PaginatedDateRangeQuery = PaginatedQuery & DateRangeInput;
+  export type PaginatedQueryRange = PaginatedQueryRangeInput & Filter;
 
   /** Input for creating a movie */
   export type Create = {
@@ -52,4 +52,8 @@ export namespace MovieInputTypes {
 
   /** Input for updating a movie (all fields optional) */
   export type Update = Partial<Create>;
+}
+
+export namespace MovieResult {
+  /** TODO: add movie result type */
 }

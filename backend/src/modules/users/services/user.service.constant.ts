@@ -1,4 +1,4 @@
-export const UserQueryFields = {
+export const USER_QUERY_FIELDS = {
   SEARCHABLE: ['username', 'fullName', 'email'],
   REGEX_MATCH: ['username', 'fullName', 'email'],
   ARRAY_MATCH: ['roles'],
