@@ -7,20 +7,24 @@ import { HttpExceptionFilter, MongoExceptionFilter } from './common/filters';
 import { JwtAuthGuard, RolesGuard } from './common/guards';
 import { DatabaseModule } from './database';
 import { UsersModule } from './modules/users';
+import { NotificationsModule } from './modules/notifications';
 import { AuthModule } from './modules/auth';
 import { MoviesModule } from './modules/movies';
 import { TheatersModule } from './modules/theaters';
-import { NotificationsModule } from './modules/notifications';
+import { TicketPricingModule } from './modules/ticket-pricing';
+import { ShowtimesModule } from './modules/showtimes';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }), // load .env toàn cục
     DatabaseModule,
-    NotificationsModule,
     UsersModule,
     AuthModule,
     MoviesModule,
     TheatersModule,
+    NotificationsModule,
+    TicketPricingModule,
+    ShowtimesModule,
   ],
 
   providers: [
