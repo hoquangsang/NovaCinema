@@ -1,5 +1,5 @@
 export type { SeatMap, RoomDocument, TheaterDocument } from './schemas';
-export { Seat, Room, Theater } from './schemas';
+export { Seat, Room, Theater, RoomSchema, TheaterSchema } from './schemas';
 
 export { RoomRepository, TheaterRepository } from './repositories';
 export { RoomService, TheaterService } from './services';

@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { DatabaseModule } from 'src/database/database.module';
-import { UsersSeederModule } from './users/users-seeder.module';
-import { MoviesSeederModule } from './movies/movies-seeder.module';
-import { TheaterSeederModule } from './theaters/theaters-seeder.module';
+import { DatabaseModule } from 'src/database';
+import { UsersSeederModule } from './users';
+import { MoviesSeederModule } from './movies';
+import { TheaterSeederModule } from './theaters';
+import { ShowtimeSeederModule } from './showtimes';
 import { SeederService } from './seeder.service';
 
 @Module({
@@ -13,6 +14,7 @@ import { SeederService } from './seeder.service';
     UsersSeederModule,
     MoviesSeederModule,
     TheaterSeederModule,
+    ShowtimeSeederModule,
   ],
   providers: [SeederService],
   exports: [SeederService],

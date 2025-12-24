@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Movie, MovieSchema } from 'src/modules/movies/schemas/movie.schema';
-import { DatabaseModule } from 'src/database/database.module';
+import { Movie, MovieSchema } from 'src/modules/movies/schemas';
+import { DatabaseModule } from 'src/database';
 import { MovieSeederService } from './movie-seeder.service';
 
 @Module({

@@ -1,15 +1,15 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Showtime, ShowtimeSchema } from './schemas/showtime.schema';
-import { ShowtimesController } from './controllers/showtimes.controller';
-import { ShowtimeService } from './services/showtime.service';
-import { ShowtimeRepository } from './repositories/showtime.repository';
-import { MoviesModule } from '../movies';
-import { TheatersModule } from '../theaters';
+import { MoviesModule } from 'src/modules/movies';
+import { TheatersModule } from 'src/modules/theaters';
+import { Showtime, ShowtimeSchema } from './schemas';
 import {
   ShowtimeCommandRepository,
   ShowtimeQueryRepository,
+  ShowtimeRepository,
 } from './repositories';
+import { ShowtimeService } from './services';
+import { ShowtimesController } from './controllers';
 
 @Module({
   imports: [
