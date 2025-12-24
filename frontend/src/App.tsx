@@ -13,12 +13,10 @@ import DashboardPage from "./pages/management/DashboardPage";
 import MoviesManagementPage from "./pages/management/MoviesManagementPage";
 import TheatersManagementPage from "./pages/management/TheatersManagementPage";
 import RoomsManagementPage from "./pages/management/RoomsManagementPage";
-import ShowtimesManagementPage from "./pages/management/ShowtimesManagementPage";
 import UsersManagementPage from "./pages/management/UsersManagementPage";
 import SettingsPage from "./pages/management/SettingsPage";
 
 import ProfilePage from "./pages/ProfilePage";
-import ShowtimesPage from "./pages/ShowtimesPage";
 
 import "./App.css";
 
@@ -48,7 +46,6 @@ function App() {
             <Route path="movie/:id" element={<MovieDetailPage />} />
             <Route path="now-showing" element={<NowShowingPage />} />
             <Route path="coming-soon" element={<ComingSoonPage />} />
-            <Route path="showtimes" element={<ShowtimesPage />} />
           </Route>
 
           {/* Management Routes - Protected for Admin only */}
@@ -64,7 +61,6 @@ function App() {
             <Route path="movies" element={<MoviesManagementPage />} />
             <Route path="theaters" element={<TheatersManagementPage />} />
             <Route path="rooms" element={<RoomsManagementPage />} />
-            <Route path="showtimes" element={<ShowtimesManagementPage />} />
             <Route path="users" element={<UsersManagementPage />} />
             <Route path="settings" element={<SettingsPage />} />
           </Route>

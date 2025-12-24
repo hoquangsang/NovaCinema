@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { User } from '../../../api/endpoints/auth.api';
 import { userApi } from '../../../api/endpoints/user.api';
 import { useToast } from '../../../components/common/ToastProvider';
+import { formatUTC0DateForInput, convertDateInputToUTC0 } from '../../../utils/timezone';
 
 interface Props {
   user: User;
@@ -12,7 +13,7 @@ interface Props {
 export default function EditUserModal({ user, onClose, onUpdated }: Props) {
   const [fullName, setFullName] = useState(user.fullName || '');
   const [phoneNumber, setPhoneNumber] = useState(user.phoneNumber || '');
-  const [dateOfBirth, setDateOfBirth] = useState(user.dateOfBirth ? user.dateOfBirth.split('T')[0] : '');
+  const [dateOfBirth, setDateOfBirth] = useState(formatUTC0DateForInput(user.dateOfBirth));
   const [active, setActive] = useState(!!user.active);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +38,7 @@ export default function EditUserModal({ user, onClose, onUpdated }: Props) {
       const payload = {
         phoneNumber,
         fullName,
-        dateOfBirth,
+        dateOfBirth: dateOfBirth ? convertDateInputToUTC0(dateOfBirth) : undefined,
         active,
       } as const;
 

@@ -3,6 +3,7 @@ import axios from 'axios';
 import type { User } from '../../api/endpoints/auth.api';
 import { useAuth } from '../../context/AuthContext';
 import { profileApi, type UpdateProfileParams } from '../../api/endpoints/profile.api';
+import { formatUTC0DateForInput, convertDateInputToUTC0 } from '../../utils/timezone';
 
 interface Props {
   profile?: User | null;
@@ -10,30 +11,11 @@ interface Props {
 
 const PersonalInfoCard = ({}: Props) => {
   const { user, updateUserLocally } = useAuth();
-  // normalize date string for <input type="date" /> (expects YYYY-MM-DD)
-  const formatForDateInput = (val?: string | null) => {
-    if (!val) return '';
-    // already in ISO format
-    if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
-    // dd/mm/yyyy or dd-mm-yyyy -> convert to yyyy-mm-dd
-    const m1 = val.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-    if (m1) return `${m1[3]}-${m1[2]}-${m1[1]}`;
-    const m2 = val.match(/^(\d{2})-(\d{2})-(\d{4})$/);
-    if (m2) return `${m2[3]}-${m2[2]}-${m2[1]}`;
-    // try Date parse
-    const d = new Date(val);
-    if (!isNaN(d.getTime())) {
-      const yyyy = d.getFullYear();
-      const mm = String(d.getMonth() + 1).padStart(2, '0');
-      const dd = String(d.getDate()).padStart(2, '0');
-      return `${yyyy}-${mm}-${dd}`;
-    }
-    return '';
-  };
+  
   const [formData, setFormData] = useState<UpdateProfileParams>({
     fullName: user?.fullName || '',
     phoneNumber: user?.phoneNumber || '',
-    dateOfBirth: formatForDateInput(user?.dateOfBirth),
+    dateOfBirth: formatUTC0DateForInput(user?.dateOfBirth),
     email: user?.email || '',
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -49,7 +31,14 @@ const PersonalInfoCard = ({}: Props) => {
     setIsLoading(true);
     try {
       setErrorInfo(null);
-      const updated = await profileApi.updateProfile(formData);
+      
+      // Convert dateOfBirth từ UTC+7 sang UTC+0 trước khi gửi lên backend
+      const dataToSend: UpdateProfileParams = {
+        ...formData,
+        dateOfBirth: formData.dateOfBirth ? convertDateInputToUTC0(formData.dateOfBirth) || undefined : undefined,
+      };
+      
+      const updated = await profileApi.updateProfile(dataToSend);
       // Update user locally to avoid calling refreshUser which may trigger
       // a logout if token refresh fails. This keeps the user on the page.
       updateUserLocally(updated);
@@ -83,7 +72,7 @@ const PersonalInfoCard = ({}: Props) => {
     setFormData({
       fullName: user?.fullName ?? '',
       phoneNumber: user?.phoneNumber ?? '',
-      dateOfBirth: formatForDateInput(user?.dateOfBirth),
+      dateOfBirth: formatUTC0DateForInput(user?.dateOfBirth),
       email: user?.email ?? '',
     });
   }, [user]);

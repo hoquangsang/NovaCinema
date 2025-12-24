@@ -4,6 +4,7 @@ import { userApi } from '../../../api/endpoints/user.api';
 import type { User } from '../../../api/endpoints/auth.api';
 import EditUserModal from './EditUserModal';
 import { useToast } from '../../../components/common/ToastProvider';
+import { formatUTC0DateToLocal } from '../../../utils/timezone';
 
 interface Props {
     search?: string;
@@ -134,7 +135,7 @@ export default function UsersTable({ search = '', sort = '', page = 1, limit = 5
                                             {user.active ? 'Active' : 'Inactive'}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-sm text-gray-600">{new Date(user.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
+                                    <td className="px-6 py-4 text-sm text-gray-600">{formatUTC0DateToLocal(user.createdAt, 'en-US')}</td>
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-2">
                                             <button onClick={() => { setSelectedUser(user); setShowEdit(true); }} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">

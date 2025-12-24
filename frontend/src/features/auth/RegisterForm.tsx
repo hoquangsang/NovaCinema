@@ -3,6 +3,7 @@ import { authApi, type RegisterParams } from '../../api/endpoints/auth.api';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { OTPVerificationModal } from './OTPVerificationModal';
+import { convertDateInputToUTC0 } from '../../utils/timezone';
 
 interface RegisterFormProps {
     onSuccess?: () => void;
@@ -86,7 +87,13 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
         try {
             console.log('📝 Attempting registration with:', { email: formData.email, username: formData.username });
 
-            await authApi.register(formData);
+            // Convert dateOfBirth sang UTC+0 trước khi gửi
+            const dataToSend = {
+                ...formData,
+                dateOfBirth: formData.dateOfBirth ? convertDateInputToUTC0(formData.dateOfBirth) : '',
+            };
+
+            await authApi.register(dataToSend as RegisterParams);
 
             console.log('✅ Registration successful, showing OTP modal');
 

@@ -1,4 +1,5 @@
 import { Plus, Search, Edit, Trash2, Calendar, Clock } from 'lucide-react';
+import { formatUTC0DateToLocal } from '../../utils/timezone';
 
 export default function ShowtimesManagementPage() {
     return (
@@ -79,7 +80,7 @@ export default function ShowtimesManagementPage() {
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-2 text-sm text-gray-600">
                                         <Calendar size={16} className="text-gray-400" />
-                                        {new Date(showtime.date).toLocaleDateString('vi-VN')}
+                                        {formatUTC0DateToLocal(showtime.date, 'vi-VN')}
                                     </div>
                                 </td>
                                 <td className="px-6 py-4">
