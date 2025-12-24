@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import type { User } from '../../../api/endpoints/auth.api';
 import { userApi } from '../../../api/endpoints/user.api';
 import { useToast } from '../../../components/common/ToastProvider';
-import { formatUTC0DateForInput, convertDateInputToUTC0 } from '../../../utils/timezone';
 
 interface Props {
   user: User;
@@ -11,39 +10,30 @@ interface Props {
 }
 
 export default function EditUserModal({ user, onClose, onUpdated }: Props) {
-  const [fullName, setFullName] = useState(user.fullName || '');
-  const [phoneNumber, setPhoneNumber] = useState(user.phoneNumber || '');
-  const [dateOfBirth, setDateOfBirth] = useState(formatUTC0DateForInput(user.dateOfBirth));
-  const [active, setActive] = useState(!!user.active);
+  const [status, setStatus] = useState<'active' | 'inactive'>(user.isActive ? 'active' : 'inactive');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const toast = useToast();
 
-  // simple phone validation: allow optional + and 9-12 digits
-  const phoneRegex = /^\+?\d{9,12}$/;
-  const phoneValid = phoneNumber.trim() === '' ? true : phoneRegex.test(phoneNumber.replace(/\s|-/g, ''));
-  const phoneError = phoneNumber.trim() !== '' && !phoneValid ? 'Số điện thoại không hợp lệ. Vui lòng nhập 9-12 chữ số, có thể bắt đầu bằng +.' : null;
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // validate phone before submit
-    if (!phoneValid) {
-      setError(phoneError);
-      toast.push(phoneError || 'Số điện thoại không hợp lệ', 'error');
+    
+    // Check if status changed
+    const currentStatus = user.isActive ? 'active' : 'inactive';
+    if (status === currentStatus) {
+      toast.push('Không có thay đổi nào', 'info');
+      onClose();
       return;
     }
+
     setLoading(true);
     setError(null);
     try {
-      const payload = {
-        phoneNumber,
-        fullName,
-        dateOfBirth: dateOfBirth ? convertDateInputToUTC0(dateOfBirth) : undefined,
-        active,
-      } as const;
-
-      const updated = await userApi.update(user._id, payload as any);
-      toast.push('Cập nhật user thành công', 'success');
+      const updated = status === 'active' 
+        ? await userApi.activate(user._id)
+        : await userApi.deactivate(user._id);
+      
+      toast.push(`Đã ${status === 'active' ? 'kích hoạt' : 'vô hiệu hóa'} user thành công`, 'success');
       onUpdated(updated);
       onClose();
     } catch (err: any) {
@@ -56,33 +46,48 @@ export default function EditUserModal({ user, onClose, onUpdated }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-lg p-6">
-        <h3 className="text-lg font-semibold mb-4">Sửa thông tin người dùng</h3>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
+        <h3 className="text-lg font-semibold mb-4">Cập nhật trạng thái người dùng</h3>
+        
+        <div className="mb-4 p-3 bg-gray-50 rounded">
+          <p className="text-sm text-gray-600">Người dùng:</p>
+          <p className="font-semibold">{user.fullName || user.username}</p>
+          <p className="text-sm text-gray-500">{user.email}</p>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Full name</label>
-            <input value={fullName} onChange={(e) => setFullName(e.target.value)} className="mt-1 block w-full border px-3 py-2 rounded-md" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Phone number</label>
-            <input value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} className={`mt-1 block w-full border px-3 py-2 rounded-md ${phoneError ? 'border-red-500' : ''}`} />
-            {phoneError && <div className="text-sm text-red-600 mt-1">{phoneError}</div>}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Date of birth</label>
-            <input type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} className="mt-1 block w-full border px-3 py-2 rounded-md" />
-          </div>
-          <div className="flex items-center gap-2">
-            <input id="active" type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} />
-            <label htmlFor="active" className="text-sm">Active</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Trạng thái</label>
+            <select 
+              value={status} 
+              onChange={(e) => setStatus(e.target.value as 'active' | 'inactive')}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+            >
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
           </div>
 
-          {error && <div className="text-sm text-red-600">{error}</div>}
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 text-red-800 rounded text-sm">
+              {error}
+            </div>
+          )}
 
-          <div className="flex items-center justify-end gap-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 border rounded">Hủy</button>
-            <button type="submit" disabled={loading || !!phoneError} className="px-4 py-2 bg-yellow-400 text-[#10142C] font-semibold rounded disabled:opacity-50">
+          <div className="flex items-center justify-end gap-2 pt-2">
+            <button 
+              type="button" 
+              onClick={onClose} 
+              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+            >
+              Hủy
+            </button>
+            <button 
+              type="submit" 
+              disabled={loading} 
+              className="px-4 py-2 bg-yellow-400 text-[#10142C] font-semibold rounded-md hover:bg-yellow-500 transition-colors disabled:opacity-50"
+            >
               {loading ? 'Đang lưu...' : 'Lưu'}
             </button>
           </div>

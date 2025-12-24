@@ -30,7 +30,7 @@ export interface User {
   fullName: string;
   dateOfBirth: string;
   roles: string[];
-  active: boolean;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }

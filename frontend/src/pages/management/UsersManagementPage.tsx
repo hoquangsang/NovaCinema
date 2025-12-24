@@ -1,27 +1,46 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import UserHeader from '../../features/management/user/UserHeader';
 import UserSearchFilter from '../../features/management/user/UserSearchFilter';
 import UsersTable from '../../features/management/user/UsersTable';
 
 export default function UsersManagementPage() {
+    const [searchInput, setSearchInput] = useState('');
     const [search, setSearch] = useState('');
-    const [sort, setSort] = useState('');
+    const [roles, setRoles] = useState('');
+    const [isActive, setIsActive] = useState('');
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(5);
 
-    const handleFilterChange = (next: { q?: string; role?: string; status?: string }) => {
-        setSearch(next.q ?? '');
-        setSort(next.role ?? '');
-        setPage(1);
+    // Debounce search input - wait 500ms after user stops typing
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setSearch(searchInput);
+            setPage(1); // Reset to page 1 when search changes
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [searchInput]);
+
+    const handleFilterChange = (next: { q?: string; roles?: string; isActive?: string }) => {
+        if (next.q !== undefined) setSearchInput(next.q);
+        if (next.roles !== undefined) {
+            setRoles(next.roles);
+            setPage(1);
+        }
+        if (next.isActive !== undefined) {
+            setIsActive(next.isActive);
+            setPage(1);
+        }
     };
 
     return (
         <div>
             <UserHeader />
-            <UserSearchFilter q={search} role={sort} onChange={handleFilterChange} />
+            <UserSearchFilter q={searchInput} roles={roles} isActive={isActive} onChange={handleFilterChange} />
             <UsersTable
                 search={search}
-                sort={sort}
+                roles={roles}
+                isActive={isActive}
                 page={page}
                 limit={limit}
                 onPageChange={(p) => setPage(p)}

@@ -5,17 +5,19 @@ import type { User } from '../../../api/endpoints/auth.api';
 import EditUserModal from './EditUserModal';
 import { useToast } from '../../../components/common/ToastProvider';
 import { formatUTC0DateToLocal } from '../../../utils/timezone';
+import { ConfirmModal } from '../../../components/common/ConfirmModal';
 
 interface Props {
     search?: string;
-    sort?: string;
+    roles?: string;
+    isActive?: string;
     page?: number;
     limit?: number;
     onPageChange?: (nextPage: number) => void;
     onLimitChange?: (nextLimit: number) => void;
 }
 
-export default function UsersTable({ search = '', sort = '', page = 1, limit = 5, onPageChange, onLimitChange }: Props) {
+export default function UsersTable({ search = '', roles = '', isActive = '', page = 1, limit = 5, onPageChange, onLimitChange }: Props) {
     const [users, setUsers] = useState<User[]>([]);
     const [total, setTotal] = useState(0);
     const [loading, setLoading] = useState(false);
@@ -24,6 +26,8 @@ export default function UsersTable({ search = '', sort = '', page = 1, limit = 5
     const [showEdit, setShowEdit] = useState(false);
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [userToDelete, setUserToDelete] = useState<User | null>(null);
     const toast = useToast();
 
     useEffect(() => {
@@ -32,7 +36,7 @@ export default function UsersTable({ search = '', sort = '', page = 1, limit = 5
             setLoading(true);
             setError(null);
             try {
-                const res = await userApi.list({ search, sort, page, limit });
+                const res = await userApi.list({ search, roles, isActive, page, limit });
                 if (!mounted) return;
                 setUsers(res.items || []);
                 setTotal(res.total || 0);
@@ -48,7 +52,7 @@ export default function UsersTable({ search = '', sort = '', page = 1, limit = 5
         return () => {
             mounted = false;
         };
-    }, [search, sort, page, limit, refreshTrigger]);
+    }, [search, roles, isActive, page, limit, refreshTrigger]);
 
     const totalPages = Math.max(1, Math.ceil(total / limit));
 
@@ -108,65 +112,61 @@ export default function UsersTable({ search = '', sort = '', page = 1, limit = 5
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
-                            {users.map((user, index) => (
-                                <tr key={user._id || index} className="hover:bg-gray-50 transition-colors">
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
-                                                {user.fullName ? user.fullName.split(' ').map((n: string) => n[0]).join('') : (user.username || '?')}
-                                            </div>
-                                            <p className="font-medium text-gray-800">{user.fullName || user.username || user.email}</p>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 text-sm text-gray-600">{user.email}</td>
-                                    <td className="px-6 py-4 text-sm text-gray-600">{user.phoneNumber}</td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-2">
-                                            {user.roles?.includes('admin') && <Shield size={16} className="text-yellow-500" />}
-                                            <span className={`px-3 py-1 text-xs font-semibold rounded-full ${user.roles?.includes('admin') ? 'bg-yellow-100 text-yellow-700' : 'bg-blue-100 text-blue-700'}`}>
-                                                {user.roles?.includes('admin')
-                                                    ? 'Admin'
-                                                    : (user.roles && user.roles.length ? (user.roles[0].charAt(0).toUpperCase() + user.roles[0].slice(1)) : 'User')}
-                                            </span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`px-3 py-1 text-xs font-semibold rounded-full ${user.active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
-                                            {user.active ? 'Active' : 'Inactive'}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-sm text-gray-600">{formatUTC0DateToLocal(user.createdAt, 'en-US')}</td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-2">
-                                            <button onClick={() => { setSelectedUser(user); setShowEdit(true); }} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                                                <Edit size={18} />
-                                            </button>
-                                            <button
-                                                onClick={async () => {
-                                                    if (!user._id) return;
-                                                    const ok = window.confirm('Bạn có chắc muốn xoá user này không?');
-                                                    if (!ok) return;
-                                                    try {
-                                                        setDeletingId(user._id);
-                                                        await userApi.delete(user._id);
-                                                        toast.push('Xoá user thành công', 'success');
-                                                        setRefreshTrigger(t => t + 1);
-                                                    } catch (err: any) {
-                                                        const msg = err?.message || 'Xoá thất bại';
-                                                        toast.push(msg, 'error');
-                                                    } finally {
-                                                        setDeletingId(null);
-                                                    }
-                                                }}
-                                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                disabled={deletingId === user._id}
-                                            >
-                                                <Trash2 size={18} />
-                                            </button>
-                                        </div>
+                            {users.length === 0 ? (
+                                <tr>
+                                    <td colSpan={7} className="px-6 py-12 text-center text-gray-600">
+                                        Không tìm thấy người dùng phù hợp.
                                     </td>
                                 </tr>
-                            ))}
+                            ) : (
+                                users.map((user, index) => (
+                                    <tr key={user._id || index} className="hover:bg-gray-50 transition-colors">
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
+                                                    {user.fullName ? user.fullName.split(' ').map((n: string) => n[0]).join('') : (user.username || '?')}
+                                                </div>
+                                                <p className="font-medium text-gray-800">{user.fullName || user.username || user.email}</p>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-600">{user.email}</td>
+                                        <td className="px-6 py-4 text-sm text-gray-600">{user.phoneNumber}</td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-2">
+                                                {user.roles?.includes('admin') && <Shield size={16} className="text-yellow-500" />}
+                                                <span className={`px-3 py-1 text-xs font-semibold rounded-full ${user.roles?.includes('admin') ? 'bg-yellow-100 text-yellow-700' : 'bg-blue-100 text-blue-700'}`}>
+                                                    {user.roles?.includes('admin')
+                                                        ? 'Admin'
+                                                        : (user.roles && user.roles.length ? (user.roles[0].charAt(0).toUpperCase() + user.roles[0].slice(1)) : 'User')}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`px-3 py-1 text-xs font-semibold rounded-full ${user.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
+                                                {user.isActive ? 'Active' : 'Inactive'}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-600">{formatUTC0DateToLocal(user.createdAt, 'en-US')}</td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-2">
+                                                <button onClick={() => { setSelectedUser(user); setShowEdit(true); }} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                                                    <Edit size={18} />
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        setUserToDelete(user);
+                                                        setShowDeleteConfirm(true);
+                                                    }}
+                                                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                    disabled={deletingId === user._id}
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
 
@@ -177,6 +177,35 @@ export default function UsersTable({ search = '', sort = '', page = 1, limit = 5
                             onUpdated={() => { setShowEdit(false); setSelectedUser(null); setRefreshTrigger(t => t + 1); }}
                         />
                     )}
+
+                    <ConfirmModal
+                        isOpen={showDeleteConfirm}
+                        title="Xác nhận xóa người dùng"
+                        message={`Bạn có chắc chắn muốn xóa người dùng "${userToDelete?.fullName || userToDelete?.username || userToDelete?.email}"? Hành động này không thể hoàn tác.`}
+                        confirmText="Xóa"
+                        cancelText="Hủy"
+                        variant="danger"
+                        onConfirm={async () => {
+                            if (!userToDelete?._id) return;
+                            try {
+                                setDeletingId(userToDelete._id);
+                                setShowDeleteConfirm(false);
+                                await userApi.delete(userToDelete._id);
+                                toast.push('Xoá người dùng thành công', 'success');
+                                setRefreshTrigger(t => t + 1);
+                            } catch (err: any) {
+                                const msg = err?.message || 'Xoá thất bại';
+                                toast.push(msg, 'error');
+                            } finally {
+                                setDeletingId(null);
+                                setUserToDelete(null);
+                            }
+                        }}
+                        onCancel={() => {
+                            setShowDeleteConfirm(false);
+                            setUserToDelete(null);
+                        }}
+                    />
 
                     <div className="mt-6 flex items-center justify-between p-4">
                         <p className="text-sm text-gray-600">Showing {(page - 1) * (limit || 0) + 1} to {Math.min((page || 1) * (limit || 0), total)} of {total} users</p>
