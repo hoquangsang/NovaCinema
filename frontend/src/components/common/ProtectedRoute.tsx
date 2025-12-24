@@ -15,7 +15,7 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
     }
 
     // If admin is required but user is not admin, redirect to home
-    if (requireAdmin && !user?.roles?.includes('admin')) {
+    if (requireAdmin && !user?.roles?.includes('ADMIN')) {
         return <Navigate to="/" replace />;
     }
 

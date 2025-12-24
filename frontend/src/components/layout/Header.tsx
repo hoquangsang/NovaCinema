@@ -84,7 +84,7 @@ export default function Header() {
                       My Bookings
                     </Link>
                     {/* Management option - only visible for admin users */}
-                    {user?.roles?.includes('admin') && (
+                    {user?.roles?.includes('ADMIN') && (
                       <Link
                         to="/management"
                         className="block px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-gray-100"
@@ -108,12 +108,12 @@ export default function Header() {
         <div className="flex h-12 items-center justify-between border-t border-white">
 
           <nav className="flex items-center gap-6">
-            <a
-              href="/theaters"
+            <Link
+              to="/showtimes"
               className="font-semibold text-white transition-colors hover:text-yellow-400"
             >
               Showtimes
-            </a>
+            </Link>
             <Link
               to="/now-showing"
               className="font-semibold text-white transition-colors hover:text-yellow-400"

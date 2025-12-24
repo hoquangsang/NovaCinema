@@ -18,6 +18,7 @@ import UsersManagementPage from "./pages/management/UsersManagementPage";
 import SettingsPage from "./pages/management/SettingsPage";
 
 import ProfilePage from "./pages/ProfilePage";
+import ShowtimesPage from "./pages/ShowtimesPage";
 
 import "./App.css";
 
@@ -34,12 +35,20 @@ function App() {
 
             {/* Thêm các trang khác ở đây sau này, ví dụ: */}
             <Route path="login" element={<AuthPage />} />
-            <Route path="profile" element={<ProfilePage />} />
+            <Route
+              path="profile"
+              element={
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
             {/* <Route path="movie/:id" element={<div>Movie Detail Page</div>} /> */}
             {/* Movie detail */}
             <Route path="movie/:id" element={<MovieDetailPage />} />
             <Route path="now-showing" element={<NowShowingPage />} />
             <Route path="coming-soon" element={<ComingSoonPage />} />
+            <Route path="showtimes" element={<ShowtimesPage />} />
           </Route>
 
           {/* Management Routes - Protected for Admin only */}
