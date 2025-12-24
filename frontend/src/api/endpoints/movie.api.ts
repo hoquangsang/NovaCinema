@@ -5,7 +5,7 @@ export interface Movie {
     title: string; // Tên phim
     director?: string; // Đạo diễn
     description?: string; // Mô tả phim
-    genre: string[]; // Thể loại phim
+    genres: string[]; // Thể loại phim
     duration: number; // Thời lượng phim tính bằng phút
     language?: string; // Ngôn ngữ của phim
     country?: string; // Quốc gia sản xuất
