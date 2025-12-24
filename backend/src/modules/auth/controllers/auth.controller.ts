@@ -1,76 +1,70 @@
-import { Body, Controller, HttpCode, Post } from "@nestjs/common";
-import { ApiOperation, ApiTags } from "@nestjs/swagger";
-import { Public, WrapCreatedResponse, WrapOkResponse } from "src/common/decorators";
-import { AuthService } from "../services/auth.service";
-import { LoginDto } from "../dtos/login.dto";
-import { RegisterDto } from "../dtos/register.dto";
-import { VerifyEmailDto } from "../dtos/verify-email.dto";
-import { ResendOtpDto } from "../dtos/resend-otp.dto";
-import { RefreshTokenDto } from "../dtos/refresh-token.dto";
-import { AccessTokenDto, AuthDto } from "../dtos";
+import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  Public,
+  WrapCreatedResponse,
+  WrapOkResponse,
+} from 'src/common/decorators';
+import { AuthService } from '../services';
+import {
+  LoginReqDto,
+  RefreshTokenReqDto,
+  RegisterReqDto,
+  ResendOtpReqDto,
+  VerifyEmailReqDto,
+} from '../dtos/requests';
+import { AccessTokenResDto, AuthResDto } from '../dtos/responses';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
-  @ApiOperation({ description: 'login' })
-  @WrapOkResponse({ dto: AuthDto, message: 'Login successful'})
+  @ApiOperation({ description: 'Login' })
+  @WrapOkResponse({ dto: AuthResDto, message: 'Logged in successful' })
   @Public()
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @Post('login')
-  login(
-    @Body() dto: LoginDto
-  ) {
-    return this.authService.login(
-      dto.email,
-      dto.password
-    );
+  public async login(@Body() dto: LoginReqDto) {
+    return this.authService.login(dto.email, dto.password);
   }
 
-  @ApiOperation({ description: 'register' })
-  @WrapCreatedResponse({ message: 'Register successful. Please verify OTP'})
+  @ApiOperation({ description: 'Register' })
+  @WrapCreatedResponse({ message: 'Registered successful. Please verify OTP' })
   @Public()
-  @HttpCode(201)
+  @HttpCode(HttpStatus.CREATED)
   @Post('register')
-  register(
-    @Body() dto: RegisterDto
-  ) {
+  public async register(@Body() dto: RegisterReqDto) {
     return this.authService.register(dto);
   }
 
-  @ApiOperation({ description: 'verify email' })
-  @WrapOkResponse({ message: 'Verify email successful'})
+  @ApiOperation({ description: 'Verify email' })
+  @WrapOkResponse({ message: 'Email verified successful' })
   @Public()
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @Post('email/verify')
-  verify(
-    @Body() dto: VerifyEmailDto
-  ) {
+  public async verify(@Body() dto: VerifyEmailReqDto) {
     return this.authService.verifyEmail(dto.email, dto.otp);
   }
 
-  @ApiOperation({ description: 'refresh token' })
-  @WrapOkResponse({ dto: AccessTokenDto, message: 'Token refreshed successfully'})
+  @ApiOperation({ description: 'Refresh token' })
+  @WrapOkResponse({
+    dto: AccessTokenResDto,
+    message: 'Token refreshed successfully',
+  })
   @Public()
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @Post('refresh-token')
-  refreshToken(
-    @Body() dto: RefreshTokenDto
-  ) {
+  public async refreshToken(@Body() dto: RefreshTokenReqDto) {
     return this.authService.refreshToken(dto.refreshToken);
   }
 
-  @ApiOperation({ description: 'resend otp' })
-  @WrapOkResponse({ message: 'A new OTP has been sent to your email. Please check your inbox.'})
+  @ApiOperation({ description: 'Resend otp' })
+  @WrapOkResponse({ message: 'OTP resent successfully' })
   @Public()
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @Post('otp/resend')
-  resendEmailOtp(
-    @Body() dto: ResendOtpDto
-  ) {
+  public async resendEmailOtp(@Body() dto: ResendOtpReqDto) {
     return this.authService.resendOtp(dto.email);
   }
 }

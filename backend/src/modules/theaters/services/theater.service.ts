@@ -1,57 +1,168 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { TheaterRepository } from "../repositories/theater.repository";
-import { SeatRepository } from "../repositories/seat.repository";
-import { RoomRepository } from "../repositories/room.repository";
+import escapeStringRegexp from 'escape-string-regexp';
+import { FilterQuery } from 'mongoose';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
+import { pickSortableFields } from 'src/modules/base/helpers';
+import { TheaterRepository } from '../repositories/theater.repository';
+import { TheaterDocument } from '../schemas/theater.schema';
+import { RoomService } from './room.service';
+import { THEATER_QUERY_FIELDS as QUERY_FIELDS } from './theater.service.constant';
+import { TheaterCriteria as Criteria } from './theater.service.type';
 
 @Injectable()
 export class TheaterService {
   constructor(
     private readonly theaterRepo: TheaterRepository,
-    private readonly roomRepo: RoomRepository,
-    private readonly seatRepo: SeatRepository
+    private readonly roomService: RoomService,
   ) {}
 
-  findTheaterById(id: string) {
-    return this.theaterRepo.findById(id);
+  /** */
+  public async findTheaterById(id: string) {
+    const existingTheater = await this.theaterRepo.query.findOneById({ id });
+    if (!existingTheater) return null;
+
+    const roomsCount = await this.roomService.countRoomsByTheaterId(id);
+    return {
+      ...existingTheater,
+      roomsCount,
+    };
   }
 
-  findAllTheaters() {
-    return this.theaterRepo.findAll();
+  /** */
+  public async findTheaters(options: Criteria.Query) {
+    const { sort: rawSort, ...rest } = options;
+    const filter = this.buildQueryFilter(rest);
+    const sort = pickSortableFields(rawSort, QUERY_FIELDS.SORTABLE);
+
+    const theaters = await this.theaterRepo.query.findMany({
+      filter,
+      sort,
+    });
+
+    return await Promise.all(
+      theaters.map(async (theater) => {
+        const roomsCount = await this.roomService.countRoomsByTheaterId(
+          theater._id,
+        );
+        return {
+          ...theater,
+          roomsCount,
+        };
+      }),
+    );
   }
 
-  createTheater(
-    data: {
-      theaterName: string;
-      address?: string;
-      hotline?: string;
-    }
-  ) {
-    return this.theaterRepo.create(data);
+  /** */
+  public async findTheatersPaginated(options: Criteria.PaginatedQuery) {
+    const { page, limit, sort: rawSort, ...rest } = options;
+    const filter = this.buildQueryFilter(rest);
+    const sort = pickSortableFields(rawSort, QUERY_FIELDS.SORTABLE);
+
+    //
+    const result = await this.theaterRepo.query.findManyPaginated({
+      filter,
+      page,
+      limit,
+      sort,
+    });
+
+    const theaters = await Promise.all(
+      result.items.map(async (theater) => {
+        const roomsCount = await this.roomService.countRoomsByTheaterId(
+          theater._id,
+        );
+        return {
+          ...theater,
+          roomsCount,
+        };
+      }),
+    );
+    return {
+      items: theaters,
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+    };
   }
 
-  async updateById(
+  /** */
+  public async createTheater(data: {
+    theaterName: string;
+    address?: string;
+    hotline?: string;
+  }) {
+    const { insertedItem: createdTheater } =
+      await this.theaterRepo.command.createOne({ data });
+
+    if (!createdTheater) throw new BadRequestException('Creation failed');
+    return createdTheater;
+  }
+
+  /** */
+  public async updateTheaterById(
     id: string,
-    updates: {
+    update: {
       theaterName?: string;
       address?: string;
       hotline?: string;
-    }
+    },
   ) {
-    const theater = await this.theaterRepo.findById(id);
-    if (!theater) throw new NotFoundException('Theater not found');
-    return this.theaterRepo.updateById(id, updates);
+    const { modifiedItem: updatedTheater } =
+      await this.theaterRepo.command.updateOneById({
+        id,
+        update,
+      });
+
+    if (!updatedTheater) throw new NotFoundException('Theater not found');
+    return updatedTheater;
   }
 
-  async deleteById(id: string) {
-    const theater = await this.theaterRepo.findById(id);
-    if (!theater) throw new NotFoundException('Theater not found');
+  /** */
+  public async deleteTheaterById(id: string) {
+    //TODO: add transaction
+    const existing = await this.theaterRepo.query.findOneById({
+      id,
+      inclusion: { _id: true },
+    });
+    if (!existing) throw new NotFoundException('Theater not found');
 
-    const rooms = await this.roomRepo.findRoomsByTheaterId(id);
-    for (const room of rooms) {
-      await this.seatRepo.deleteByRoomId(room._id);
+    // delete all rooms
+    await this.roomService.deleteRoomsByTheaterId(existing._id);
+
+    const result = await this.theaterRepo.command.deleteOneById({ id });
+    if (!result.deletedCount)
+      throw new InternalServerErrorException('Deletion failed');
+
+    // TODO: deactivate all showtimes
+    return true;
+  }
+
+  /** */
+  private buildQueryFilter(options: Criteria.Query) {
+    const { search, sort: rawSort, ...rest } = options;
+    const filter: FilterQuery<TheaterDocument> = {};
+
+    // search fields
+    if (search) {
+      const r = new RegExp(escapeStringRegexp(search), 'i');
+      filter.$or = QUERY_FIELDS.SEARCHABLE.map((f) => ({ [f]: r }));
     }
-    await this.roomRepo.deleteByTheaterId(theater._id);
 
-    return this.theaterRepo.deleteById(id);
+    // regex fields
+    QUERY_FIELDS.REGEX_MATCH.forEach((f) => {
+      if (rest[f] !== undefined)
+        filter[f] = new RegExp(escapeStringRegexp(rest[f]), 'i');
+    });
+
+    // exact match fields
+    QUERY_FIELDS.EXACT_MATCH.forEach((f) => {
+      if (rest[f] !== undefined) filter[f] = rest[f];
+    });
+
+    return filter;
   }
 }

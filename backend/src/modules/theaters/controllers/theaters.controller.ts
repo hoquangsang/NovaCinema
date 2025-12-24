@@ -1,63 +1,99 @@
-import { Body, Controller, Delete, Get, HttpCode, NotFoundException, Param, Patch, Post } from "@nestjs/common";
-import { ApiOperation, ApiTags } from "@nestjs/swagger";
-import { ParseObjectIdPipe } from "@nestjs/mongoose";
-import { TheaterService } from "../services/theater.service";
-import { Public, WrapListResponse, WrapNoContentResponse, WrapOkResponse } from "src/common/decorators";
-import { CreateTheaterDto, TheaterDto, UpdateTheaterDto } from "../dtos";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ParseObjectIdPipe } from '@nestjs/mongoose';
+import {
+  Public,
+  RequireRoles,
+  WrapListResponse,
+  WrapNoContentResponse,
+  WrapOkResponse,
+  WrapPaginatedResponse,
+} from 'src/common/decorators';
+import { USER_ROLES } from 'src/modules/users/constants';
+import { TheaterService } from '../services/theater.service';
+import {
+  CreateTheaterReqDto,
+  PaginatedQueryTheatersReqDto,
+  QueryTheatersReqDto,
+  UpdateTheaterReqDto,
+} from '../dtos/requests';
+import { TheaterResDto } from '../dtos/responses';
 
 @ApiTags('Theaters')
 @Controller('theaters')
 export class TheatersController {
-  constructor(
-    private readonly service: TheaterService
-  ) {}
-  
-  @ApiOperation({ description: 'Get theater by ID' })
-  @WrapOkResponse({ dto: TheaterDto })
-  @HttpCode(200)
-  @Get(':id')
-  async getById(@Param('id', ParseObjectIdPipe) id: string) {
-    const theater = await this.service.findTheaterById(id);
-    if (!theater) throw new NotFoundException('Theater not found');
-    return theater;
+  constructor(private readonly theaterService: TheaterService) {}
+
+  @ApiOperation({ description: 'Query theaters' })
+  @WrapPaginatedResponse({ dto: TheaterResDto })
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @Get()
+  public async paginatedQueryTheaters(
+    @Query() query: PaginatedQueryTheatersReqDto,
+  ) {
+    return this.theaterService.findTheatersPaginated(query);
   }
 
-  @ApiOperation({ description: 'Get all theaters' })
-  @WrapListResponse({ dto: TheaterDto })
+  @ApiOperation({ description: 'Query all theaters' })
+  @WrapListResponse({ dto: TheaterResDto })
   @Public()
-  @HttpCode(200)
-  @Get()
-  async getAll() {
-    return this.service.findAllTheaters();
+  @HttpCode(HttpStatus.OK)
+  @Get('/list')
+  public async queryTheaters(@Query() query: QueryTheatersReqDto) {
+    return this.theaterService.findTheaters(query);
+  }
+
+  @ApiOperation({ description: 'Get theater by ID' })
+  @WrapOkResponse({ dto: TheaterResDto })
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @Get(':id')
+  public async getById(@Param('id', ParseObjectIdPipe) id: string) {
+    const existed = await this.theaterService.findTheaterById(id);
+    if (!existed) throw new NotFoundException('Theater not found');
+    return existed;
   }
 
   @ApiOperation({ description: 'Create new theater' })
-  @WrapOkResponse({ dto: TheaterDto })
-  @HttpCode(201)
+  @WrapOkResponse({ dto: TheaterResDto, message: 'Created successfully' })
+  @RequireRoles(USER_ROLES.ADMIN)
+  @HttpCode(HttpStatus.CREATED)
   @Post()
-  async createTheater(@Body() dto: CreateTheaterDto) {
-    return this.service.createTheater(dto);
+  public async createTheater(@Body() dto: CreateTheaterReqDto) {
+    return this.theaterService.createTheater(dto);
   }
 
   @ApiOperation({ description: 'Update theater' })
-  @WrapOkResponse({ dto: TheaterDto })
-  @HttpCode(200)
+  @WrapOkResponse({ dto: TheaterResDto, message: 'Updated successfully' })
+  @RequireRoles(USER_ROLES.ADMIN)
+  @HttpCode(HttpStatus.OK)
   @Patch(':id')
-  async updateTheater(
+  public async updateTheater(
     @Param('id', ParseObjectIdPipe) id: string,
-    @Body() dto: UpdateTheaterDto
+    @Body() dto: UpdateTheaterReqDto,
   ) {
-    const theater = await this.service.updateById(id, dto);
-    if (!theater) throw new NotFoundException('Theater not found');
-    return theater;
+    return this.theaterService.updateTheaterById(id, dto);
   }
 
-  @ApiOperation({ description: 'Delete theater' })
-  @WrapNoContentResponse({ message: 'Theater deleted successfully' })
-  @HttpCode(204)
+  @ApiOperation({ description: 'Hard delete theater' })
+  @WrapNoContentResponse({ message: 'Deleted successfully' })
+  @RequireRoles(USER_ROLES.ADMIN)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
-  async deleteTheater(@Param('id', ParseObjectIdPipe) id: string) {
-    const deleted = await this.service.deleteById(id);
-    if (!deleted) throw new NotFoundException('Theater not found');
+  public async deleteTheater(@Param('id', ParseObjectIdPipe) id: string) {
+    await this.theaterService.deleteTheaterById(id);
   }
 }

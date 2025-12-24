@@ -3,20 +3,27 @@ import {
   CanActivate,
   ExecutionContext,
   ForbiddenException,
-} from "@nestjs/common";
-import { Reflector } from "@nestjs/core";
-import { METADATA_KEYS } from '../constants'
+} from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { UserRoleType } from 'src/modules/users/types';
+import { METADATA_KEYS } from '../constants';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   canActivate(ctx: ExecutionContext): boolean {
-    const roles = this.reflector.get<string[]>(
-      METADATA_KEYS.ROLES,
-      ctx.getHandler()
+    const isPublic = this.reflector.getAllAndOverride<boolean>(
+      METADATA_KEYS.IS_PUBLIC,
+      [ctx.getHandler(), ctx.getClass()],
     );
-    if (!roles) return true;
+    if (isPublic) return true;
+
+    const roles = this.reflector.getAllAndOverride<UserRoleType[]>(
+      METADATA_KEYS.ROLES,
+      [ctx.getHandler(), ctx.getClass()],
+    );
+    if (!roles || roles.length === 0) return true;
 
     const request = ctx.switchToHttp().getRequest();
     const user = request.user;
@@ -25,7 +32,7 @@ export class RolesGuard implements CanActivate {
       throw new ForbiddenException('Invalid user roles');
     }
 
-    const hasRole = user.roles.some((r: string) => roles.includes(r));
+    const hasRole = user.roles.some((r: UserRoleType) => roles.includes(r));
     if (!hasRole) {
       throw new ForbiddenException('Role not permitted');
     }

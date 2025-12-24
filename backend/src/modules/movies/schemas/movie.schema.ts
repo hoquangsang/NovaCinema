@@ -9,11 +9,10 @@ export class Movie {
   title!: string;
 
   @Prop({ type: [String], required: true })
-  genre!: string[];
+  genres!: string[];
 
-  @Prop({ required: true })
+  @Prop({ required: true, min: 1 })
   duration!: number;
-
 
   @Prop()
   description?: string;
@@ -24,22 +23,21 @@ export class Movie {
   @Prop()
   trailerUrl?: string;
 
-
-  @Prop()
-  releaseDate?: Date;
+  @Prop({ required: true })
+  releaseDate!: Date;
 
   @Prop()
   endDate?: Date;
 
   @Prop()
-  ratingAge?: number;
+  ratingAge?: string;
 
   @Prop()
   country?: string;
 
   @Prop()
   language?: string;
-  
+
   @Prop({ type: [String] })
   actors?: string[];
 
@@ -51,4 +49,6 @@ export class Movie {
 }
 
 export const MovieSchema = SchemaFactory.createForClass(Movie);
+MovieSchema.index({ releaseDate: 1 });
+MovieSchema.index({ endDate: 1 });
 MovieSchema.index({ releaseDate: 1, endDate: 1 });

@@ -1,48 +1,38 @@
-import { Module } from "@nestjs/common";
-import { MongooseModule } from "@nestjs/mongoose";
-
-import { Theater, TheaterSchema } from "./schemas/theater.schema";
-import { Room, RoomSchema } from "./schemas/room.schema";
-import { Seat, SeatSchema } from "./schemas/seat.schema";
-
-import { TheaterRepository } from "./repositories/theater.repository";
-import { RoomRepository } from "./repositories/room.repository";
-import { SeatRepository } from "./repositories/seat.repository";
-
-import { RoomService } from "./services/room.service";
-import { SeatService } from "./services/seat.service";
-import { TheaterService } from "./services/theater.service";
-
-import { RoomsController } from "./controllers/rooms.controller";
-import { SeatsController } from "./controllers/seats.controller";
-import { TheatersController } from "./controllers/theaters.controller";
-
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Room, RoomSchema, Theater, TheaterSchema } from './schemas';
+import {
+  RoomCommandRepository,
+  RoomQueryRepository,
+  RoomRepository,
+  TheaterCommandRepository,
+  TheaterQueryRepository,
+  TheaterRepository,
+} from './repositories';
+import { RoomService, TheaterService } from './services';
+import { RoomsController, TheatersController } from './controllers';
 
 @Module({
   imports: [
+    ConfigModule,
     MongooseModule.forFeature([
-        { name: Theater.name, schema: TheaterSchema },
-        { name: Room.name, schema: RoomSchema },
-        { name: Seat.name, schema: SeatSchema }
-    ])
+      { name: Theater.name, schema: TheaterSchema },
+      { name: Room.name, schema: RoomSchema },
+    ]),
   ],
-  controllers: [
-    TheatersController,
-    RoomsController,
-    SeatsController
-  ],
+  controllers: [TheatersController, RoomsController],
   providers: [
-    TheaterService,
+    TheaterCommandRepository,
+    TheaterQueryRepository,
     TheaterRepository,
-    RoomService,
-    SeatService,
-    RoomRepository,
-    SeatRepository
-  ],
-  exports: [
     TheaterService,
+
+    RoomCommandRepository,
+    RoomQueryRepository,
+    RoomRepository,
     RoomService,
-    SeatService
-  ]
+  ],
+  exports: [TheaterService, RoomService],
 })
 export class TheatersModule {}

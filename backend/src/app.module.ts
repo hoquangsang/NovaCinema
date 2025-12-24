@@ -1,26 +1,30 @@
-import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
-import { DatabaseModule } from './database';
-import { MailModule } from './mail';
-import { UsersModule } from './modules/users';
-import { AuthModule } from './modules/auth';
-import { MoviesModule } from './modules/movies';
-import { TheatersModule } from './modules/theaters';
+import { Module } from '@nestjs/common';
 import { ValidationPipe } from './common/pipes';
 import { LoggingInterceptor, ResponseInterceptor } from './common/interceptors';
 import { HttpExceptionFilter, MongoExceptionFilter } from './common/filters';
 import { JwtAuthGuard, RolesGuard } from './common/guards';
+import { DatabaseModule } from './database';
+import { UsersModule } from './modules/users';
+import { NotificationsModule } from './modules/notifications';
+import { AuthModule } from './modules/auth';
+import { MoviesModule } from './modules/movies';
+import { TheatersModule } from './modules/theaters';
+import { TicketPricingModule } from './modules/ticket-pricing';
+import { ShowtimesModule } from './modules/showtimes';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }), // load .env toàn cục
     DatabaseModule,
-    MailModule,
     UsersModule,
     AuthModule,
     MoviesModule,
     TheatersModule,
+    NotificationsModule,
+    TicketPricingModule,
+    ShowtimesModule,
   ],
 
   providers: [
