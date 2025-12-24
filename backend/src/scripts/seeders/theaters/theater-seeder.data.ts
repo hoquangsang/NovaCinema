@@ -18,12 +18,6 @@ export const THEATERS_MOCK = [
   },
 ];
 
-export const ROOMS_MOCK = [
-  { roomName: 'Room 1', rowCount: 8, seatsPerRow: 10 },
-  { roomName: 'Room 2', rowCount: 8, seatsPerRow: 10 },
-  { roomName: 'Room 3', rowCount: 8, seatsPerRow: 10 },
-];
-
 export function generateSeatMap(
   rowCount: number,
   seatsPerRow: number,

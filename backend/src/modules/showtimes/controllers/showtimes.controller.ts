@@ -44,6 +44,7 @@ export class ShowtimesController {
 
   @ApiOperation({ description: 'Paginated query range showtimes' })
   @WrapPaginatedResponse({ dto: ShowtimeResDto })
+  @Public()
   @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.OK)
   @Get()

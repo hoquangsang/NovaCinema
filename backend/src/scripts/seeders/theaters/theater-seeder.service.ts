@@ -7,12 +7,11 @@ import {
   Theater,
   TheaterDocument,
 } from 'src/modules/theaters';
-import {
-  THEATERS_MOCK,
-  ROOMS_MOCK,
-  generateSeatMap,
-} from './theater-seeder.data';
+import { THEATERS_MOCK, generateSeatMap } from './theater-seeder.data';
 
+const ROOM_COUNT = 8;
+const ROW_COUNT = 8;
+const SEATS_PER_ROW = 10;
 @Injectable()
 export class TheaterSeederService {
   private readonly logger = new Logger(TheaterSeederService.name);
@@ -38,17 +37,17 @@ export class TheaterSeederService {
     for (const theater of theaters) {
       const theaterId = theater._id;
 
-      for (const r of ROOMS_MOCK) {
-        const seatMap = generateSeatMap(r.rowCount, r.seatsPerRow);
+      for (let i = 1; i <= ROOM_COUNT; i++) {
+        const seatMap = generateSeatMap(ROW_COUNT, SEATS_PER_ROW);
 
-        const room = await this.roomModel.create({
+        await this.roomModel.create({
           theaterId,
-          roomName: r.roomName,
+          roomName: `Room ${i}`,
           seatMap,
         });
       }
     }
 
-    this.logger.log(`Users theaters!`);
+    this.logger.log(`Theater inserted!`);
   }
 }
