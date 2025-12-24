@@ -64,7 +64,7 @@ export const authApi = {
    * Refresh access token
    */
   refreshToken: async (refreshToken: string): Promise<{ accessToken: string }> => {
-    const response = await apiClient.post('/auth/refresh', { refreshToken });
+    const response = await apiClient.post('/auth/refresh-token', { refreshToken });
     return response.data;
   },
 
@@ -113,7 +113,7 @@ export const authApi = {
     // (validation or 400) doesn't trigger automatic logout/refresh logic.
     const token = localStorage.getItem('accessToken');
     await axios.patch(
-      `${config.apiBaseUrl}/api/users/me/password`,
+      `${config.apiBaseUrl}/api/users/change-password`,
       { currentPassword, newPassword },
       {
         headers: {

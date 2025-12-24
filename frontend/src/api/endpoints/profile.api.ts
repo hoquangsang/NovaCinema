@@ -10,6 +10,7 @@ import type { User } from './auth.api';
 
 export interface UpdateProfileParams {
   fullName?: string;
+  username?: string;
   phoneNumber?: string;
   dateOfBirth?: string;
   email?: string;

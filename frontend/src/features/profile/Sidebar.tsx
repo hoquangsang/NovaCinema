@@ -27,7 +27,8 @@ const Sidebar = ({ user, onLogout }: Props) => {
         </div>
         <div>
           <div className="font-bold">{user?.fullName || user?.username || 'User'}</div>
-          <div className="text-sm text-white/80">Thành viên</div>
+          <div className="text-sm text-white/80">{user?.roles?.includes('ADMIN') ? 'Admin' : 'Thành viên'}</div>
+          <div className="text-xs text-white/60 mt-1">{user?.email}</div>
         </div>
       </div>
 
