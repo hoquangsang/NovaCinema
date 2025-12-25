@@ -1,12 +1,17 @@
 import { useState } from 'react';
 import MovieHeader from '../../features/management/movie/MovieHeader';
-import MovieSearchFilter from '../../features/management/movie/MovieSearchFilter';
+import MovieSearchFilter, { type FilterValues } from '../../features/management/movie/MovieSearchFilter';
 import MoviesTable from '../../features/management/movie/MoviesTable';
 import AddEditMovieModal from '../../features/management/movie/AddEditMovieModal';
 import type { Movie } from '../../api/endpoints/movie.api';
 
 export default function MoviesManagementPage() {
-    const [search, setSearch] = useState('');
+    const [filters, setFilters] = useState<FilterValues>({
+        search: '',
+        status: '',
+        genre: '',
+        ratingAge: '',
+    });
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
     const [showModal, setShowModal] = useState(false);
@@ -41,17 +46,25 @@ export default function MoviesManagementPage() {
         setPage(1);
     };
 
+    const handleFilterChange = (newFilters: FilterValues) => {
+        setFilters(newFilters);
+        setPage(1); // Reset to first page when filters change
+    };
+
     return (
         <div>
             <MovieHeader onAddClick={handleAddClick} />
             
             <MovieSearchFilter 
-                search={search} 
-                onSearchChange={setSearch} 
+                filters={filters} 
+                onFilterChange={handleFilterChange} 
             />
             
             <MoviesTable 
-                search={search}
+                search={filters.search}
+                status={filters.status}
+                genre={filters.genre}
+                ratingAge={filters.ratingAge}
                 page={page}
                 limit={limit}
                 onPageChange={handlePageChange}

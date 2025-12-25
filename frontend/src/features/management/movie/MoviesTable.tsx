@@ -6,6 +6,9 @@ import { ConfirmModal } from '../../../components/common/ConfirmModal';
 
 interface Props {
     search?: string;
+    status?: string;
+    genre?: string;
+    ratingAge?: string;
     page?: number;
     limit?: number;
     onPageChange?: (nextPage: number) => void;
@@ -16,6 +19,9 @@ interface Props {
 
 export default function MoviesTable({ 
     search = '', 
+    status = '',
+    genre = '',
+    ratingAge = '',
     page = 1, 
     limit = 10, 
     onPageChange, 
@@ -38,14 +44,56 @@ export default function MoviesTable({
             setLoading(true);
             setError(null);
             try {
+                // Build filter params
+                const now = new Date();
+                let from: string | undefined;
+                let to: string | undefined;
+
+                // Status filter logic
+                if (status === 'showing') {
+                    // Now showing: releaseDate <= now <= endDate
+                    to = now.toISOString().split('T')[0];
+                } else if (status === 'upcoming') {
+                    // Coming soon: releaseDate > now
+                    from = now.toISOString().split('T')[0];
+                } else if (status === 'ended') {
+                    // Ended: endDate < now
+                    to = now.toISOString().split('T')[0];
+                }
+
                 const res = await movieApi.getAllMoviesWithFilters({ 
                     search: search || undefined, 
                     page, 
-                    limit 
+                    limit,
+                    genres: genre ? [genre] : undefined,
+                    ratingAge: ratingAge || undefined,
+                    from: status === 'upcoming' ? from : undefined,
+                    to: status === 'ended' ? to : undefined,
                 });
                 if (!mounted) return;
-                setMovies(res.items || []);
-                setTotal(res.total || 0);
+                
+                // Client-side filtering for status if API doesn't fully support it
+                let filteredMovies = res.items || [];
+                if (status === 'showing') {
+                    filteredMovies = filteredMovies.filter(movie => {
+                        const releaseDate = movie.releaseDate ? new Date(movie.releaseDate) : null;
+                        const endDate = movie.endDate ? new Date(movie.endDate) : null;
+                        return releaseDate && releaseDate <= now && (!endDate || endDate >= now);
+                    });
+                } else if (status === 'upcoming') {
+                    filteredMovies = filteredMovies.filter(movie => {
+                        const releaseDate = movie.releaseDate ? new Date(movie.releaseDate) : null;
+                        return releaseDate && releaseDate > now;
+                    });
+                } else if (status === 'ended') {
+                    filteredMovies = filteredMovies.filter(movie => {
+                        const endDate = movie.endDate ? new Date(movie.endDate) : null;
+                        return endDate && endDate < now;
+                    });
+                }
+
+                setMovies(filteredMovies);
+                setTotal(status ? filteredMovies.length : (res.total || 0));
             } catch (err: any) {
                 if (mounted) {
                     setError(err?.message || 'Failed to load movies');
@@ -60,7 +108,7 @@ export default function MoviesTable({
         return () => {
             mounted = false;
         };
-    }, [search, page, limit, refreshTrigger]);
+    }, [search, status, genre, ratingAge, page, limit, refreshTrigger]);
 
     const totalPages = Math.max(1, Math.ceil(total / limit));
 
@@ -305,9 +353,9 @@ export default function MoviesTable({
                 isOpen={showDeleteConfirm}
                 onCancel={() => setShowDeleteConfirm(false)}
                 onConfirm={handleDeleteConfirm}
-                title="Delete Movie"
-                message={`Are you sure you want to delete "${movieToDelete?.title}"? This action cannot be undone.`}
-                confirmText="Delete"
+                title="Xác nhận xóa phim"
+                message={`Bạn có chắc chắn muốn xóa phim "${movieToDelete?.title}"? Hành động này không thể hoàn tác.`}
+                confirmText="Xóa"
                 variant="danger"
             />
         </>
