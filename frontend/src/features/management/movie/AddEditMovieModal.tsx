@@ -34,6 +34,32 @@ export default function AddEditMovieModal({ isOpen, onClose, onSuccess, movie }:
 
     useEffect(() => {
         if (isOpen && movie) {
+            // Debug: log raw endDate from server
+            console.log('Movie endDate from server:', movie.endDate, 'Type:', typeof movie.endDate);
+            console.log('Movie releaseDate from server:', movie.releaseDate, 'Type:', typeof movie.releaseDate);
+            
+            // Helper to extract yyyy-MM-dd from various formats
+            const extractDate = (dateValue: string | undefined | null): string => {
+                if (!dateValue) return '';
+                // If it contains 'T', split by T
+                if (dateValue.includes('T')) {
+                    return dateValue.split('T')[0];
+                }
+                // If already in yyyy-MM-dd format
+                if (/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+                    return dateValue;
+                }
+                // Try to parse and format
+                const date = new Date(dateValue);
+                if (!isNaN(date.getTime())) {
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    return `${year}-${month}-${day}`;
+                }
+                return '';
+            };
+
             setFormData({
                 title: movie.title,
                 genres: movie.genres,
@@ -41,8 +67,8 @@ export default function AddEditMovieModal({ isOpen, onClose, onSuccess, movie }:
                 description: movie.description || '',
                 posterUrl: movie.posterUrl || '',
                 trailerUrl: movie.trailerUrl || '',
-                releaseDate: movie.releaseDate ? movie.releaseDate.split('T')[0] : '',
-                endDate: movie.endDate ? movie.endDate.split('T')[0] : '',
+                releaseDate: extractDate(movie.releaseDate),
+                endDate: extractDate(movie.endDate),
                 ratingAge: movie.ratingAge || '',
                 country: movie.country || '',
                 language: movie.language || '',
@@ -80,22 +106,49 @@ export default function AddEditMovieModal({ isOpen, onClose, onSuccess, movie }:
 
         setLoading(true);
         try {
+            // Ensure dates are formatted as yyyy-MM-dd
+            const formatDate = (dateStr: string | undefined) => {
+                if (!dateStr || dateStr.trim() === '') return undefined;
+                // If already in yyyy-MM-dd format, return as is
+                if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+                    return dateStr;
+                }
+                // Otherwise try to parse and format
+                const date = new Date(dateStr);
+                if (isNaN(date.getTime())) return undefined;
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+
             const cleanPayload: any = {
                 title: formData.title,
                 genres: formData.genres,
                 duration: formData.duration,
-                description: formData.description || null,
-                posterUrl: formData.posterUrl || null,
-                trailerUrl: formData.trailerUrl || null,
-                releaseDate: formData.releaseDate ? formData.releaseDate.split('T')[0] : null,
-                endDate: formData.endDate ? formData.endDate.split('T')[0] : null,
-                ratingAge: formData.ratingAge || null,
-                country: formData.country || null,
-                language: formData.language || null,
-                actors: formData.actors && formData.actors.length > 0 ? formData.actors : null,
-                director: formData.director || null,
-                producer: formData.producer || null,
+                description: formData.description || undefined,
+                posterUrl: formData.posterUrl || undefined,
+                trailerUrl: formData.trailerUrl || undefined,
+                releaseDate: formatDate(formData.releaseDate),
+                endDate: formatDate(formData.endDate),
+                ratingAge: formData.ratingAge || undefined,
+                country: formData.country || undefined,
+                language: formData.language || undefined,
+                actors: formData.actors && formData.actors.length > 0 ? formData.actors : undefined,
+                director: formData.director || undefined,
+                producer: formData.producer || undefined,
             };
+
+            // Remove undefined and null fields
+            Object.keys(cleanPayload).forEach(key => {
+                if (cleanPayload[key] === undefined || cleanPayload[key] === null) {
+                    delete cleanPayload[key];
+                }
+            });
+
+            // Debug: log payload
+            console.log('Submitting payload:', cleanPayload);
+            console.log('Form endDate:', formData.endDate, 'Formatted:', formatDate(formData.endDate));
 
             if (movie) {
                 await movieApi.updateMovie(movie._id, cleanPayload);
@@ -107,7 +160,11 @@ export default function AddEditMovieModal({ isOpen, onClose, onSuccess, movie }:
             onSuccess();
             onClose();
         } catch (err: any) {
-            toast.push(err?.message || 'Failed to save movie', 'error');
+            console.error('API Error:', err);
+            console.error('Error response:', err?.response?.data);
+            console.error('Errors array:', err?.response?.data?.errors);
+            const errorMsg = err?.response?.data?.message || err?.message || 'Failed to save movie';
+            toast.push(errorMsg, 'error');
         } finally {
             setLoading(false);
         }
@@ -141,8 +198,8 @@ export default function AddEditMovieModal({ isOpen, onClose, onSuccess, movie }:
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-20 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/40' onClick={onClose}>
+            <div className='bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto' onClick={(e) => e.stopPropagation()}>
                 {/* Header */}
                 <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
                     <h2 className="text-2xl font-bold text-gray-800">
