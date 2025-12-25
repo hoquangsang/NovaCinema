@@ -26,7 +26,7 @@ export class UpdateMovieReqDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  genre?: string[];
+  genres?: string[];
 
   @ApiPropertyOptional({
     type: Number,
