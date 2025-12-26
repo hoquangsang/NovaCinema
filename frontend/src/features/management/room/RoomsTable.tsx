@@ -17,6 +17,7 @@ interface RoomsTableProps {
     page: number;
     limit: number;
     onPageChange: (page: number) => void;
+    onLimitChange?: (limit: number) => void;
     onEdit?: (room: Room) => void;
     onDelete?: (room: Room) => void;
     refreshTrigger?: number;
@@ -30,6 +31,7 @@ export default function RoomsTable({
     page,
     limit,
     onPageChange,
+    onLimitChange,
     onEdit,
     onDelete,
     refreshTrigger = 0,
@@ -198,11 +200,28 @@ export default function RoomsTable({
                 </table>
             </div>
 
-            {/* Pagination */}
+            {/* Pagination - Always visible */}
             <div className="mt-6 flex items-center justify-between">
-                <p className="text-sm text-gray-600">
-                    Showing {((meta.page - 1) * meta.limit) + 1} to {Math.min(meta.page * meta.limit, meta.total)} of {meta.total} rooms
-                </p>
+                <div className="flex items-center gap-4">
+                    {/* Limit selector */}
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-600">Show</span>
+                        <select
+                            value={limit}
+                            onChange={(e) => onLimitChange?.(Number(e.target.value))}
+                            className="px-3 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 text-sm"
+                        >
+                            <option value={5}>5</option>
+                            <option value={10}>10</option>
+                            <option value={20}>20</option>
+                            <option value={50}>50</option>
+                        </select>
+                        <span className="text-sm text-gray-600">entries</span>
+                    </div>
+                    <p className="text-sm text-gray-600">
+                        Showing {meta.total > 0 ? ((meta.page - 1) * meta.limit) + 1 : 0} to {Math.min(meta.page * meta.limit, meta.total)} of {meta.total} rooms
+                    </p>
+                </div>
                 <div className="flex gap-2">
                     <button
                         onClick={() => onPageChange(meta.page - 1)}
@@ -225,7 +244,7 @@ export default function RoomsTable({
                     ))}
                     <button
                         onClick={() => onPageChange(meta.page + 1)}
-                        disabled={meta.page >= meta.totalPages}
+                        disabled={meta.page >= meta.totalPages || meta.totalPages === 0}
                         className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Next

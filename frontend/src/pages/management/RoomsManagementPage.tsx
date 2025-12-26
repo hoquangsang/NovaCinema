@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import RoomHeader from '../../features/management/room/RoomHeader';
 import RoomSearchFilter, { type RoomFilterValues } from '../../features/management/room/RoomSearchFilter';
 import RoomsTable from '../../features/management/room/RoomsTable';
+import AddEditRoomModal from '../../features/management/room/AddEditRoomModal';
 import { theaterApi, type Theater } from '../../api/endpoints/theater.api';
 import { roomApi, type Room } from '../../api/endpoints/room.api';
 import { ConfirmModal } from '../../components/common/ConfirmModal';
@@ -24,7 +25,12 @@ export default function RoomsManagementPage() {
         status: '',
     });
     const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(10);
     const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+    // Modal state
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [roomToEdit, setRoomToEdit] = useState<Room | null>(null);
 
     // Delete modal state
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -58,17 +64,31 @@ export default function RoomsManagementPage() {
 
     const handleTheaterChange = (theaterId: string) => {
         setSelectedTheaterId(theaterId);
-        setPage(1); // Reset to first page when theater changes
+        setPage(1);
     };
 
     const handleAddClick = () => {
-        // TODO: Open add room modal
-        console.log('Add new room clicked');
+        setRoomToEdit(null);
+        setShowEditModal(true);
+    };
+
+    const handleEditClick = (room: Room) => {
+        setRoomToEdit(room);
+        setShowEditModal(true);
+    };
+
+    const handleModalClose = () => {
+        setShowEditModal(false);
+        setRoomToEdit(null);
+    };
+
+    const handleModalSuccess = () => {
+        setRefreshTrigger(prev => prev + 1);
     };
 
     const handleFilterChange = (newFilters: RoomFilterValues) => {
         setFilters(newFilters);
-        setPage(1); // Reset to first page when filters change
+        setPage(1);
     };
 
     const handlePageChange = (newPage: number) => {
@@ -86,10 +106,10 @@ export default function RoomsManagementPage() {
         setDeleting(true);
         try {
             await roomApi.delete(roomToDelete._id);
-            toast.push('Room deleted successfully', 'success');
+            toast.push('Xóa phòng thành công', 'success');
             setRefreshTrigger(prev => prev + 1);
         } catch (error: unknown) {
-            const errorMessage = error instanceof Error ? error.message : 'Failed to delete room';
+            const errorMessage = error instanceof Error ? error.message : 'Không thể xóa phòng';
             toast.push(errorMessage, 'error');
         } finally {
             setDeleting(false);
@@ -125,22 +145,34 @@ export default function RoomsManagementPage() {
                 roomType={filters.roomType}
                 status={filters.status}
                 page={page}
-                limit={10}
+                limit={limit}
                 onPageChange={handlePageChange}
+                onLimitChange={(newLimit) => { setLimit(newLimit); setPage(1); }}
+                onEdit={handleEditClick}
                 onDelete={handleDeleteClick}
                 refreshTrigger={refreshTrigger}
             />
+
+            {/* Add/Edit Room Modal */}
+            {showEditModal && (
+                <AddEditRoomModal
+                    room={roomToEdit}
+                    theaterId={selectedTheaterId}
+                    onClose={handleModalClose}
+                    onSuccess={handleModalSuccess}
+                />
+            )}
 
             {/* Delete Confirmation Modal */}
             {showDeleteConfirm && roomToDelete && (
                 <ConfirmModal
                     isOpen={showDeleteConfirm}
-                    title="Delete Room"
-                    message={`Are you sure you want to delete "${roomToDelete.roomName}"? This action cannot be undone.`}
+                    title="Xóa Phòng"
+                    message={`Bạn có chắc chắn muốn xóa "${roomToDelete.roomName}"? Hành động này không thể hoàn tác.`}
                     onConfirm={handleDeleteConfirm}
                     onCancel={handleDeleteCancel}
-                    confirmText={deleting ? 'Deleting...' : 'Delete'}
-                    cancelText="Cancel"
+                    confirmText={deleting ? 'Đang xóa...' : 'Xóa'}
+                    cancelText="Hủy"
                     variant="danger"
                 />
             )}
