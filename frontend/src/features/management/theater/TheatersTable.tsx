@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Edit, Trash2, MapPin, Phone, CheckCircle, XCircle } from 'lucide-react';
 import { theaterApi } from '../../../api/endpoints/theater.api';
 import type { Theater } from '../../../api/endpoints/theater.api';
@@ -35,6 +36,7 @@ export default function TheatersTable({
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [theaterToDelete, setTheaterToDelete] = useState<Theater | null>(null);
     const toast = useToast();
+    const navigate = useNavigate();
 
     useEffect(() => {
         let mounted = true;
@@ -186,14 +188,18 @@ export default function TheatersTable({
                                                 </div>
                                             </div>
 
-                                            {/* Stats */}
+                                            {/* Stats & Quick Actions */}
                                             <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200">
-                                                <div>
-                                                    <p className="text-xs text-gray-500">Rooms</p>
-                                                    <p className="text-2xl font-bold text-gray-800">
+                                                <button
+                                                    onClick={() => navigate(`/management/rooms?theaterId=${theater._id}`)}
+                                                    className="group text-left hover:bg-gray-50 rounded-lg px-2 py-1 -ml-2 transition-colors"
+                                                    title="Click to view rooms"
+                                                >
+                                                    <p className="text-xs text-gray-500 group-hover:text-yellow-600">Rooms</p>
+                                                    <p className="text-2xl font-bold text-gray-800 group-hover:text-yellow-600">
                                                         {theater.roomsCount || 0}
                                                     </p>
-                                                </div>
+                                                </button>
                                                 <div className="text-right">
                                                     <p className="text-xs text-gray-500">Created</p>
                                                     <p className="text-sm font-medium text-gray-700">
