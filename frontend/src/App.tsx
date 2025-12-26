@@ -1,6 +1,6 @@
 // src/App.tsx
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ToastProvider } from './components/common/ToastProvider';
+import { ToastProvider } from "./components/common/ToastProvider";
 import MainLayout from "./components/layout/MainLayout";
 import ManagementLayout from "./components/layout/ManagementLayout";
 import ProtectedRoute from "./components/common/ProtectedRoute";
@@ -14,6 +14,7 @@ import MoviesManagementPage from "./pages/management/MoviesManagementPage";
 import TheatersManagementPage from "./pages/management/TheatersManagementPage";
 import RoomsManagementPage from "./pages/management/RoomsManagementPage";
 import UsersManagementPage from "./pages/management/UsersManagementPage";
+import ShowtimesManagementPage from "./pages/management/ShowtimesManagementPage";
 import SettingsPage from "./pages/management/SettingsPage";
 
 import ProfilePage from "./pages/ProfilePage";
@@ -62,6 +63,7 @@ function App() {
             <Route path="theaters" element={<TheatersManagementPage />} />
             <Route path="rooms" element={<RoomsManagementPage />} />
             <Route path="users" element={<UsersManagementPage />} />
+            <Route path="showtimes" element={<ShowtimesManagementPage />} />
             <Route path="settings" element={<SettingsPage />} />
           </Route>
         </Routes>
