@@ -77,7 +77,7 @@ export const theaterApi = {
    * Get all theaters (no pagination) - for dropdown
    */
   getList: async (params: Omit<ListTheatersParams, 'page' | 'limit'> = {}): Promise<Theater[]> => {
-    const cleanParams: Record<string, any> = {};
+    const cleanParams: Record<string, unknown> = {};
     if (params.search && params.search.trim()) cleanParams.search = params.search;
     if (params.theaterName && params.theaterName.trim()) cleanParams.theaterName = params.theaterName;
     if (params.address && params.address.trim()) cleanParams.address = params.address;
@@ -86,7 +86,10 @@ export const theaterApi = {
     if (params.sort && params.sort.length > 0) cleanParams.sort = params.sort;
     
     const response = await apiClient.get("/theaters/list", { params: cleanParams });
-    return response as unknown as Theater[];
+    if (response && typeof response === 'object' && 'data' in response) {
+      return (response as { data: Theater[] }).data || [];
+    }
+    return Array.isArray(response) ? response : [];
   },
 
   /**
