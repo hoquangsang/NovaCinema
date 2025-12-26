@@ -18,20 +18,37 @@ export interface Room {
 
 export interface Theater {
   _id: string;
-  name: string;
+  theaterName: string;
   address: string;
-  city: string;
-  rooms?: Room[];
+  hotline: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  roomsCount?: number;
 }
 
-export interface TheaterFilters {
+export interface ListTheatersParams {
   search?: string;
-  city?: string;
+  sort?: string[];
   page?: number;
   limit?: number;
+  theaterName?: string;
+  address?: string;
+  hotline?: string;
+  isActive?: boolean;
+}
+
+export interface CreateTheaterDto {
+  theaterName: string;
+  address: string;
+  hotline: string;
+}
+
+export interface UpdateTheaterDto {
+  theaterName?: string;
+  address?: string;
+  hotline?: string;
+  isActive?: boolean;
 }
 
 // ==================== API ====================
@@ -40,25 +57,67 @@ export const theaterApi = {
   /**
    * Get theaters with pagination
    */
-  getTheaters: async (filters: TheaterFilters = {}): Promise<PaginatedResponse<Theater>> => {
-    const response = await apiClient.get("/theaters", { params: filters });
+  list: async (params: ListTheatersParams = {}): Promise<PaginatedResponse<Theater>> => {
+    // Clean params to avoid validation errors
+    const cleanParams: Record<string, any> = {};
+    if (params.page) cleanParams.page = params.page;
+    if (params.limit) cleanParams.limit = params.limit;
+    if (params.search && params.search.trim()) cleanParams.search = params.search;
+    if (params.theaterName && params.theaterName.trim()) cleanParams.theaterName = params.theaterName;
+    if (params.address && params.address.trim()) cleanParams.address = params.address;
+    if (params.hotline && params.hotline.trim()) cleanParams.hotline = params.hotline;
+    if (params.isActive !== undefined) cleanParams.isActive = params.isActive;
+    if (params.sort && params.sort.length > 0) cleanParams.sort = params.sort;
+    
+    const response = await apiClient.get("/theaters", { params: cleanParams });
     return response as unknown as PaginatedResponse<Theater>;
   },
 
   /**
    * Get all theaters (no pagination) - for dropdown
    */
-  getTheatersList: async (): Promise<Theater[]> => {
-    const response = await apiClient.get("/theaters/list");
-    return response.data;
+  getList: async (params: Omit<ListTheatersParams, 'page' | 'limit'> = {}): Promise<Theater[]> => {
+    const cleanParams: Record<string, any> = {};
+    if (params.search && params.search.trim()) cleanParams.search = params.search;
+    if (params.theaterName && params.theaterName.trim()) cleanParams.theaterName = params.theaterName;
+    if (params.address && params.address.trim()) cleanParams.address = params.address;
+    if (params.hotline && params.hotline.trim()) cleanParams.hotline = params.hotline;
+    if (params.isActive !== undefined) cleanParams.isActive = params.isActive;
+    if (params.sort && params.sort.length > 0) cleanParams.sort = params.sort;
+    
+    const response = await apiClient.get("/theaters/list", { params: cleanParams });
+    return response as unknown as Theater[];
   },
 
   /**
    * Get theater by ID
    */
-  getTheaterById: async (id: string): Promise<Theater> => {
+  getById: async (id: string): Promise<Theater> => {
     const response = await apiClient.get(`/theaters/${id}`);
-    return response.data;
+    return response as unknown as Theater;
+  },
+
+  /**
+   * Create new theater
+   */
+  create: async (data: CreateTheaterDto): Promise<Theater> => {
+    const response = await apiClient.post("/theaters", data);
+    return response as unknown as Theater;
+  },
+
+  /**
+   * Update theater
+   */
+  update: async (id: string, data: UpdateTheaterDto): Promise<Theater> => {
+    const response = await apiClient.patch(`/theaters/${id}`, data);
+    return response as unknown as Theater;
+  },
+
+  /**
+   * Delete theater
+   */
+  delete: async (id: string): Promise<void> => {
+    await apiClient.delete(`/theaters/${id}`);
   },
 
   /**
@@ -66,7 +125,7 @@ export const theaterApi = {
    */
   getRoomsByTheaterId: async (theaterId: string): Promise<Room[]> => {
     const response = await apiClient.get(`/theaters/${theaterId}/rooms`);
-    return response.data;
+    return response as unknown as Room[];
   },
 
   /**
@@ -74,6 +133,6 @@ export const theaterApi = {
    */
   getRoomsList: async (): Promise<Room[]> => {
     const response = await apiClient.get("/rooms/list");
-    return response.data;
+    return response as unknown as Room[];
   },
 };
