@@ -244,6 +244,12 @@ export class RoomService {
       if (rest[f] !== undefined) filter[f] = rest[f];
     });
 
+    // array match fields (use $in for filtering by array values)
+    QUERY_FIELDS.ARRAY_MATCH.forEach((f) => {
+      if (rest[f] !== undefined && Array.isArray(rest[f]) && rest[f].length > 0)
+        filter[f] = { $in: rest[f] };
+    });
+
     return filter;
   }
 }

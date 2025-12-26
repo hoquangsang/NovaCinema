@@ -24,7 +24,6 @@ export class Room {
     type: String,
     enum: ROOM_TYPE_VALUES,
     default: ROOM_TYPES._2D,
-    immutable: true,
   })
   roomType!: RoomType;
 
