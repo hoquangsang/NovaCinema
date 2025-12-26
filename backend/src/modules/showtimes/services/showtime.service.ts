@@ -38,16 +38,16 @@ export class ShowtimeService {
 
   /******************************** */
   public async findShowtimeById(id: string) {
-    return this.showtimeRepo.query.findOneById({ id });
+    return this.showtimeRepo.query.findOneByIdPopulated(id);
   }
 
   public async findShowtimes(options: Criteria.QueryRange) {
     const { ...rest } = options;
     const filter = this.buildShowtimeFilter(rest);
 
-    return this.showtimeRepo.query.findMany({
+    return this.showtimeRepo.query.findManyLight({
       filter,
-      sort: { startAt: 'asc' },
+      sort: { startAt: 1 },
     });
   }
 
@@ -85,11 +85,11 @@ export class ShowtimeService {
     const { page, limit, ...rest } = options;
     const filter = this.buildShowtimeFilter(rest);
 
-    const result = await this.showtimeRepo.query.findManyPaginated({
+    const result = await this.showtimeRepo.query.findManyPaginatedLight({
       filter,
       page,
       limit,
-      sort: { startAt: 'asc' },
+      sort: { startAt: 1 },
     });
 
     return {
