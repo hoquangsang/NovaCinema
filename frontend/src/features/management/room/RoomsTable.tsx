@@ -78,12 +78,8 @@ export default function RoomsTable({
 
     const getRoomTypeBadgeStyle = (type: string) => {
         switch (type.toUpperCase()) {
-            case 'IMAX':
-                return 'bg-purple-100 text-purple-700';
             case 'VIP':
                 return 'bg-yellow-100 text-yellow-700';
-            case '4DX':
-                return 'bg-blue-100 text-blue-700';
             case '3D':
                 return 'bg-pink-100 text-pink-700';
             default:
