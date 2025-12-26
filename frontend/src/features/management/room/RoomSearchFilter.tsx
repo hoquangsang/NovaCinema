@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 
 export interface RoomFilterValues {
@@ -17,8 +18,27 @@ export default function RoomSearchFilter({
     onFilterChange,
     disabled = false,
 }: RoomSearchFilterProps) {
+    // Local search state for debounce
+    const [localSearch, setLocalSearch] = useState(filters.search);
+
+    // Sync local state when filters.search changes from outside
+    useEffect(() => {
+        setLocalSearch(filters.search);
+    }, [filters.search]);
+
+    // Debounce search - 500ms after typing stops
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (localSearch !== filters.search) {
+                onFilterChange({ ...filters, search: localSearch });
+            }
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [localSearch, filters, onFilterChange]);
+
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        onFilterChange({ ...filters, search: e.target.value });
+        setLocalSearch(e.target.value);
     };
 
     const handleRoomTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -36,7 +56,7 @@ export default function RoomSearchFilter({
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                     <input
                         type="text"
-                        value={filters.search}
+                        value={localSearch}
                         onChange={handleSearchChange}
                         placeholder="Search rooms..."
                         className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 disabled:opacity-50"
@@ -52,8 +72,6 @@ export default function RoomSearchFilter({
                     <option value="">All Types</option>
                     <option value="2D">2D</option>
                     <option value="3D">3D</option>
-                    <option value="IMAX">IMAX</option>
-                    <option value="4DX">4DX</option>
                     <option value="VIP">VIP</option>
                 </select>
                 <select
