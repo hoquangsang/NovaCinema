@@ -65,21 +65,21 @@ export class CreateMovieReqDto {
 
   @ApiProperty({
     type: Date,
-    description: 'Release date',
+    description: 'Release date. Suggested format: yyyy-MM-dd',
     example: '2025-01-01',
   })
   @IsOptional()
-  @IsDate({ message: 'releaseDate must be yyyy-MM-dd' })
+  @IsDate({ message: 'releaseDate must be a date' })
   @ToDateTime()
   releaseDate!: Date;
 
   @ApiPropertyOptional({
     type: Date,
-    description: 'End date',
+    description: 'End date. Suggested format: yyyy-MM-dd',
     example: '2025-03-01',
   })
   @IsOptional()
-  @IsDate({ message: 'endDate must be yyyy-MM-dd' })
+  @IsDate({ message: 'endDate must be a date' })
   @ToDateTime()
   endDate?: Date;
 

@@ -59,7 +59,7 @@ export class RegisterReqDto {
 
   @ApiPropertyOptional({
     type: String,
-    description: 'Date of birth',
+    description: 'Date of birth. Suggested format: yyyy-MM-dd',
     example: '1990-01-01',
   })
   @IsOptional()
