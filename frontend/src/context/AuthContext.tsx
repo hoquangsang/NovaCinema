@@ -5,6 +5,7 @@ import { profileApi } from '../api/endpoints/profile.api';
 interface AuthContextType {
     user: User | null;
     isAuthenticated: boolean;
+    isLoading: boolean;
     login: (user: User, accessToken: string, refreshToken: string) => void;
     logout: () => void;
     refreshUser: () => Promise<void>;
@@ -27,6 +28,7 @@ interface AuthProviderProps {
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
     const [user, setUser] = useState<User | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     // Load user from localStorage on mount
     useEffect(() => {
@@ -43,6 +45,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
                 localStorage.removeItem('refreshToken');
             }
         }
+        setIsLoading(false);
     }, []);
 
     const login = (user: User, accessToken: string, refreshToken: string) => {
@@ -79,6 +82,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     const value = {
         user,
         isAuthenticated: !!user,
+        isLoading,
         login,
         logout,
         refreshUser,
