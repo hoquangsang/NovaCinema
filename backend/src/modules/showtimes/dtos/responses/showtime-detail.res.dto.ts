@@ -2,12 +2,15 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
 import { ROOM_TYPE_VALUES, ROOM_TYPES } from 'src/modules/theaters/constants';
 import { RoomType } from 'src/modules/theaters/types';
+import { ShowtimeMovieResDto } from './showtime-movie.res.dto';
+import { ShowtimeRoomResDto } from './showtime-room.res.dto';
+import { ShowtimeTheaterResDto } from './showtime-theater.res.dto';
 
 /**
- * Showtime response DTO for list/search APIs
- * Contains only essential info + names (not full objects)
+ * Showtime detail response DTO for GET /:id API
+ * Contains full nested objects for movie, room, theater
  */
-export class ShowtimeResDto {
+export class ShowtimeDetailResDto {
   @ApiProperty({
     type: String,
     description: 'Showtime ID',
@@ -73,36 +76,44 @@ export class ShowtimeResDto {
   @Expose()
   isActive?: boolean;
 
-  // Light populated fields - only names
   @ApiPropertyOptional({
     type: String,
-    description: 'Movie title',
-    example: 'Inception',
+    description: 'Creation timestamp',
+    example: '2025-11-01T12:00:00Z',
   })
   @Expose()
-  movieTitle?: string;
+  createdAt?: Date;
 
   @ApiPropertyOptional({
     type: String,
-    description: 'Movie poster URL',
-    example: 'https://example.com/poster.jpg',
+    description: 'Last update timestamp',
+    example: '2025-11-15T12:00:00Z',
   })
   @Expose()
-  moviePosterUrl?: string;
+  updatedAt?: Date;
+
+  // Full populated objects
+  @ApiPropertyOptional({
+    type: ShowtimeMovieResDto,
+    description: 'Full movie details',
+  })
+  @Expose()
+  @Type(() => ShowtimeMovieResDto)
+  movie?: ShowtimeMovieResDto;
 
   @ApiPropertyOptional({
-    type: String,
-    description: 'Room name',
-    example: 'Room A',
+    type: ShowtimeRoomResDto,
+    description: 'Full room details',
   })
   @Expose()
-  roomName?: string;
+  @Type(() => ShowtimeRoomResDto)
+  room?: ShowtimeRoomResDto;
 
   @ApiPropertyOptional({
-    type: String,
-    description: 'Theater name',
-    example: 'CGV Bitexco',
+    type: ShowtimeTheaterResDto,
+    description: 'Full theater details',
   })
   @Expose()
-  theaterName?: string;
+  @Type(() => ShowtimeTheaterResDto)
+  theater?: ShowtimeTheaterResDto;
 }

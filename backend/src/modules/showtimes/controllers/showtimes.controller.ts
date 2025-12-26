@@ -34,6 +34,7 @@ import {
 } from '../dtos/requests';
 import {
   ShowtimeResDto,
+  ShowtimeDetailResDto,
   CreateShowtimeValidationResDto,
 } from '../dtos/responses';
 
@@ -84,7 +85,7 @@ export class ShowtimesController {
   }
 
   @ApiOperation({ description: 'Get showtime by id' })
-  @WrapOkResponse({ dto: ShowtimeResDto })
+  @WrapOkResponse({ dto: ShowtimeDetailResDto })
   @Public()
   @HttpCode(HttpStatus.OK)
   @Get(':id')
