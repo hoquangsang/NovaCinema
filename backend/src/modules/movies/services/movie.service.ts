@@ -92,12 +92,8 @@ export class MovieService {
   public async findMoviesPaginated(options: Criteria.PaginatedQueryRange) {
     const { from: rawStart, to: rawEnd, ...rest } = options;
 
-    let startDate: Date | undefined;
-    if (rawStart) startDate = DateUtil.localStartOfDay(rawStart);
-
-    let endDate: Date | undefined;
-    if (rawEnd) endDate = DateUtil.localEndOfDay(rawEnd);
-
+    const startDate = rawStart ? DateUtil.startOfDay(rawStart) : undefined;
+    const endDate = rawEnd ? DateUtil.endOfDay(rawEnd) : undefined;
     if (startDate && endDate && startDate > endDate) {
       throw new ConflictException(
         'Start date must be before or equal to end date',
@@ -115,7 +111,7 @@ export class MovieService {
   }
 
   public async findShowingMoviesPaginated(options: Criteria.PaginatedQuery) {
-    const today = DateUtil.localStartOfDay(DateUtil.nowLocal());
+    const today = DateUtil.startOfDay(DateUtil.now());
 
     return this.findMoviesByQuery({
       ...options,
@@ -125,13 +121,13 @@ export class MovieService {
   }
 
   public async findUpcomingMoviesPaginated(options: Criteria.PaginatedQuery) {
-    const tomorrow = DateUtil.localStartOfDay(
-      DateUtil.utcAdd(DateUtil.nowUtc(), { days: 1 }),
+    const tomorrowStart = DateUtil.startOfDay(
+      DateUtil.add(DateUtil.now(), { days: 1 }),
     );
 
     return this.findMoviesByQuery({
       ...options,
-      releaseDate: { $gte: tomorrow },
+      releaseDate: { $gte: tomorrowStart },
     });
   }
 
@@ -143,8 +139,8 @@ export class MovieService {
         'Start date must be before or equal to end date',
       );
 
-    const releaseDate = DateUtil.localStartOfDay(rawRelease);
-    const endDate = rawEnd ? DateUtil.localEndOfDay(rawEnd) : undefined;
+    const releaseDate = DateUtil.startOfDay(rawRelease);
+    const endDate = rawEnd ? DateUtil.endOfDay(rawEnd) : undefined;
 
     const { insertedItem: createdMovie } =
       await this.movieRepo.command.createOne({
@@ -166,9 +162,9 @@ export class MovieService {
     const { releaseDate: rawRelease, endDate: rawEnd, ...rest } = update;
 
     const nextRelease = rawRelease
-      ? DateUtil.localStartOfDay(rawRelease)
+      ? DateUtil.startOfDay(rawRelease)
       : existed.releaseDate;
-    const nextEnd = rawEnd ? DateUtil.localEndOfDay(rawEnd) : existed.endDate;
+    const nextEnd = rawEnd ? DateUtil.endOfDay(rawEnd) : existed.endDate;
 
     if (nextEnd && nextRelease > nextEnd)
       throw new ConflictException(

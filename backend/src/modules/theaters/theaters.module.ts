@@ -10,7 +10,7 @@ import {
   TheaterQueryRepository,
   TheaterRepository,
 } from './repositories';
-import { RoomService, TheaterService } from './services';
+import { SeatService, RoomService, TheaterService } from './services';
 import { RoomsController, TheatersController } from './controllers';
 
 @Module({
@@ -32,7 +32,9 @@ import { RoomsController, TheatersController } from './controllers';
     RoomQueryRepository,
     RoomRepository,
     RoomService,
+
+    SeatService,
   ],
-  exports: [TheaterService, RoomService],
+  exports: [TheaterService, RoomService, SeatService],
 })
 export class TheatersModule {}

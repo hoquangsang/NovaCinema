@@ -4,12 +4,14 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { DaysOfWeek, TimeHHmm } from 'src/common/types';
-import { CalendarUtil, DateUtil, TimeUtil } from 'src/common/utils';
+import { DateUtil, TimeUtil, WeekUtil } from 'src/common/utils';
+import { SEAT_TYPE_VALUES } from 'src/modules/theaters/constants';
 import { SeatType, RoomType } from 'src/modules/theaters/types';
 import { PRICING_LIMITS } from '../constants';
-import { TicketPricingRepository } from '../repositories';
 import { TicketPricing } from '../schemas';
+import { TicketPricingRepository } from '../repositories';
 import { TicketPricingCriteria as Criteria } from './ticket-pricing.service.type';
+import { TicketPricingResult as Result } from './ticket-pricing.service.type';
 
 @Injectable()
 export class TicketPricingService {
@@ -23,15 +25,45 @@ export class TicketPricingService {
     return pricing;
   }
 
-  public async getTicketPrice(input: Criteria.Calculate) {
+  public async getSeatTypePrices(
+    input: Criteria.SeatTypePrices,
+  ): Promise<Result.SeatTypePrices> {
     const pricing = await this.getTicketPricing();
+    const { roomType, effectiveAt } = input;
+    const { basePrice, modifiers } = pricing;
 
-    const raw = this.calculatePrice(pricing, input);
+    const currentDayOfWeek = WeekUtil.dayOfWeek(effectiveAt);
+    const minuteOfDay = DateUtil.minutesOfDay(effectiveAt);
 
-    return Math.max(
-      PRICING_LIMITS.TOTAL_PRICE.MIN,
-      Math.min(PRICING_LIMITS.TOTAL_PRICE.MAX, raw),
+    const roomTypeModifier = modifiers.roomTypes.find(
+      (x) => x.roomType === roomType,
     );
+    const dayOfWeekModifier = modifiers.daysOfWeek.find((x) =>
+      x.applicableDays.includes(currentDayOfWeek),
+    );
+    const timeRangeModifier = modifiers.dailyTimeRanges.find((x) =>
+      this.matchTimeRange(minuteOfDay, x.startTime, x.endTime),
+    );
+
+    const baseDelta =
+      (roomTypeModifier?.deltaPrice ?? 0) +
+      (dayOfWeekModifier?.deltaPrice ?? 0) +
+      (timeRangeModifier?.deltaPrice ?? 0);
+
+    const result: Record<SeatType, number> = { COUPLE: 0, NORMAL: 0, VIP: 0 };
+    for (const seatType of SEAT_TYPE_VALUES) {
+      const seatModifier = modifiers.seatTypes.find(
+        (x) => x.seatType === seatType,
+      );
+      const rawPrice = basePrice + baseDelta + (seatModifier?.deltaPrice ?? 0);
+      const finalPrice = Math.max(
+        PRICING_LIMITS.TOTAL_PRICE.MIN,
+        Math.min(PRICING_LIMITS.TOTAL_PRICE.MAX, rawPrice),
+      );
+
+      result[seatType] = finalPrice;
+    }
+    return result;
   }
 
   public async upsertTicketPricing(data: Criteria.Upsert) {
@@ -77,40 +109,6 @@ export class TicketPricingService {
   }
 
   /** */
-  private calculatePrice(
-    pricing: TicketPricing,
-    input: Criteria.Calculate,
-  ): number {
-    const { roomType, seatType, datetime } = input;
-    const { basePrice, modifiers } = pricing;
-
-    const currentDayOfWeek = CalendarUtil.dayOfWeek(datetime);
-    const minuteOfDay = DateUtil.localMinutesOfDay(datetime);
-
-    const seatTypeModifier = modifiers.seatTypes.find(
-      (x) => x.seatType === seatType,
-    );
-    const roomTypeModifier = modifiers.roomTypes.find(
-      (x) => x.roomType === roomType,
-    );
-    const dayOfWeekModifier = modifiers.daysOfWeek.find((x) =>
-      x.applicableDays.includes(currentDayOfWeek),
-    );
-    const dailyTimeRangeModifier = modifiers.dailyTimeRanges.find((x) =>
-      this.matchTimeRange(minuteOfDay, x.startTime, x.endTime),
-    );
-
-    const deltas = [
-      seatTypeModifier?.deltaPrice ?? 0,
-      roomTypeModifier?.deltaPrice ?? 0,
-      dayOfWeekModifier?.deltaPrice ?? 0,
-      dailyTimeRangeModifier?.deltaPrice ?? 0,
-    ];
-    const totalDelta = deltas.reduce((sum, d) => sum + d, 0);
-
-    return basePrice + totalDelta;
-  }
-
   private matchTimeRange(time: number, startTime: TimeHHmm, endTime: TimeHHmm) {
     const start = TimeUtil.toMinutes(startTime);
     const end = TimeUtil.toMinutes(endTime);
@@ -142,7 +140,7 @@ export class TicketPricingService {
     if (modifiers.seatTypes)
       this.assertSeatTypeModifiersValid(modifiers.seatTypes);
     if (modifiers.roomTypes)
-      this.validateRoomTypeModifiersValid(modifiers.roomTypes);
+      this.assertRoomTypeModifiersValid(modifiers.roomTypes);
     if (modifiers.daysOfWeek)
       this.assertDayOfWeekModifiersValid(modifiers.daysOfWeek);
     if (modifiers.dailyTimeRanges)
@@ -168,7 +166,7 @@ export class TicketPricingService {
     }
   }
 
-  private validateRoomTypeModifiersValid(arr: Criteria.RoomTypeModifiers[]) {
+  private assertRoomTypeModifiersValid(arr: Criteria.RoomTypeModifiers[]) {
     const used = new Set<RoomType>();
     for (const m of arr) {
       if (used.has(m.roomType))
