@@ -90,7 +90,7 @@ export class UpdateMovieReqDto {
     example: 'P',
   })
   @IsOptional()
-  @IsNumber()
+  @IsString()
   ratingAge?: string;
 
   @ApiPropertyOptional({

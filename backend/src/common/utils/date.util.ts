@@ -32,6 +32,10 @@ export const DateUtil = {
     return DateTime.now().setZone(ZONE).toJSDate();
   },
 
+  nowUTC(): Date {
+    return DateTime.utc().toJSDate();
+  },
+
   /* ========= PARSE & FORMAT ========= */
   parse(raw: Date | string | number): Date {
     return toJSDate(toDateTime(raw));
