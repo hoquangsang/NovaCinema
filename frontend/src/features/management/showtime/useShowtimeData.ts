@@ -19,6 +19,7 @@ export interface UseShowtimeDataReturn {
   page: number;
   setPage: (page: number) => void;
   limit: number;
+  setLimit: (limit: number) => void;
   total: number;
   totalPages: number;
 
@@ -51,7 +52,7 @@ export function useShowtimeData(): UseShowtimeDataReturn {
 
   // Pagination state
   const [page, setPage] = useState(1);
-  const [limit] = useState(10);
+  const [limit, setLimit] = useState(10);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
@@ -68,8 +69,11 @@ export function useShowtimeData(): UseShowtimeDataReturn {
   // Fetch dropdown data for filters and form
   const fetchDropdownData = useCallback(async () => {
     try {
-      const [moviesData, theatersData] = await Promise.all([movieApi.getAllMovies(), theaterApi.getTheatersList()]);
-      setMovies(moviesData);
+      const [moviesResponse, theatersData] = await Promise.all([
+        movieApi.getAllMoviesWithFilters({ limit: 1000 }),
+        theaterApi.getList()
+      ]);
+      setMovies(moviesResponse.items);
       setTheaters(theatersData);
     } catch (err) {
       console.error("Failed to fetch dropdown data:", err);
@@ -135,6 +139,10 @@ export function useShowtimeData(): UseShowtimeDataReturn {
     page,
     setPage,
     limit,
+    setLimit: (newLimit: number) => {
+      setLimit(newLimit);
+      setPage(1);
+    },
     total,
     totalPages,
     search,

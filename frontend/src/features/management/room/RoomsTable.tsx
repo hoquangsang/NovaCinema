@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Edit, Trash2, Building2, Loader2 } from 'lucide-react';
 import { roomApi, type Room, type RoomFilters } from '../../../api/endpoints/room.api';
+import { Pagination } from '../../../components/common/Pagination';
 
 interface MetaData {
     total: number;
@@ -85,22 +86,6 @@ export default function RoomsTable({
             default:
                 return 'bg-gray-100 text-gray-700';
         }
-    };
-
-    const getPageNumbers = () => {
-        const pages: number[] = [];
-        const maxVisible = 3;
-        let start = Math.max(1, meta.page - 1);
-        const end = Math.min(meta.totalPages, start + maxVisible - 1);
-
-        if (end - start < maxVisible - 1) {
-            start = Math.max(1, end - maxVisible + 1);
-        }
-
-        for (let i = start; i <= end; i++) {
-            pages.push(i);
-        }
-        return pages;
     };
 
     // No theater selected
@@ -194,58 +179,17 @@ export default function RoomsTable({
                         ))}
                     </tbody>
                 </table>
-            </div>
 
-            {/* Pagination - Always visible */}
-            <div className="mt-6 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    {/* Limit selector */}
-                    <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-600">Show</span>
-                        <select
-                            value={limit}
-                            onChange={(e) => onLimitChange?.(Number(e.target.value))}
-                            className="px-3 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 text-sm"
-                        >
-                            <option value={5}>5</option>
-                            <option value={10}>10</option>
-                            <option value={20}>20</option>
-                            <option value={50}>50</option>
-                        </select>
-                        <span className="text-sm text-gray-600">entries</span>
-                    </div>
-                    <p className="text-sm text-gray-600">
-                        Showing {meta.total > 0 ? ((meta.page - 1) * meta.limit) + 1 : 0} to {Math.min(meta.page * meta.limit, meta.total)} of {meta.total} rooms
-                    </p>
-                </div>
-                <div className="flex gap-2">
-                    <button
-                        onClick={() => onPageChange(meta.page - 1)}
-                        disabled={meta.page <= 1}
-                        className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        Previous
-                    </button>
-                    {getPageNumbers().map((pageNum) => (
-                        <button
-                            key={pageNum}
-                            onClick={() => onPageChange(pageNum)}
-                            className={`px-4 py-2 rounded-lg transition-colors ${pageNum === meta.page
-                                    ? 'bg-yellow-400 text-[#10142C] font-semibold'
-                                    : 'border border-gray-300 hover:bg-gray-50'
-                                }`}
-                        >
-                            {pageNum}
-                        </button>
-                    ))}
-                    <button
-                        onClick={() => onPageChange(meta.page + 1)}
-                        disabled={meta.page >= meta.totalPages || meta.totalPages === 0}
-                        className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        Next
-                    </button>
-                </div>
+                {/* Pagination - Always visible */}
+                <Pagination
+                    page={meta.page}
+                    limit={meta.limit}
+                    total={meta.total}
+                    totalPages={meta.totalPages}
+                    onPageChange={onPageChange}
+                    onLimitChange={onLimitChange}
+                    itemLabel="rooms"
+                />
             </div>
         </>
     );

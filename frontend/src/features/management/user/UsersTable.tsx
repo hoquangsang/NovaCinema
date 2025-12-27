@@ -6,6 +6,7 @@ import EditUserModal from './EditUserModal';
 import { useToast } from '../../../components/common/ToastProvider';
 import { formatUTC0DateToLocal } from '../../../utils/timezone';
 import { ConfirmModal } from '../../../components/common/ConfirmModal';
+import { Pagination } from '../../../components/common/Pagination';
 
 interface Props {
     search?: string;
@@ -56,47 +57,12 @@ export default function UsersTable({ search = '', roles = '', isActive = '', pag
 
     const totalPages = Math.max(1, Math.ceil(total / limit));
 
-    const getPageList = (totalPages: number, current: number, maxButtons = 7): (number | '...')[] => {
-        if (totalPages <= maxButtons) return Array.from({ length: totalPages }, (_, i) => i + 1);
-
-        const pages = new Set<number>();
-        pages.add(1);
-        pages.add(totalPages);
-
-        let left = Math.max(2, current - 1);
-        let right = Math.min(totalPages - 1, current + 1);
-
-        // expand window until we have enough buttons (reserve slots for first and last)
-        while (right - left + 1 < maxButtons - 2) {
-            if (left > 2) {
-                left -= 1;
-            } else if (right < totalPages - 1) {
-                right += 1;
-            } else break;
-        }
-
-        for (let i = left; i <= right; i++) pages.add(i);
-
-        const sorted = Array.from(pages).sort((a, b) => a - b);
-        const result: (number | '...')[] = [];
-        for (let i = 0; i < sorted.length; i++) {
-            result.push(sorted[i]);
-            if (i < sorted.length - 1) {
-                const a = sorted[i];
-                const b = sorted[i + 1];
-                if (b - a > 1) result.push('...');
-            }
-        }
-
-        return result;
-    };
-
     return (
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
             {loading ? (
-                <div className="p-6">Đang tải...</div>
+                <div className="p-12 text-center text-gray-500">Đang tải...</div>
             ) : error ? (
-                <div className="p-6 text-red-600">Lỗi: {error}</div>
+                <div className="p-12 text-center text-red-600">Lỗi: {error}</div>
             ) : (
                 <>
                     <table className="w-full">
@@ -133,9 +99,9 @@ export default function UsersTable({ search = '', roles = '', isActive = '', pag
                                         <td className="px-6 py-4 text-sm text-gray-600">{user.phoneNumber}</td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-2">
-                                                {user.roles?.includes('admin') && <Shield size={16} className="text-yellow-500" />}
-                                                <span className={`px-3 py-1 text-xs font-semibold rounded-full ${user.roles?.includes('admin') ? 'bg-yellow-100 text-yellow-700' : 'bg-blue-100 text-blue-700'}`}>
-                                                    {user.roles?.includes('admin')
+                                                {user.roles?.includes('ADMIN') && <Shield size={16} className="text-yellow-500" />}
+                                                <span className={`px-3 py-1 text-xs font-semibold rounded-full ${user.roles?.includes('ADMIN') ? 'bg-yellow-100 text-yellow-700' : 'bg-blue-100 text-blue-700'}`}>
+                                                    {user.roles?.includes('ADMIN')
                                                         ? 'Admin'
                                                         : (user.roles && user.roles.length ? (user.roles[0].charAt(0).toUpperCase() + user.roles[0].slice(1)) : 'User')}
                                                 </span>
@@ -207,47 +173,15 @@ export default function UsersTable({ search = '', roles = '', isActive = '', pag
                         }}
                     />
 
-                    <div className="mt-6 flex items-center justify-between p-4">
-                        <p className="text-sm text-gray-600">Showing {(page - 1) * (limit || 0) + 1} to {Math.min((page || 1) * (limit || 0), total)} of {total} users</p>
-
-                        <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2">
-                                <label className="text-sm text-gray-600">Per page:</label>
-                                <select
-                                    value={limit}
-                                    onChange={(e) => onLimitChange && onLimitChange(Number(e.target.value))}
-                                    className="border border-gray-300 rounded-md px-2 py-1 text-sm"
-                                >
-                                    <option value={5}>5</option>
-                                    <option value={10}>10</option>
-                                    <option value={20}>20</option>
-                                    <option value={50}>50</option>
-                                </select>
-                            </div>
-
-                            <div className="flex gap-2">
-                                <button disabled={page <= 1} onClick={() => onPageChange && onPageChange(page - 1)} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50">
-                                    Previous
-                                </button>
-
-                                {getPageList(totalPages, page, 7).map((p, idx) => (
-                                    p === '...' ? (
-                                        <button key={`dots-${idx}`} disabled className="px-3 py-2 rounded-lg">...</button>
-                                    ) : (
-                                        <button
-                                            key={`page-${p}`}
-                                            onClick={() => onPageChange && onPageChange(p as number)}
-                                            className={`px-4 py-2 rounded-lg ${p === page ? 'bg-yellow-400 text-[#10142C] font-semibold' : 'border border-gray-300 hover:bg-gray-50'}`}
-                                        >
-                                            {p}
-                                        </button>
-                                    )
-                                ))}
-
-                                <button disabled={page >= totalPages} onClick={() => onPageChange && onPageChange(page + 1)} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50">Next</button>
-                            </div>
-                        </div>
-                    </div>
+                    <Pagination
+                        page={page}
+                        limit={limit}
+                        total={total}
+                        totalPages={totalPages}
+                        onPageChange={onPageChange}
+                        onLimitChange={onLimitChange}
+                        itemLabel="users"
+                    />
                 </>
             )}
         </div>

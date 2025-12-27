@@ -9,7 +9,7 @@ export default function UsersManagementPage() {
     const [roles, setRoles] = useState('');
     const [isActive, setIsActive] = useState('');
     const [page, setPage] = useState(1);
-    const [limit, setLimit] = useState(5);
+    const [limit, setLimit] = useState(10);
 
     // Debounce search input - wait 500ms after user stops typing
     useEffect(() => {

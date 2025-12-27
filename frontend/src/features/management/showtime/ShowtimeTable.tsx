@@ -1,11 +1,6 @@
-/**
- * ShowtimeTable Component
- * Displays showtimes in a table with selection, actions, and pagination
- * Now uses populated fields directly from API
- */
-
-import { Calendar, Clock, Edit, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar, Clock, Edit, Trash2 } from "lucide-react";
 import type { Showtime } from "../../../api/endpoints/showtime.api";
+import { Pagination } from "../../../components/common/Pagination";
 
 // Format date/time helpers
 const formatDate = (dateString: string) => {
@@ -33,6 +28,7 @@ interface ShowtimeTableProps {
   // Pagination
   page: number;
   onPageChange: (page: number) => void;
+  onLimitChange?: (limit: number) => void;
   limit: number;
   total: number;
   totalPages: number;
@@ -47,60 +43,11 @@ export function ShowtimeTable({
   onDelete,
   page,
   onPageChange,
+  onLimitChange,
   limit,
   total,
   totalPages,
 }: ShowtimeTableProps) {
-  // Render pagination
-  const renderPagination = () => {
-    const pages: number[] = [];
-    const maxVisible = 5;
-    let startPage = Math.max(1, page - Math.floor(maxVisible / 2));
-    const endPage = Math.min(totalPages, startPage + maxVisible - 1);
-
-    if (endPage - startPage + 1 < maxVisible) {
-      startPage = Math.max(1, endPage - maxVisible + 1);
-    }
-
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(i);
-    }
-
-    return (
-      <div className="mt-6 flex items-center justify-between">
-        <p className="text-sm text-gray-600">
-          Hiển thị {(page - 1) * limit + 1} đến {Math.min(page * limit, total)} trong số {total} suất chiếu
-        </p>
-        <div className="flex gap-2">
-          <button
-            onClick={() => onPageChange(Math.max(1, page - 1))}
-            disabled={page === 1}
-            className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <ChevronLeft size={18} />
-          </button>
-          {pages.map((p) => (
-            <button
-              key={p}
-              onClick={() => onPageChange(p)}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                p === page ? "bg-yellow-400 text-[#10142C] font-semibold" : "border border-gray-300 hover:bg-gray-50"
-              }`}
-            >
-              {p}
-            </button>
-          ))}
-          <button
-            onClick={() => onPageChange(Math.min(totalPages, page + 1))}
-            disabled={page === totalPages}
-            className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <ChevronRight size={18} />
-          </button>
-        </div>
-      </div>
-    );
-  };
 
   return (
     <>
@@ -217,10 +164,20 @@ export function ShowtimeTable({
             )}
           </tbody>
         </table>
-      </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && renderPagination()}
+        {/* Pagination */}
+        {totalPages > 0 && (
+          <Pagination
+            page={page}
+            limit={limit}
+            total={total}
+            totalPages={totalPages}
+            onPageChange={onPageChange}
+            onLimitChange={onLimitChange}
+            itemLabel="showtimes"
+          />
+        )}
+      </div>
     </>
   );
 }
