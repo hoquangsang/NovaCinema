@@ -127,9 +127,7 @@ export class UserService {
     });
     if (exists) throw new BadRequestException('Email already exists');
 
-    const dateOfBirth = rawDate
-      ? DateUtil.localStartOfDay(new Date(rawDate))
-      : rawDate;
+    const dateOfBirth = rawDate ? DateUtil.startOfDay(rawDate) : rawDate;
 
     const hashedPassword = await HashUtil.hash(password);
     const { insertedItem: createdUser } = await this.userRepo.command.createOne(

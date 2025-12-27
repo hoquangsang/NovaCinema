@@ -54,8 +54,8 @@ export class ShowtimeService {
   public async findShowtimesByDate(options: Criteria.QueryByDate) {
     const { date, ...rest } = options;
 
-    const startAt = DateUtil.localStartOfDay(date);
-    const endAt = DateUtil.localEndOfDay(date);
+    const startAt = DateUtil.startOfDay(date);
+    const endAt = DateUtil.endOfDay(date);
 
     return this.findShowtimes({
       ...rest,
@@ -65,19 +65,19 @@ export class ShowtimeService {
   }
 
   public async findAvailableShowtimes(options: Criteria.QueryAvailable) {
-    const now = DateUtil.nowLocal();
+    const now = DateUtil.now();
     const { date = now, ...rest } = options;
-    const localStartOfDay = DateUtil.localStartOfDay(date);
-    const localEndOfDay = DateUtil.localEndOfDay(date);
+    const startDay = DateUtil.startOfDay(date);
+    const endDay = DateUtil.endOfDay(date);
 
-    if (localEndOfDay < now) {
+    if (endDay < now) {
       return [];
     }
 
     return this.findShowtimes({
       ...rest,
-      from: DateUtil.max(now, localStartOfDay),
-      to: localEndOfDay,
+      from: DateUtil.max(now, startDay),
+      to: endDay,
     });
   }
 
@@ -492,9 +492,9 @@ export class ShowtimeService {
     // 1. build
     const slots = startAts
       .map((raw) => {
-        const startAt = DateUtil.localRoundDown(raw, ROUND_STEP_MIN);
-        const endAt = DateUtil.localRoundUp(
-          DateUtil.utcAdd(startAt, {
+        const startAt = DateUtil.roundDown(raw, ROUND_STEP_MIN);
+        const endAt = DateUtil.roundUp(
+          DateUtil.add(startAt, {
             minutes: movie.duration + GAP_MIN,
           }),
           ROUND_STEP_MIN,
@@ -502,7 +502,7 @@ export class ShowtimeService {
         return {
           startAt,
           endAt,
-          label: DateUtil.toLocalDatetimeString(startAt, 'yyyy-MM-dd HH:mm'),
+          label: DateUtil.toDatetimeString(startAt, 'yyyy-MM-dd HH:mm'),
         };
       })
       .sort((a, b) => a.startAt.getTime() - b.startAt.getTime());
@@ -558,7 +558,7 @@ export class ShowtimeService {
     movie: MovieLike,
   ): Result.Validation {
     const errors: string[] = [];
-    const now = DateUtil.localRoundDown(DateUtil.nowLocal(), ROUND_STEP_MIN);
+    const now = DateUtil.roundDown(DateUtil.now(), ROUND_STEP_MIN);
 
     const push = (msg: string) => {
       errors.push(msg);
@@ -569,9 +569,7 @@ export class ShowtimeService {
     }
 
     if (startAt < movie.releaseDate) {
-      push(
-        `before release date (${DateUtil.toLocalDateString(movie.releaseDate)})`,
-      );
+      push(`before release date (${DateUtil.toDateString(movie.releaseDate)})`);
     }
 
     if (startAt >= endAt) {
@@ -579,9 +577,7 @@ export class ShowtimeService {
     }
 
     if (movie.endDate && endAt > movie.endDate) {
-      push(
-        `exceeds movie end date (${DateUtil.toLocalDateString(movie.endDate)})`,
-      );
+      push(`exceeds movie end date (${DateUtil.toDateString(movie.endDate)})`);
     }
 
     if (errors.length) {
@@ -715,7 +711,7 @@ export class ShowtimeService {
 
         // Overlap
         errors.push(
-          `Room ${room.roomName} (${room._id}) conflicts with existing showtime at ${DateUtil.toLocalDatetimeString(
+          `Room ${room.roomName} (${room._id}) conflicts with existing showtime at ${DateUtil.toDatetimeString(
             ex.startAt,
           )}`,
         );
@@ -778,7 +774,7 @@ export class ShowtimeService {
             ex.roomType === rt
           ) {
             errors.push(
-              `Duplicate unique showtime: movie=${movie._id}, theater=${theaterId}, roomType=${rt}, startAt=${DateUtil.toLocalDatetimeString(
+              `Duplicate unique showtime: movie=${movie._id}, theater=${theaterId}, roomType=${rt}, startAt=${DateUtil.toDatetimeString(
                 r.startAt,
               )}`,
             );
@@ -804,8 +800,6 @@ export class ShowtimeService {
     startTimes: TimeHHmm[],
     repeatDates: Date[],
   ): Result.ValidationResult<Date[]> {
-    const errors: string[] = [];
-
     // 1. Validate input required
     if (!startTimes?.length) {
       return this.failure('startTimes', ['startTimes is required']);
@@ -827,11 +821,12 @@ export class ShowtimeService {
 
     // 3. Build startAts
     const startAts: Date[] = [];
-
     for (const date of repeatDates) {
-      const base = DateUtil.localStartOfDay(date);
+      const base = DateUtil.startOfDay(date);
       for (const time of startTimes) {
-        startAts.push(DateUtil.localSetTime(base, time));
+        const minutesOfDay = TimeUtil.toMinutes(time);
+        const startAt = DateUtil.setMinutesOfDay(base, minutesOfDay);
+        startAts.push(startAt);
       }
     }
 

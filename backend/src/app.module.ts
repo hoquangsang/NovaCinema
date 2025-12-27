@@ -13,6 +13,7 @@ import { MoviesModule } from './modules/movies';
 import { TheatersModule } from './modules/theaters';
 import { TicketPricingModule } from './modules/ticket-pricing';
 import { ShowtimesModule } from './modules/showtimes';
+import { BookingsModule } from './modules/bookings';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { ShowtimesModule } from './modules/showtimes';
     NotificationsModule,
     TicketPricingModule,
     ShowtimesModule,
+    BookingsModule,
   ],
 
   providers: [

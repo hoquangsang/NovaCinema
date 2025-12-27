@@ -35,13 +35,14 @@ export namespace TicketPricingCriteria {
     modifiers?: PricingModifier;
   };
 
-  export type Calculate = {
-    seatType: SeatType;
+  export type SeatTypePrices = {
     roomType: RoomType;
-    datetime: Date;
+    effectiveAt: Date;
   };
 }
 
 export namespace TicketPricingResult {
-  /** */
+  export type SeatTypePrices = {
+    readonly [K in SeatType]: number;
+  };
 }

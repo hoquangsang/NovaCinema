@@ -26,7 +26,7 @@ export class UpdateMovieReqDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  genre?: string[];
+  genres?: string[];
 
   @ApiPropertyOptional({
     type: Number,
@@ -66,22 +66,22 @@ export class UpdateMovieReqDto {
 
   @ApiPropertyOptional({
     type: String,
-    description: 'Release date',
+    description: 'Release date. Suggested format: yyyy-MM-dd',
     example: '2025-12-12',
   })
   @IsOptional()
-  @IsDate({ message: 'releaseDate must be yyyy-MM-dd' })
+  @IsDate({ message: 'releaseDate must be a date' })
   @ToDateTime()
   releaseDate?: Date;
 
   @ApiPropertyOptional({
     type: String,
-    description: 'End date for showing',
+    description: 'End date. Suggested format: yyyy-MM-dd',
     example: '2025-12-31',
   })
   @IsOptional()
-  @IsOptional()
-  @IsDate({ message: 'endDate must be yyyy-MM-dd' })
+  @IsDate({ message: 'endDate must be a date' })
+  @ToDateTime()
   endDate?: Date;
 
   @ApiPropertyOptional({
@@ -90,7 +90,7 @@ export class UpdateMovieReqDto {
     example: 'P',
   })
   @IsOptional()
-  @IsNumber()
+  @IsString()
   ratingAge?: string;
 
   @ApiPropertyOptional({
