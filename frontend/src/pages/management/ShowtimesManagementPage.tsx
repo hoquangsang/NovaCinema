@@ -3,17 +3,23 @@
  * Admin page for managing movie showtimes
  */
 
-import { useState } from "react";
-import { Plus, Search, Trash2, Loader2, AlertCircle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, Trash2, Loader2, Copy, Search } from "lucide-react";
 import { showtimeApi, type Showtime } from "../../api/endpoints/showtime.api";
 import {
   ShowtimeTable,
   ShowtimeFormModal,
+  BulkShowtimeFormModal,
   ShowtimeDeleteModal,
   useShowtimeData,
 } from "../../features/management/showtime";
+import { SearchableMovieSelect } from "../../components/common/SearchableMovieSelect";
+import { SearchableTheaterSelect } from "../../components/common/SearchableTheaterSelect";
+import { useToast } from "../../components/common/ToastProvider";
 
 export default function ShowtimesManagementPage() {
+  const toast = useToast();
+
   // Use custom hook for data management
   const {
     showtimes,
@@ -29,16 +35,27 @@ export default function ShowtimesManagementPage() {
     setSelectedMovieId,
     selectedTheaterId,
     setSelectedTheaterId,
-    selectedDate,
-    setSelectedDate,
+    fromDate,
+    setFromDate,
+    toDate,
+    setToDate,
     loading,
     error,
     refetch,
+    search,
     fetchRoomsByTheaterId,
   } = useShowtimeData();
 
+  // Show toast on error
+  useEffect(() => {
+    if (error) {
+      toast.push(error, "error", 5000);
+    }
+  }, [error, toast]);
+
   // Modal state
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
   const [editingShowtime, setEditingShowtime] = useState<Showtime | null>(null);
 
@@ -65,6 +82,7 @@ export default function ShowtimesManagementPage() {
 
   // Handle form success
   const handleFormSuccess = () => {
+    toast.push("Thành công!", "success");
     refetch();
   };
 
@@ -75,9 +93,11 @@ export default function ShowtimesManagementPage() {
     try {
       await showtimeApi.deleteShowtime(deleteConfirmId);
       setDeleteConfirmId(null);
+      toast.push("Xóa suất chiếu thành công", "success");
       refetch();
     } catch (err) {
-      console.error("Delete failed:", err);
+      const msg = err instanceof Error ? err.message : "Xóa thất bại";
+      toast.push(msg, "error");
     } finally {
       setDeleting(false);
     }
@@ -90,9 +110,11 @@ export default function ShowtimesManagementPage() {
     try {
       await showtimeApi.deleteShowtimes(selectedIds);
       setSelectedIds([]);
+      toast.push(`Xóa ${selectedIds.length} suất chiếu thành công`, "success");
       refetch();
     } catch (err) {
-      console.error("Bulk delete failed:", err);
+      const msg = err instanceof Error ? err.message : "Xóa thất bại";
+      toast.push(msg, "error");
     } finally {
       setDeleting(false);
     }
@@ -132,6 +154,13 @@ export default function ShowtimesManagementPage() {
             </button>
           )}
           <button
+            onClick={() => setIsBulkModalOpen(true)}
+            className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg transition-colors shadow-md"
+          >
+            <Copy size={20} />
+            Tạo hàng loạt
+          </button>
+          <button
             onClick={handleOpenCreateModal}
             className="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-[#10142C] font-semibold px-6 py-3 rounded-lg transition-colors shadow-md"
           >
@@ -143,56 +172,52 @@ export default function ShowtimesManagementPage() {
 
       {/* Filter */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <div className="flex gap-4 flex-wrap">
-          <div className="flex-1 min-w-[200px] relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-            <input
-              type="text"
-              placeholder="Tìm kiếm..."
-              disabled
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 disabled:bg-gray-100"
+        <div className="flex gap-4 flex-wrap items-end">
+          <div className="flex-1 min-w-[220px]">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Phim</label>
+            <SearchableMovieSelect
+              movies={movies}
+              value={selectedMovieId}
+              onChange={setSelectedMovieId}
+              placeholder="Tất cả phim"
             />
           </div>
-          <select
-            value={selectedMovieId}
-            onChange={(e) => setSelectedMovieId(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
+          <div className="flex-1 min-w-[220px]">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Rạp</label>
+            <SearchableTheaterSelect
+              theaters={theaters}
+              value={selectedTheaterId}
+              onChange={setSelectedTheaterId}
+              placeholder="Tất cả rạp"
+            />
+          </div>
+          <div className="min-w-[150px]">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Từ ngày</label>
+            <input
+              type="date"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
+            />
+          </div>
+          <div className="min-w-[150px]">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Đến ngày</label>
+            <input
+              type="date"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
+            />
+          </div>
+          <button
+            onClick={search}
+            className="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-[#10142C] font-semibold px-6 py-2 rounded-lg transition-colors"
           >
-            <option value="">Tất cả phim</option>
-            {movies.map((movie) => (
-              <option key={movie._id} value={movie._id}>
-                {movie.title}
-              </option>
-            ))}
-          </select>
-          <select
-            value={selectedTheaterId}
-            onChange={(e) => setSelectedTheaterId(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
-          >
-            <option value="">Tất cả rạp</option>
-            {theaters.map((theater) => (
-              <option key={theater._id} value={theater._id}>
-                {theater.theaterName}
-              </option>
-            ))}
-          </select>
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
-          />
+            <Search size={18} />
+            Tìm kiếm
+          </button>
         </div>
       </div>
-
-      {/* Error Alert */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 flex items-center gap-3">
-          <AlertCircle className="text-red-500" size={20} />
-          <p className="text-red-700">{error}</p>
-        </div>
-      )}
 
       {/* Loading State */}
       {loading ? (
@@ -224,6 +249,16 @@ export default function ShowtimesManagementPage() {
         movies={movies}
         theaters={theaters}
         onClose={() => setIsFormModalOpen(false)}
+        onSuccess={handleFormSuccess}
+        fetchRoomsByTheaterId={fetchRoomsByTheaterId}
+      />
+
+      {/* Bulk Form Modal */}
+      <BulkShowtimeFormModal
+        isOpen={isBulkModalOpen}
+        movies={movies}
+        theaters={theaters}
+        onClose={() => setIsBulkModalOpen(false)}
         onSuccess={handleFormSuccess}
         fetchRoomsByTheaterId={fetchRoomsByTheaterId}
       />

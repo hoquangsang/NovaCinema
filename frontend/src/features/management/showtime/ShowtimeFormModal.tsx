@@ -8,6 +8,8 @@ import { X, Loader2, AlertCircle } from "lucide-react";
 import { showtimeApi, type Showtime, type CreateShowtimeDto } from "../../../api/endpoints/showtime.api";
 import type { Movie } from "../../../api/endpoints/movie.api";
 import type { Theater, Room } from "../../../api/endpoints/theater.api";
+import { SearchableMovieSelect } from "../../../components/common/SearchableMovieSelect";
+import { SearchableTheaterSelect } from "../../../components/common/SearchableTheaterSelect";
 
 const formatDateTimeForInput = (date: Date) => {
   const offset = date.getTimezoneOffset();
@@ -129,39 +131,27 @@ export function ShowtimeFormModal({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Phim *</label>
-            <select
+            <SearchableMovieSelect
+              movies={movies}
               value={formData.movieId}
-              onChange={(e) => setFormData((prev) => ({ ...prev, movieId: e.target.value }))}
+              onChange={(movieId) => setFormData((prev) => ({ ...prev, movieId }))}
+              placeholder="Tìm và chọn phim..."
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
-            >
-              <option value="">Chọn phim</option>
-              {movies.map((movie) => (
-                <option key={movie._id} value={movie._id}>
-                  {movie.title}
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Rạp *</label>
-            <select
+            <SearchableTheaterSelect
+              theaters={theaters}
               value={formTheaterId}
-              onChange={(e) => {
-                setFormTheaterId(e.target.value);
+              onChange={(theaterId) => {
+                setFormTheaterId(theaterId);
                 setFormData((prev) => ({ ...prev, roomId: "" }));
               }}
+              placeholder="Chọn rạp"
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
-            >
-              <option value="">Chọn rạp</option>
-              {theaters.map((theater) => (
-                <option key={theater._id} value={theater._id}>
-                  {theater.name}
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
           <div>
@@ -176,7 +166,7 @@ export function ShowtimeFormModal({
               <option value="">{loadingRooms ? "Đang tải..." : "Chọn phòng chiếu"}</option>
               {formRooms.map((room) => (
                 <option key={room._id} value={room._id}>
-                  {room.name} ({room.type})
+                  {room.roomName} ({room.roomType})
                 </option>
               ))}
             </select>

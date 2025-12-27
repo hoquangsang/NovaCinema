@@ -24,14 +24,14 @@ export interface UseShowtimeDataReturn {
   totalPages: number;
 
   // Filters
-  search: string;
-  setSearch: (search: string) => void;
   selectedMovieId: string;
   setSelectedMovieId: (id: string) => void;
   selectedTheaterId: string;
   setSelectedTheaterId: (id: string) => void;
-  selectedDate: string;
-  setSelectedDate: (date: string) => void;
+  fromDate: string;
+  setFromDate: (date: string) => void;
+  toDate: string;
+  setToDate: (date: string) => void;
 
   // Loading & Error states
   loading: boolean;
@@ -39,6 +39,7 @@ export interface UseShowtimeDataReturn {
 
   // Actions
   refetch: () => void;
+  search: () => void;
 
   // Room fetching for form
   fetchRoomsByTheaterId: (theaterId: string) => Promise<Room[]>;
@@ -57,10 +58,10 @@ export function useShowtimeData(): UseShowtimeDataReturn {
   const [totalPages, setTotalPages] = useState(0);
 
   // Filter state
-  const [search, setSearch] = useState("");
   const [selectedMovieId, setSelectedMovieId] = useState("");
   const [selectedTheaterId, setSelectedTheaterId] = useState("");
-  const [selectedDate, setSelectedDate] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
 
   // Dropdown data (for filters and form)
   const [movies, setMovies] = useState<Movie[]>([]);
@@ -91,35 +92,30 @@ export function useShowtimeData(): UseShowtimeDataReturn {
       };
       if (selectedMovieId) filters.movieId = selectedMovieId;
       if (selectedTheaterId) filters.theaterId = selectedTheaterId;
-      if (selectedDate) filters.date = selectedDate;
+      if (fromDate) filters.from = fromDate;
+      if (toDate) filters.to = toDate;
 
       const response = await showtimeApi.getShowtimes(filters);
       setShowtimes(response.items);
       setTotal(response.total);
       setTotalPages(Math.ceil(response.total / response.limit));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Không thể tải danh sách suất chiếu");
+      const message = err instanceof Error ? err.message : "Không thể tải danh sách suất chiếu";
+      setError(message);
       console.error("Failed to fetch showtimes:", err);
     } finally {
       setLoading(false);
     }
-  }, [page, limit, selectedMovieId, selectedTheaterId, selectedDate]);
+  }, [page, limit, selectedMovieId, selectedTheaterId, fromDate, toDate]);
 
   useEffect(() => {
     fetchDropdownData();
   }, [fetchDropdownData]);
 
+  // Only fetch on mount and when pagination changes
   useEffect(() => {
     fetchShowtimes();
-  }, [fetchShowtimes]);
-
-  // Handle search with debounce - reset page
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setPage(1);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [search]);
+  }, [page, limit]); // Removed filter dependencies - now manual search
 
   // Fetch rooms by theater ID (for form)
   const fetchRoomsByTheaterId = async (theaterId: string): Promise<Room[]> => {
@@ -131,6 +127,12 @@ export function useShowtimeData(): UseShowtimeDataReturn {
       return [];
     }
   };
+
+  // Manual search function
+  const handleSearch = useCallback(() => {
+    setPage(1);
+    fetchShowtimes();
+  }, [fetchShowtimes]);
 
   return {
     showtimes,
@@ -145,26 +147,18 @@ export function useShowtimeData(): UseShowtimeDataReturn {
     },
     total,
     totalPages,
-    search,
-    setSearch,
     selectedMovieId,
-    setSelectedMovieId: (id: string) => {
-      setSelectedMovieId(id);
-      setPage(1);
-    },
+    setSelectedMovieId,
     selectedTheaterId,
-    setSelectedTheaterId: (id: string) => {
-      setSelectedTheaterId(id);
-      setPage(1);
-    },
-    selectedDate,
-    setSelectedDate: (date: string) => {
-      setSelectedDate(date);
-      setPage(1);
-    },
+    setSelectedTheaterId,
+    fromDate,
+    setFromDate,
+    toDate,
+    setToDate,
     loading,
     error,
     refetch: fetchShowtimes,
+    search: handleSearch,
     fetchRoomsByTheaterId,
   };
 }
