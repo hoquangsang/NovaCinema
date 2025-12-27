@@ -22,6 +22,7 @@ export default function ShowtimesManagementPage() {
     page,
     setPage,
     limit,
+    setLimit,
     total,
     totalPages,
     selectedMovieId,
@@ -172,7 +173,7 @@ export default function ShowtimesManagementPage() {
             <option value="">Tất cả rạp</option>
             {theaters.map((theater) => (
               <option key={theater._id} value={theater._id}>
-                {theater.name}
+                {theater.theaterName}
               </option>
             ))}
           </select>
@@ -208,6 +209,7 @@ export default function ShowtimesManagementPage() {
           onDelete={setDeleteConfirmId}
           page={page}
           onPageChange={setPage}
+          onLimitChange={setLimit}
           limit={limit}
           total={total}
           totalPages={totalPages}

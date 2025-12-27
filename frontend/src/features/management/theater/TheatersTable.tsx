@@ -7,6 +7,7 @@ import AddEditTheaterModal from './AddEditTheaterModal';
 import { useToast } from '../../../components/common/ToastProvider';
 import { formatUTC0DateToLocal } from '../../../utils/timezone';
 import { ConfirmModal } from '../../../components/common/ConfirmModal';
+import { Pagination } from '../../../components/common/Pagination';
 
 interface Props {
     search?: string;
@@ -21,7 +22,7 @@ export default function TheatersTable({
     search = '', 
     isActive = '', 
     page = 1, 
-    limit = 5, 
+    limit = 9, 
     onPageChange, 
     onLimitChange 
 }: Props) {
@@ -69,41 +70,6 @@ export default function TheatersTable({
 
     const totalPages = Math.max(1, Math.ceil(total / limit));
 
-    const getPageList = (totalPages: number, current: number, maxButtons = 7): (number | '...')[] => {
-        if (totalPages <= maxButtons) return Array.from({ length: totalPages }, (_, i) => i + 1);
-
-        const pages = new Set<number>();
-        pages.add(1);
-        pages.add(totalPages);
-
-        let left = Math.max(2, current - 1);
-        let right = Math.min(totalPages - 1, current + 1);
-
-        // expand window until we have enough buttons (reserve slots for first and last)
-        while (right - left + 1 < maxButtons - 2) {
-            if (left > 2) {
-                left -= 1;
-            } else if (right < totalPages - 1) {
-                right += 1;
-            } else break;
-        }
-
-        for (let i = left; i <= right; i++) pages.add(i);
-
-        const sorted = Array.from(pages).sort((a, b) => a - b);
-        const result: (number | '...')[] = [];
-        for (let i = 0; i < sorted.length; i++) {
-            result.push(sorted[i]);
-            if (i < sorted.length - 1) {
-                const a = sorted[i];
-                const b = sorted[i + 1];
-                if (b - a > 1) result.push('...');
-            }
-        }
-
-        return result;
-    };
-
     const handleEdit = (theater: Theater) => {
         setSelectedTheater(theater);
         setShowEdit(true);
@@ -135,9 +101,9 @@ export default function TheatersTable({
         <>
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
                 {loading ? (
-                    <div className="p-6">Loading theaters...</div>
+                    <div className="p-12 text-center text-gray-500">Loading theaters...</div>
                 ) : error ? (
-                    <div className="p-6 text-red-600">Error: {error}</div>
+                    <div className="p-12 text-center text-red-600">Error: {error}</div>
                 ) : (
                     <>
                         {/* Grid View */}
@@ -235,60 +201,16 @@ export default function TheatersTable({
 
                         {/* Pagination */}
                         {total > 0 && (
-                            <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <span className="text-sm text-gray-600">Show</span>
-                                    <select
-                                        className="px-3 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 text-sm"
-                                        value={limit}
-                                        onChange={(e) => onLimitChange?.(Number(e.target.value))}
-                                    >
-                                        <option value={5}>5</option>
-                                        <option value={10}>10</option>
-                                        <option value={20}>20</option>
-                                        <option value={50}>50</option>
-                                    </select>
-                                    <span className="text-sm text-gray-600">
-                                        Showing {Math.min((page - 1) * limit + 1, total)} to {Math.min(page * limit, total)} of {total} theaters
-                                    </span>
-                                </div>
-
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => onPageChange?.(page - 1)}
-                                        disabled={page <= 1}
-                                        className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                                    >
-                                        Previous
-                                    </button>
-                                    {getPageList(totalPages, page).map((p, idx) =>
-                                        p === '...' ? (
-                                            <span key={idx} className="px-2 py-2 text-gray-400">
-                                                ...
-                                            </span>
-                                        ) : (
-                                            <button
-                                                key={idx}
-                                                onClick={() => onPageChange?.(p)}
-                                                className={`px-4 py-2 rounded-lg transition-colors text-sm ${
-                                                    page === p
-                                                        ? 'bg-yellow-400 text-[#10142C] font-semibold'
-                                                        : 'border border-gray-300 hover:bg-gray-50'
-                                                }`}
-                                            >
-                                                {p}
-                                            </button>
-                                        )
-                                    )}
-                                    <button
-                                        onClick={() => onPageChange?.(page + 1)}
-                                        disabled={page >= totalPages}
-                                        className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                                    >
-                                        Next
-                                    </button>
-                                </div>
-                            </div>
+                            <Pagination
+                                page={page}
+                                limit={limit}
+                                total={total}
+                                totalPages={totalPages}
+                                onPageChange={onPageChange}
+                                onLimitChange={onLimitChange}
+                                itemLabel="theaters"
+                                limitOptions={[6, 9, 12, 18]}
+                            />
                         )}
                     </>
                 )}

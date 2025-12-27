@@ -3,6 +3,7 @@ import { Edit, Trash2 } from 'lucide-react';
 import { movieApi, type Movie } from '../../../api/endpoints/movie.api';
 import { useToast } from '../../../components/common/ToastProvider';
 import { ConfirmModal } from '../../../components/common/ConfirmModal';
+import { Pagination } from '../../../components/common/Pagination';
 
 interface Props {
     search?: string;
@@ -112,35 +113,6 @@ export default function MoviesTable({
 
     const totalPages = Math.max(1, Math.ceil(total / limit));
 
-    const getPageList = (totalPages: number, current: number, maxButtons = 7): (number | '...')[] => {
-        if (totalPages <= maxButtons) return Array.from({ length: totalPages }, (_, i) => i + 1);
-
-        const pages = new Set<number>();
-        pages.add(1);
-        pages.add(totalPages);
-
-        let left = Math.max(2, current - 1);
-        let right = Math.min(totalPages - 1, current + 1);
-
-        while (right - left + 1 < maxButtons - 2) {
-            if (left > 2) {
-                left -= 1;
-            } else if (right < totalPages - 1) {
-                right += 1;
-            } else break;
-        }
-
-        for (let i = left; i <= right; i++) pages.add(i);
-
-        const sorted = Array.from(pages).sort((a, b) => a - b);
-        const withEllipsis: (number | '...')[] = [];
-        for (let i = 0; i < sorted.length; i++) {
-            if (i > 0 && sorted[i] - sorted[i - 1] > 1) withEllipsis.push('...');
-            withEllipsis.push(sorted[i]);
-        }
-        return withEllipsis;
-    };
-
     const handleDeleteClick = (movie: Movie) => {
         setMovieToDelete(movie);
         setShowDeleteConfirm(true);
@@ -185,7 +157,7 @@ export default function MoviesTable({
 
     if (error) {
         return (
-            <div className="bg-white rounded-lg shadow-md p-8 text-center">
+            <div className="bg-white rounded-lg shadow-md p-12 text-center">
                 <p className="text-red-600">{error}</p>
             </div>
         );
@@ -288,64 +260,15 @@ export default function MoviesTable({
 
                 {/* Pagination */}
                 {!loading && movies.length > 0 && (
-                    <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <span>Show</span>
-                            <select
-                                value={limit}
-                                onChange={(e) => onLimitChange?.(Number(e.target.value))}
-                                className="px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                            >
-                                <option value={5}>5</option>
-                                <option value={10}>10</option>
-                                <option value={20}>20</option>
-                                <option value={50}>50</option>
-                            </select>
-                            <span>entries</span>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                            <button
-                                onClick={() => onPageChange?.(page - 1)}
-                                disabled={page === 1}
-                                className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                            >
-                                Previous
-                            </button>
-
-                            {getPageList(totalPages, page).map((p, i) =>
-                                p === '...' ? (
-                                    <span key={`ellipsis-${i}`} className="px-2 text-gray-500">
-                                        ...
-                                    </span>
-                                ) : (
-                                    <button
-                                        key={p}
-                                        onClick={() => onPageChange?.(p)}
-                                        className={`px-3 py-1 border rounded transition-colors ${
-                                            page === p
-                                                ? 'bg-yellow-400 border-yellow-400 text-[#10142C] font-semibold'
-                                                : 'border-gray-300 hover:bg-gray-50'
-                                        }`}
-                                    >
-                                        {p}
-                                    </button>
-                                )
-                            )}
-
-                            <button
-                                onClick={() => onPageChange?.(page + 1)}
-                                disabled={page === totalPages}
-                                className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                            >
-                                Next
-                            </button>
-                        </div>
-
-                        <div className="text-sm text-gray-600">
-                            Page {page} of {totalPages}
-                        </div>
-                    </div>
+                    <Pagination
+                        page={page}
+                        limit={limit}
+                        total={total}
+                        totalPages={totalPages}
+                        onPageChange={onPageChange}
+                        onLimitChange={onLimitChange}
+                        itemLabel="movies"
+                    />
                 )}
             </div>
 
