@@ -17,7 +17,7 @@ import {
   startOfDay,
   addDays,
   minuteToDate,
-  round5,
+  roundUp,
   pickMovieShowWindow,
 } from './showtime-seeder.helper';
 
@@ -92,7 +92,7 @@ export class ShowtimeSeederService {
 
       const weeks = Math.max(
         1,
-        Math.ceil((end.getTime() - start.getTime()) / 604800000),
+        Math.ceil((end.getTime() - start.getTime()) / 604_800_000),
       );
 
       const weeklyTarget = Math.max(3, Math.floor(rooms.length * 0.7));
@@ -155,7 +155,7 @@ export class ShowtimeSeederService {
     const days =
       Math.ceil(
         (startOfDay(maxEnd).getTime() - startOfDay(minRelease).getTime()) /
-          86400000,
+          86_400_000,
       ) || randomInt(14, 28);
 
     const maxDuration = Math.max(...movies.map((m) => m.duration));
@@ -173,10 +173,11 @@ export class ShowtimeSeederService {
 
         for (let j = 0; j < showCount; j++) {
           const jitter = randomInt(-10, 10);
-          const startMinute = round5(cursor + jitter);
+
+          const rawStart = minuteToDate(date, cursor + jitter);
+          const startAt = roundUp(rawStart, 5);
 
           const buffer = randomInt(10, 15);
-          const startAt = minuteToDate(date, startMinute);
           const endAt = addMinutes(startAt, maxDuration + buffer);
 
           if (endAt.getHours() * 60 + endAt.getMinutes() > CLOSE_MINUTE) {

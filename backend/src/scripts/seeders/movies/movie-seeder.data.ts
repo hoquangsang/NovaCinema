@@ -1,6 +1,36 @@
+import { DateUtil } from 'src/common/utils';
 import { Movie } from 'src/modules/movies/schemas/movie.schema';
 
-export const SHOWING_MOVIES_DATA: Partial<Movie>[] = [
+const DAY_MS = 24 * 60 * 60 * 1000;
+const START_DAY = DateUtil.startOfDay('2025-12-01');
+const END_DAY = DateUtil.startOfDay('2026-01-31');
+
+function randomInt(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+const generateRandomDates = (): { releaseDate: Date; endDate: Date } => {
+  const totalDays = Math.max(
+    1,
+    Math.floor((END_DAY.getTime() - START_DAY.getTime()) / DAY_MS),
+  );
+
+  const offsetDays = randomInt(0, totalDays);
+  const releaseDate = DateUtil.addDays(START_DAY, offsetDays);
+
+  const durationDays = randomInt(14, 28);
+  const endDate = DateUtil.endOfDay(
+    DateUtil.addDays(releaseDate, durationDays),
+  );
+
+  return {
+    releaseDate,
+    endDate,
+  };
+};
+
+// --- MAIN DATA ---
+export const MOVIES_DATA: Partial<Movie>[] = [
   {
     title: 'HOÀNG TỬ QUỶ (T18)',
     genres: ['Horror'],
@@ -10,8 +40,6 @@ export const SHOWING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F12-2025%2Fhoang-tu-quy-main.png&w=1920&q=75',
     trailerUrl: 'https://youtu.be/oLxbSoA389c',
-    releaseDate: new Date('2025-12-05'),
-    endDate: new Date('2025-12-31'),
     ratingAge: 'C13',
     country: 'Vietnam',
     language: 'Vietnamese',
@@ -26,6 +54,7 @@ export const SHOWING_MOVIES_DATA: Partial<Movie>[] = [
     ],
     director: 'Trần Hữu Tấn',
     producer: 'Hoàng Quân',
+    ...generateRandomDates(),
   },
   {
     title: 'TRUY TÌM LONG DIÊN HƯƠNG (T16)',
@@ -36,14 +65,13 @@ export const SHOWING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F11-2025%2Ftruy-tien-long-dien-huong-poster.jpg&w=1920&q=75',
     trailerUrl: 'https://youtu.be/fO6X58qWA_s',
-    releaseDate: new Date('2025-12-01'),
-    endDate: new Date('2025-12-31'),
     ratingAge: undefined,
     country: 'Vietnam',
     language: 'Vietnamese',
     actors: ['Quang Tuấn', 'Ma Ran Đô', 'Hoàng Tóc Dài', 'Nguyên Thảo'],
     director: 'Dương Minh Chiến',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: '96 PHÚT SINH TỬ (T16) LT',
@@ -54,8 +82,6 @@ export const SHOWING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F12-2025%2F96M.jpg&w=1920&q=75',
     trailerUrl: 'https://youtu.be/H9U8H01_olw',
-    releaseDate: new Date('2025-12-05'),
-    endDate: new Date('2025-12-25'),
     ratingAge: undefined,
     country: 'Vietnam',
     language: 'Vietnamese',
@@ -69,6 +95,7 @@ export const SHOWING_MOVIES_DATA: Partial<Movie>[] = [
     ],
     director: 'Hồng Tử Huyên',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'PHIÊN CHỢ CỦA QUỶ (T18)',
@@ -79,14 +106,13 @@ export const SHOWING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F12-2025%2Fphien-cho-cua-quy.jpg&w=1920&q=75',
     trailerUrl: 'https://youtu.be/dLmJv83Djyc',
-    releaseDate: new Date('2025-11-28'),
-    endDate: new Date('2025-12-20'),
     ratingAge: 'C13',
     country: 'Vietnam',
     language: 'Vietnamese',
     actors: ['Ngọc Xuân', 'Hứa Vĩ Văn', 'Yoo Jae Myung'],
     director: 'Hong Won Ki',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'QUÁN KỲ NAM (T16)',
@@ -97,14 +123,13 @@ export const SHOWING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F11-2025%2Fquan-ky-nam-poster.jpg&w=1920&q=75',
     trailerUrl: 'https://youtu.be/27dgpqiI0VU',
-    releaseDate: new Date('2025-11-28'),
-    endDate: new Date('2025-12-25'),
     ratingAge: undefined,
     country: 'Vietnam',
     language: 'Vietnamese',
     actors: ['Liên Bỉnh Phát', 'Đỗ Thị Hải Yến', 'Trần Thế Mạnh'],
     director: 'Lê Nhật Quang',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'PHÒNG TRỌ MA BẦU',
@@ -115,8 +140,6 @@ export const SHOWING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F11-2025%2Fphong-tro-ma-bay-payoff.jpg&w=1080&q=75',
     trailerUrl: 'https://youtu.be/aCI_-1TNlkk',
-    releaseDate: new Date('2025-11-28'),
-    endDate: new Date('2025-12-20'),
     ratingAge: 'C13',
     country: 'Vietnam',
     language: 'Vietnamese',
@@ -131,6 +154,7 @@ export const SHOWING_MOVIES_DATA: Partial<Movie>[] = [
     ],
     director: 'Ngụy Minh Khang',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'PHI VỤ ĐỘNG TRỜI 2 (P)',
@@ -141,14 +165,13 @@ export const SHOWING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F11-2025%2Fzootopia-2_1.jpg&w=1080&q=75',
     trailerUrl: 'https://youtu.be/5O3LEps6WJY',
-    releaseDate: new Date('2025-11-28'),
-    endDate: new Date('2026-01-15'),
     ratingAge: 'P',
     country: 'USA',
     language: 'English',
     actors: ['Jason Bateman', 'Quinta Brunson', 'Fortune Feimster'],
     director: 'Jared Bush, Byron Howard',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'KỲ AN NGHỈ (T18)',
@@ -159,14 +182,13 @@ export const SHOWING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F11-2025%2Fky-an-nghi.jpg&w=1080&q=75',
     trailerUrl: 'https://youtu.be/JJZU5ZXKEnk',
-    releaseDate: new Date('2025-11-21'),
-    endDate: new Date('2025-12-20'),
     ratingAge: 'C13',
     country: 'USA',
     language: 'English',
     actors: ['Tatiana Maslany', 'Rossif Sutherland', 'Claire Friesen'],
     director: 'Osgood Perkins',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'CƯỚI VỢ CHO CHA (T13)',
@@ -177,14 +199,13 @@ export const SHOWING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F11-2025%2Fcuoi-vo-cho-cha-poster.png&w=1920&q=75',
     trailerUrl: 'https://youtu.be/1ffxVmHB4Hk',
-    releaseDate: new Date('2025-11-21'),
-    endDate: new Date('2026-01-15'),
     ratingAge: undefined,
     country: 'Vietnam',
     language: 'Vietnamese',
     actors: [],
     director: 'Nguyễn Ngọc Lâm',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'TAFITI - NÁO LOẠN SA MẠC (P)',
@@ -195,14 +216,13 @@ export const SHOWING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F11-2025%2Ftafiti.jpg&w=1080&q=75',
     trailerUrl: 'https://youtu.be/n9Jv1bEjSgk',
-    releaseDate: new Date('2025-11-21'),
-    endDate: new Date('2025-12-31'),
     ratingAge: 'P',
     country: 'Germany',
     language: 'Vietnamese',
     actors: [],
     director: 'Nian Wels',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'NĂM ĐÊM KINH HOÀNG 2 (T16)',
@@ -213,8 +233,6 @@ export const SHOWING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F12-2025%2Fnam-dem-kinh-hoang.png&w=1080&q=75',
     trailerUrl: undefined,
-    releaseDate: new Date('2025-12-05'),
-    endDate: new Date('2026-01-10'),
     ratingAge: undefined,
     country: 'United States',
     language: 'English',
@@ -231,6 +249,7 @@ export const SHOWING_MOVIES_DATA: Partial<Movie>[] = [
     ],
     director: 'Emma Tammi',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'GANGSTER VỀ LÀNG (T16) LT',
@@ -241,14 +260,13 @@ export const SHOWING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F11-2025%2Fgangster-ve-lang.jpg&w=1080&q=75',
     trailerUrl: 'https://youtu.be/6P5Nt6RdeZY',
-    releaseDate: new Date('2025-11-28'),
-    endDate: new Date('2026-01-15'),
     ratingAge: undefined,
     country: 'South Korea',
     language: 'Korean',
     actors: ['Jung Hye-Seong', 'Ji Seung Hyun'],
     director: 'Kim Hee-Seong',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: '5 CENTIMET TRÊN GIÂY (T13)',
@@ -259,14 +277,13 @@ export const SHOWING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F12-2025%2F5cm.jpg&w=1080&q=75',
     trailerUrl: 'https://youtu.be/WI0_CiynFW8',
-    releaseDate: new Date('2025-12-05'),
-    endDate: new Date('2025-12-25'),
     ratingAge: undefined,
     country: 'Japan',
     language: 'Japanese',
     actors: [],
     director: 'Makoto Shinkai',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'PHIM ĐIỆN ẢNH THÁM TỬ LỪNG DANH CONAN: DƯ ẢNH CỦA ĐỘC NHÃN (K) PĐ',
@@ -277,8 +294,6 @@ export const SHOWING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F11-2025%2Fconan-rerun.jpg&w=1080&q=75',
     trailerUrl: undefined,
-    releaseDate: new Date('2025-11-28'),
-    endDate: new Date('2025-12-20'),
     ratingAge: 'P',
     country: 'Japan',
     language: 'Japanese',
@@ -290,6 +305,7 @@ export const SHOWING_MOVIES_DATA: Partial<Movie>[] = [
     ],
     director: 'Katsuya Shigehara',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: '100 MÉT (P)',
@@ -300,14 +316,13 @@ export const SHOWING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F11-2025%2F100m-poster.jpg&w=1080&q=75',
     trailerUrl: 'https://youtu.be/g38X4oSElkg',
-    releaseDate: new Date('2025-11-28'),
-    endDate: new Date('2026-01-15'),
     ratingAge: undefined,
     country: 'Japan',
     language: 'Japanese',
     actors: [],
     director: 'Kenji Iwaisawa',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'PHI VỤ THẾ KỶ: THOẮT ẨN THOẮT HIỆN (T13)',
@@ -318,8 +333,6 @@ export const SHOWING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F11-2025%2Fphi-vu-the-ki.png&w=1080&q=75',
     trailerUrl: 'https://youtu.be/rt8tzGFN-Fk',
-    releaseDate: new Date('2025-11-28'),
-    endDate: new Date('2026-01-15'),
     ratingAge: undefined,
     country: 'United States',
     language: 'English',
@@ -335,6 +348,7 @@ export const SHOWING_MOVIES_DATA: Partial<Movie>[] = [
     ],
     director: 'Ruben Fleischer',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'ANH TRAI SAY XE (T16) LT',
@@ -345,8 +359,6 @@ export const SHOWING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F11-2025%2Fanh-trai-say-xe.jpg&w=1080&q=75',
     trailerUrl: 'https://youtu.be/15FPFsXcR-c',
-    releaseDate: new Date('2025-11-21'),
-    endDate: new Date('2026-01-15'),
     ratingAge: undefined,
     country: 'South Korea',
     language: 'Korean',
@@ -359,6 +371,7 @@ export const SHOWING_MOVIES_DATA: Partial<Movie>[] = [
     ],
     director: 'Nam Dae Jung',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'MA LỦNG TƯỜNG (T18)',
@@ -369,18 +382,14 @@ export const SHOWING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F12-2025%2Fma-lung-tuong-poster.jpg&w=1080&q=75',
     trailerUrl: 'https://youtu.be/7I-PtAD_TGM',
-    releaseDate: new Date('2025-12-05'),
-    endDate: new Date('2026-01-15'),
     ratingAge: 'C13',
     country: 'Indonesia',
     language: 'Indonesian',
     actors: ['Satine Zaneta', 'Niken Anjani'],
     director: 'Tomy Dewo',
     producer: undefined,
+    ...generateRandomDates(),
   },
-];
-
-export const UPCOMING_MOVIES_DATA: Partial<Movie>[] = [
   {
     title: 'SCARLET',
     genres: ['Animation', 'Fantasy'],
@@ -390,14 +399,13 @@ export const UPCOMING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F12-2025%2Fscarlet.jpg&w=1080&q=75',
     trailerUrl: 'https://youtu.be/zh5y1QWIL-g',
-    releaseDate: new Date('2025-12-12'),
-    endDate: new Date('2026-01-15'),
     ratingAge: undefined,
     country: 'Japan',
     language: 'Japanese',
     actors: ['Ashida Mana', 'Okada Masaki', 'Yakusho Koji'],
     director: 'Mamoru Hosoda',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'THẾ HỆ KỲ TÍCH (K)',
@@ -408,8 +416,6 @@ export const UPCOMING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F12-2025%2Fthe-he-ky-tich.jpg&w=1080&q=75',
     trailerUrl: 'https://youtu.be/YH734HLCDpo',
-    releaseDate: new Date('2025-12-12'),
-    endDate: new Date('2026-01-15'),
     ratingAge: undefined,
     country: 'Vietnam',
     language: 'Vietnamese',
@@ -426,6 +432,7 @@ export const UPCOMING_MOVIES_DATA: Partial<Movie>[] = [
     ],
     director: 'Hoàng Nam',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'MẮC BẪY LŨ TÍ QUẬY (P) LT',
@@ -436,14 +443,13 @@ export const UPCOMING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F12-2025%2Fmac-bay-lu-ti-quay.jpeg&w=1080&q=75',
     trailerUrl: 'https://youtu.be/kcjXkv2XeHI',
-    releaseDate: new Date('2025-12-12'),
-    endDate: new Date('2026-01-10'),
     ratingAge: 'P',
     country: 'Norway',
     language: 'Norwegian',
     actors: ['Vivild Falk Berg', 'Vegard Strand Eide', 'Charlotte Frogner'],
     director: 'Henrik Martin Dahlsbakken',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'KUMANTHONG NHẬT BẢN: VONG NHI CÚP BẾ (T16)',
@@ -454,8 +460,6 @@ export const UPCOMING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F12-2025%2Fkumanthong-nhat-ban-vong-nhi-cup-be.jpeg&w=1080&q=75',
     trailerUrl: 'https://youtu.be/xcYVKTYnRCc',
-    releaseDate: new Date('2025-12-12'),
-    endDate: undefined,
     ratingAge: 'C13',
     country: 'Japan',
     language: 'Japanese',
@@ -468,6 +472,7 @@ export const UPCOMING_MOVIES_DATA: Partial<Movie>[] = [
     ],
     director: 'Yaguchi Shinobu',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'VUA CỦA CÁC VUA (PĐ)',
@@ -478,14 +483,13 @@ export const UPCOMING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F12-2025%2Fvua-cua-cac-vua.png&w=1080&q=75',
     trailerUrl: 'https://youtu.be/6g5TvVyc65g',
-    releaseDate: new Date('2025-12-12'),
-    endDate: undefined,
     ratingAge: 'P',
     country: 'South Korea',
     language: 'Korean',
     actors: ['Mark Hamill', 'Pierce Brosnan', 'Roman Griffin Davis'],
     director: 'Seong-ho Jang',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'PHIM ĐIỆN ẢNH ANH TRAI TÔI LÀ KHỦNG LONG: TƯƠNG LAI CỦA QUÁ KHỨ',
@@ -496,14 +500,13 @@ export const UPCOMING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F12-2025%2Fanh-trai-toi-la-khung-long.png&w=1080&q=75',
     trailerUrl: undefined,
-    releaseDate: new Date('2025-12-12'),
-    endDate: undefined,
     ratingAge: 'P',
     country: undefined,
     language: undefined,
     actors: [],
     director: undefined,
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'EM SẼ KHỬ ANH (T18)',
@@ -514,14 +517,13 @@ export const UPCOMING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F12-2025%2Fem-se-khu-anh.png&w=1080&q=75',
     trailerUrl: undefined,
-    releaseDate: new Date('2025-12-12'),
-    endDate: undefined,
     ratingAge: undefined,
     country: undefined,
     language: undefined,
     actors: ['Jennifer Lawrence', 'Robert Pattinson', 'Sissy Spacek'],
     director: 'Lynne Ramsay',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'CHỢ ĐEN THỜI TẬN THẾ',
@@ -532,14 +534,13 @@ export const UPCOMING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F12-2025%2Fcho-den-thoi-tan-the.jpg&w=1080&q=75',
     trailerUrl: 'https://youtu.be/ktjCLQ0raB8',
-    releaseDate: new Date('2025-12-19'),
-    endDate: undefined,
     ratingAge: undefined,
     country: undefined,
     language: undefined,
     actors: ['Lee Jae-in', 'Hong Kyung', 'Jeong Man-sik'],
     director: 'Hong Gi-Won',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'ĐỤNG ĐỘ SIÊU TRĂN',
@@ -550,14 +551,13 @@ export const UPCOMING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F12-2025%2FAnaconda.jpg&w=1080&q=75',
     trailerUrl: 'https://youtu.be/vJiB77BGGxU',
-    releaseDate: new Date('2025-12-25'),
-    endDate: undefined,
     ratingAge: undefined,
     country: undefined,
     language: undefined,
     actors: ['Jack Black', 'Paul Rudd', 'Steve Zahn'],
     director: 'Tom Gormican',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'CÔ HẦU GÁI',
@@ -568,14 +568,13 @@ export const UPCOMING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F12-2025%2Fco-hau-gai.jpg&w=1080&q=75',
     trailerUrl: undefined,
-    releaseDate: new Date('2025-12-26'),
-    endDate: undefined,
     ratingAge: undefined,
     country: undefined,
     language: undefined,
     actors: ['Sydney Sweeney', 'Brandon Sklenar', 'Amanda Seyfried'],
     director: 'Paul Feig',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'THIÊN ĐƯỜNG MÁU',
@@ -586,14 +585,13 @@ export const UPCOMING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F12-2025%2Fthien-duong-mau-poster.png&w=1080&q=75',
     trailerUrl: 'https://youtu.be/QeLB2BuXaM0',
-    releaseDate: new Date('2025-12-31'),
-    endDate: undefined,
     ratingAge: undefined,
     country: 'Vietnam',
     language: 'Vietnamese',
     actors: ['Quang Tuấn', 'Hoài Lâm', 'Quách Ngọc Ngoan'],
     director: 'Hoàng Tuấn Cường',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'AI THƯƠNG AI MẾN',
@@ -604,8 +602,6 @@ export const UPCOMING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F01-2026%2Fai-men-ai-thuong-poster.jpeg&w=1080&q=75',
     trailerUrl: 'https://youtu.be/Z5QDdTiDgto',
-    releaseDate: new Date('2026-01-01'),
-    endDate: undefined,
     ratingAge: undefined,
     country: 'Vietnam',
     language: 'Vietnamese',
@@ -620,6 +616,7 @@ export const UPCOMING_MOVIES_DATA: Partial<Movie>[] = [
     ],
     director: 'Thu Trang',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'CON KỂ BA NGHE',
@@ -630,14 +627,13 @@ export const UPCOMING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F01-2026%2Fcon-ke-ba-nghe-poster.jpg&w=1080&q=75',
     trailerUrl: 'https://youtu.be/AosY6TeYB_U',
-    releaseDate: new Date('2026-01-16'),
-    endDate: undefined,
     ratingAge: undefined,
     country: 'Vietnam',
     language: 'Vietnamese',
     actors: [],
     director: 'Đỗ Quốc Trung',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'MÙI PHỞ',
@@ -647,14 +643,13 @@ export const UPCOMING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F02-2026%2Fmui-pho.jpg&w=1080&q=75',
     trailerUrl: undefined,
-    releaseDate: new Date('2026-02-17'),
-    endDate: undefined,
     ratingAge: undefined,
     country: 'Vietnam',
     language: 'Vietnamese',
     actors: [],
     director: undefined,
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'BÁU VẬT TRỜI CHO',
@@ -665,8 +660,6 @@ export const UPCOMING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F02-2026%2Fbau-vat-troi-cho.jpg&w=1080&q=75',
     trailerUrl: 'https://youtu.be/yiXKz5qFivc',
-    releaseDate: new Date('2026-02-17'),
-    endDate: undefined,
     ratingAge: undefined,
     country: 'Vietnam',
     language: 'Vietnamese',
@@ -684,6 +677,7 @@ export const UPCOMING_MOVIES_DATA: Partial<Movie>[] = [
     ],
     director: 'Lê Thanh Sơn',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'PHIM SUPER MARIO THIÊN HÀ',
@@ -694,8 +688,6 @@ export const UPCOMING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F04-2026%2Fmario.jpg&w=1080&q=75',
     trailerUrl: 'https://youtu.be/pY0u714WV3M',
-    releaseDate: new Date('2026-04-03'),
-    endDate: undefined,
     ratingAge: 'P',
     country: undefined,
     language: undefined,
@@ -711,6 +703,7 @@ export const UPCOMING_MOVIES_DATA: Partial<Movie>[] = [
     ],
     director: 'Aaron Horvath, Michael Jelenic',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'ĐẠI TIỆC TRĂNG MÁU 8',
@@ -721,8 +714,6 @@ export const UPCOMING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F12-2025%2Fdai-tiec-trang-mau.jpg&w=1080&q=75',
     trailerUrl: undefined,
-    releaseDate: new Date('2026-04-30'),
-    endDate: undefined,
     ratingAge: 'C13',
     country: 'Vietnam',
     language: 'Vietnamese',
@@ -737,6 +728,7 @@ export const UPCOMING_MOVIES_DATA: Partial<Movie>[] = [
     ],
     director: 'Phan Gia Nhật Linh',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'MORTAL KOMBAT: CUỘC CHIẾN SINH TỬ II',
@@ -747,8 +739,6 @@ export const UPCOMING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F05-2025%2FMORTAL_KOMBAT_II-Teaser_Poster-700x1000_1_.jpg&w=1080&q=75',
     trailerUrl: 'https://youtu.be/OxFuEBUHJFU',
-    releaseDate: new Date('2026-05-15'),
-    endDate: undefined,
     ratingAge: undefined,
     country: undefined,
     language: undefined,
@@ -764,6 +754,7 @@ export const UPCOMING_MOVIES_DATA: Partial<Movie>[] = [
     ],
     director: 'Simon McQuoid',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'NHÀ HAI CHỦ',
@@ -774,14 +765,13 @@ export const UPCOMING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F12-2025%2Fnha-hai-chu-payoff.jpg&w=1080&q=75',
     trailerUrl: 'https://youtu.be/oRxJOh8FrUA',
-    releaseDate: new Date('2025-12-05'),
-    endDate: undefined,
     ratingAge: 'C13',
     country: 'Việt Nam',
     language: 'Vietnamese',
     actors: ['Trâm Anh', 'Kim Hải', 'Tạ Lâm', 'Kim Phương', 'Mộc Trà'],
     director: 'Trần Duy Linh, Phạm Trung Hiếu',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'CHÀNG MÈO MANG MŨ',
@@ -792,8 +782,6 @@ export const UPCOMING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F11-2025%2FTHE_CAT_IN_THE_HAT-Teaser_Poster-061126-700x1000.jpg&w=1080&q=75',
     trailerUrl: undefined,
-    releaseDate: new Date('2026-11-06'),
-    endDate: undefined,
     ratingAge: 'P',
     country: undefined,
     language: undefined,
@@ -806,6 +794,7 @@ export const UPCOMING_MOVIES_DATA: Partial<Movie>[] = [
     ],
     director: 'Alessandro Carloni, Erica Rivinoja',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'SPONGEBOB: LỜI NGUYỀN HẢI TẶC',
@@ -816,8 +805,6 @@ export const UPCOMING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F12-2025%2Fspongebob-poster.png&w=1080&q=75',
     trailerUrl: 'https://youtu.be/lRgJyuBu8IA',
-    releaseDate: new Date('2025-12-26'),
-    endDate: undefined,
     ratingAge: 'P',
     country: undefined,
     language: undefined,
@@ -837,6 +824,7 @@ export const UPCOMING_MOVIES_DATA: Partial<Movie>[] = [
     ],
     director: 'Derek Drymon',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'THOÁT KHỎI TẬN THẾ',
@@ -847,8 +835,6 @@ export const UPCOMING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F03-2026%2Fthoat-khoi-tan-the.jpg&w=1080&q=75',
     trailerUrl: undefined,
-    releaseDate: new Date('2026-03-20'),
-    endDate: undefined,
     ratingAge: undefined,
     country: undefined,
     language: undefined,
@@ -860,6 +846,7 @@ export const UPCOMING_MOVIES_DATA: Partial<Movie>[] = [
     ],
     director: 'Phil Lord, Christopher Miller',
     producer: undefined,
+    ...generateRandomDates(),
   },
   {
     title: 'CÚ NHẢY KỲ DIỆU',
@@ -870,13 +857,12 @@ export const UPCOMING_MOVIES_DATA: Partial<Movie>[] = [
     posterUrl:
       'https://cinestar.com.vn/_next/image/?url=https%3A%2F%2Fapi-website.cinestar.com.vn%2Fmedia%2Fwysiwyg%2FPosters%2F03-2026%2Fhoopers-poster.jpg&w=1080&q=75',
     trailerUrl: undefined,
-    releaseDate: new Date('2026-03-27'),
-    endDate: undefined,
     ratingAge: 'P',
     country: undefined,
     language: undefined,
     actors: ['Jon Hamm', 'Bobby Moynihan', 'Piper Curda'],
     director: 'Daniel Chong',
     producer: undefined,
+    ...generateRandomDates(),
   },
 ];
