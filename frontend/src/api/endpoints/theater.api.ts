@@ -9,11 +9,13 @@ import { apiClient, type PaginatedResponse } from "../client";
 
 export interface Room {
   _id: string;
-  name: string;
-  type: string; // "2D", "3D", "IMAX", etc.
+  roomName: string;
+  roomType: string; // "2D", "3D", "IMAX", etc.
   capacity: number;
   theaterId: string;
   isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Theater {
@@ -86,10 +88,22 @@ export const theaterApi = {
     if (params.sort && params.sort.length > 0) cleanParams.sort = params.sort;
     
     const response = await apiClient.get("/theaters/list", { params: cleanParams });
-    if (response && typeof response === 'object' && 'data' in response) {
-      return (response as { data: Theater[] }).data || [];
+    
+    if (Array.isArray(response)) {
+      return response;
     }
-    return Array.isArray(response) ? response : [];
+    
+    if (response && typeof response === 'object') {
+      const resp = response as unknown as Record<string, unknown>;
+      if (Array.isArray(resp.items)) {
+        return resp.items as Theater[];
+      }
+      if (Array.isArray(resp.data)) {
+        return resp.data as Theater[];
+      }
+    }
+    
+    return [];
   },
 
   /**
@@ -127,8 +141,20 @@ export const theaterApi = {
    * Get rooms by theater ID
    */
   getRoomsByTheaterId: async (theaterId: string): Promise<Room[]> => {
-    const response = await apiClient.get(`/theaters/${theaterId}/rooms`);
-    return response as unknown as Room[];
+    const response = await apiClient.get(`/rooms/theaters/${theaterId}`);
+    if (Array.isArray(response)) {
+      return response;
+    }
+    if (response && typeof response === 'object') {
+      const resp = response as unknown as Record<string, unknown>;
+      if (Array.isArray(resp.items)) {
+        return resp.items as Room[];
+      }
+      if (Array.isArray(resp.data)) {
+        return resp.data as Room[];
+      }
+    }
+    return [];
   },
 
   /**

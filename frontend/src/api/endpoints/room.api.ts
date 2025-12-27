@@ -143,4 +143,29 @@ export const roomApi = {
     }
     return response as unknown as RoomDetail;
   },
+
+  /**
+   * Get rooms list by theater ID (no pagination - for dropdown)
+   * GET /api/rooms/theaters/{theaterId}/list
+   */
+  getRoomsListByTheaterId: async (
+    theaterId: string,
+    filters: Omit<RoomFilters, 'page' | 'limit'> = {}
+  ): Promise<Room[]> => {
+    const params: Record<string, unknown> = {};
+
+    if (filters.search) params.search = filters.search;
+    if (filters.sort && filters.sort.length > 0) params.sort = filters.sort;
+    if (filters.roomName) params.roomName = filters.roomName;
+    if (filters.roomType && filters.roomType.length > 0) params.roomType = filters.roomType;
+    if (filters.isActive !== undefined) params.isActive = filters.isActive;
+
+    const response = await apiClient.get(`/rooms/theaters/${theaterId}/list`, { params });
+    
+    // Handle different response formats
+    if (response && typeof response === 'object' && 'data' in response) {
+      return (response as { data: Room[] }).data || [];
+    }
+    return Array.isArray(response) ? response : [];
+  },
 };
