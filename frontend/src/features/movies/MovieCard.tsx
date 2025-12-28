@@ -7,10 +7,9 @@ import TrailerModal from "../../components/movie-details/TrailerModal";
 
 interface Props {
   movie: Movie;
-  variant: "now-showing" | "coming-soon";
 }
 
-export const MovieCard = ({ movie, variant }: Props) => {
+export const MovieCard = ({ movie }: Props) => {
   const navigate = useNavigate();
   const [showTrailer, setShowTrailer] = useState(false);
 
@@ -38,15 +37,9 @@ export const MovieCard = ({ movie, variant }: Props) => {
             </div>
           </Button>
 
-          {variant === "now-showing" ? (
-            <Button intent="primary" className="hidden sm:flex" onClick={() => navigate(`/movie/${movie._id}`)}>
-              BUY TICKETS
-            </Button>
-          ) : (
-            <Button intent="primary" className="hidden sm:flex" onClick={() => navigate(`/movie/${movie._id}`)}>
-              VIEW DETAILS
-            </Button>
-          )}
+          <Button intent="primary" className="hidden sm:flex" onClick={() => navigate(`/movie/${movie._id}`)}>
+            VIEW DETAILS
+          </Button>
         </div>
         <TrailerModal
           open={showTrailer}

@@ -52,7 +52,7 @@ export const MovieListSlider = ({ title, movies, variant }: Props) => {
         >
           {movies.map((movie) => (
             <SwiperSlide key={movie._id} className="movie-slide mb-10">
-              <MovieCard movie={movie} variant={variant} />
+              <MovieCard movie={movie} />
             </SwiperSlide>
           ))}
         </Swiper>

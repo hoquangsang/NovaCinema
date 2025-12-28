@@ -11,6 +11,8 @@ export default function MoviesManagementPage() {
         status: '',
         genre: '',
         ratingAge: '',
+        from: '',
+        to: '',
     });
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
@@ -65,6 +67,8 @@ export default function MoviesManagementPage() {
                 status={filters.status}
                 genre={filters.genre}
                 ratingAge={filters.ratingAge}
+                from={filters.from}
+                to={filters.to}
                 page={page}
                 limit={limit}
                 onPageChange={handlePageChange}

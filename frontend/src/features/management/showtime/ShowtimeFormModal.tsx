@@ -89,8 +89,13 @@ export function ShowtimeFormModal({
     setValidationError(null);
 
     try {
+      const payload = {
+        ...formData,
+        startAt: new Date(formData.startAt).toISOString(),
+      };
+
       // Validate first
-      const validation = await showtimeApi.validateShowtime(formData);
+      const validation = await showtimeApi.validateShowtime(payload);
       if (!validation.valid) {
         setValidationError(validation.message || validation.errors?.join(", ") || "Validation failed");
         setSubmitting(false);
@@ -98,7 +103,7 @@ export function ShowtimeFormModal({
       }
 
       // Create showtime
-      await showtimeApi.createShowtime(formData);
+      await showtimeApi.createShowtime(payload);
       onSuccess();
       onClose();
     } catch (err) {
@@ -177,7 +182,7 @@ export function ShowtimeFormModal({
             <input
               type="datetime-local"
               value={formData.startAt}
-              onChange={(e) => setFormData((prev) => ({ ...prev, startAt: new Date(e.target.value).toISOString() }))}
+              onChange={(e) => setFormData((prev) => ({ ...prev, startAt: e.target.value }))}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
             />
