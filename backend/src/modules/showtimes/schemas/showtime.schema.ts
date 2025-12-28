@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
+import { HydratedDocument, Schema as MongooseSchema, Types } from 'mongoose';
 import { ROOM_TYPE_VALUES, ROOM_TYPES } from 'src/modules/theaters/constants';
 import { RoomType } from 'src/modules/theaters/types';
 import { Room, Theater } from 'src/modules/theaters';
@@ -10,7 +10,7 @@ export type ShowtimeDocument = HydratedDocument<Showtime>;
 @Schema({ timestamps: true })
 export class Showtime {
   @Prop({
-    type: Types.ObjectId,
+    type: MongooseSchema.Types.ObjectId,
     ref: Movie.name,
     required: true,
     immutable: true,
@@ -18,7 +18,7 @@ export class Showtime {
   movieId!: Types.ObjectId;
 
   @Prop({
-    type: Types.ObjectId,
+    type: MongooseSchema.Types.ObjectId,
     ref: Theater.name,
     required: true,
     immutable: true,
@@ -26,7 +26,7 @@ export class Showtime {
   theaterId!: Types.ObjectId;
 
   @Prop({
-    type: Types.ObjectId,
+    type: MongooseSchema.Types.ObjectId,
     ref: Room.name,
     required: true,
     immutable: true,

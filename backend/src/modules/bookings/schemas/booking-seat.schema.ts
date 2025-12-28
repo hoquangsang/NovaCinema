@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types, HydratedDocument } from 'mongoose';
-import { Booking } from './booking.schema';
+import { HydratedDocument, Schema as MongooseSchema, Types } from 'mongoose';
 import { User } from 'src/modules/users';
 import { Room } from 'src/modules/theaters';
 import { Showtime } from 'src/modules/showtimes';
@@ -9,13 +8,14 @@ import {
   BOOKING_SEAT_STATUSES,
 } from '../constants';
 import { BookingSeatStatus } from '../types';
+import { Booking } from './booking.schema';
 
 export type BookingSeatDocument = HydratedDocument<BookingSeat>;
 
 @Schema({ timestamps: true })
 export class BookingSeat {
   @Prop({
-    type: Types.ObjectId,
+    type: MongooseSchema.Types.ObjectId,
     ref: Booking.name,
     required: true,
     immutable: true,
@@ -23,7 +23,7 @@ export class BookingSeat {
   bookingId!: Types.ObjectId;
 
   @Prop({
-    type: Types.ObjectId,
+    type: MongooseSchema.Types.ObjectId,
     ref: User.name,
     required: true,
     immutable: true,
@@ -31,7 +31,7 @@ export class BookingSeat {
   userId!: Types.ObjectId;
 
   @Prop({
-    type: Types.ObjectId,
+    type: MongooseSchema.Types.ObjectId,
     ref: Showtime.name,
     required: true,
     immutable: true,
@@ -39,10 +39,10 @@ export class BookingSeat {
   showtimeId!: Types.ObjectId;
 
   @Prop({
+    type: MongooseSchema.Types.ObjectId,
     ref: Room.name,
     required: true,
     immutable: true,
-    type: Types.ObjectId,
   })
   roomId!: Types.ObjectId;
 

@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types, HydratedDocument } from 'mongoose';
+import { HydratedDocument, Schema as MongooseSchema, Types } from 'mongoose';
 import { User } from 'src/modules/users';
 import { Showtime } from 'src/modules/showtimes';
 import { BOOKING_STATUS_VALUES } from '../constants';
@@ -10,7 +10,7 @@ export type BookingDocument = HydratedDocument<Booking>;
 @Schema({ timestamps: true })
 export class Booking {
   @Prop({
-    type: Types.ObjectId,
+    type: MongooseSchema.Types.ObjectId,
     ref: User.name,
     required: true,
     immutable: true,
@@ -18,7 +18,7 @@ export class Booking {
   userId!: Types.ObjectId;
 
   @Prop({
-    type: Types.ObjectId,
+    type: MongooseSchema.Types.ObjectId,
     ref: Showtime.name,
     required: true,
     immutable: true,
