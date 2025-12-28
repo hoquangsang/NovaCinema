@@ -13,8 +13,15 @@ import { pickSortableFields } from 'src/modules/base/helpers';
 import { USER_ROLES } from '../constants';
 import { UserDocument } from '../schemas';
 import { UserRepository } from '../repositories';
-import { USER_QUERY_FIELDS as QUERY_FIELDS } from './user.service.constant';
 import { UserCriteria as Criteria } from './user.service.type';
+
+const QUERY_FIELDS = {
+  SEARCHABLE: ['username', 'fullName', 'email'],
+  REGEX_MATCH: ['username', 'fullName', 'email'],
+  ARRAY_MATCH: ['roles'],
+  EXACT_MATCH: ['isActive', 'phoneNumber'],
+  SORTABLE: ['username', 'email', 'fullName', 'createdAt', 'lastLoginAt'],
+} as const;
 
 @Injectable()
 export class UserService {

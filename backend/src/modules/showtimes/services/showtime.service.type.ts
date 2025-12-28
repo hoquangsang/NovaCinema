@@ -40,7 +40,6 @@ export interface Range {
 export namespace ShowtimeCriteria {
   type Filter = {
     search?: never;
-    sort?: never;
     movieId?: string;
     theaterId?: string;
     roomId?: string;
@@ -59,6 +58,7 @@ export namespace ShowtimeCriteria {
   export type QueryAvailable = QueryInput &
     Filter & {
       date?: Date;
+      movieId: string;
     };
 
   export type PaginatedQuery = PaginatedQueryInput & Filter;

@@ -64,15 +64,6 @@ export class ShowtimesController {
     return await this.showtimeService.findShowtimes(query);
   }
 
-  @ApiOperation({ description: 'Query showtimes by date' })
-  @WrapListResponse({ dto: ShowtimeResDto })
-  @Public()
-  @HttpCode(HttpStatus.OK)
-  @Get('/by-date')
-  public async getShowtimesByDate(@Query() query: QueryShowtimesByDateReqDto) {
-    return await this.showtimeService.findShowtimesByDate(query);
-  }
-
   @ApiOperation({ description: 'Query available showtimes (by date)' })
   @WrapListResponse({ dto: ShowtimeResDto })
   @Public()

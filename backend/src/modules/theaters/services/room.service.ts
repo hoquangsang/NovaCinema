@@ -13,8 +13,15 @@ import { RoomType, SeatType } from '../types';
 import { RoomDocument } from '../schemas';
 import { RoomRepository } from '../repositories';
 import { SeatService } from './seat.service';
-import { ROOM_QUERY_FIELDS as QUERY_FIELDS } from './room.service.constant';
 import { RoomCriteria as Criteria } from './room.service.type';
+
+const QUERY_FIELDS = {
+  SEARCHABLE: ['roomName'] as const,
+  REGEX_MATCH: ['roomName'] as const,
+  ARRAY_MATCH: ['roomType'] as const,
+  EXACT_MATCH: ['isActive'] as const,
+  SORTABLE: ['roomName', 'roomType'] as const,
+} as const;
 
 @Injectable()
 export class RoomService {
@@ -36,27 +43,17 @@ export class RoomService {
 
   /** */
   public async findRoomById(id: string) {
-    const room = await this.roomRepo.query.findOneById({ id });
-    if (!room) return null;
-
-    // detail
-    return {
-      ...room,
-      capacity: this.seatService.calculateCapacity(room.seatMap),
-    };
+    return await this.roomRepo.query.findOneById({ id });
   }
 
   public async findRoomsByIds(roomIds: string[]) {
-    const rooms = await this.roomRepo.query.findMany({
-      filter: { _id: { $in: roomIds } },
-    });
-
-    return rooms.map((room) => {
-      const { seatMap, ...rest } = room;
-      return {
-        ...rest,
-        capacity: this.seatService.calculateCapacity(room.seatMap),
-      };
+    return await this.roomRepo.query.findMany({
+      filter: {
+        _id: { $in: roomIds },
+      },
+      exclusion: {
+        seatMap: false,
+      },
     });
   }
 
@@ -68,17 +65,12 @@ export class RoomService {
     const filter = this.buildQueryFilterByTheaterId(theaterId, rest);
     const sort = pickSortableFields(rawSort, QUERY_FIELDS.SORTABLE);
 
-    const rooms = await this.roomRepo.query.findMany({
-      filter,
-      sort,
-    });
-
-    return rooms.map((room) => {
-      const { seatMap, ...rest } = room;
-      return {
-        ...rest,
-        capacity: this.seatService.calculateCapacity(room.seatMap),
-      };
+    return await this.roomRepo.query.findMany({
+      filter: filter,
+      sort: sort,
+      exclusion: {
+        seatMap: false,
+      },
     });
   }
 
@@ -91,22 +83,17 @@ export class RoomService {
     const sort = pickSortableFields(rawSort, QUERY_FIELDS.SORTABLE);
 
     const result = await this.roomRepo.query.findManyPaginated({
-      filter,
-      page,
-      limit,
-      sort,
-    });
-
-    const existingRooms = result.items.map((room) => {
-      const { seatMap, ...rest } = room;
-      return {
-        ...rest,
-        capacity: this.seatService.calculateCapacity(room.seatMap),
-      };
+      filter: filter,
+      page: page,
+      limit: limit,
+      sort: sort,
+      exclusion: {
+        seatMap: false,
+      },
     });
 
     return {
-      items: existingRooms,
+      items: result.items,
       total: result.total,
       page: result.page,
       limit: result.limit,
@@ -125,22 +112,23 @@ export class RoomService {
       throw new ConflictException(`Room [${roomName}] already exists`);
 
     //
+    const seatMap = this.seatService.buildSeatMap(seatMapRaw);
+    const capacity = this.seatService.calculateCapacity(seatMap);
+
     const { insertedItem: createdRoom } = await this.roomRepo.command.createOne(
       {
         data: {
           theaterId: theaterId,
           roomName: roomName,
           roomType: roomType,
-          seatMap: this.seatService.buildSeatMap(seatMapRaw),
+          seatMap: seatMap,
+          capacity: capacity,
         },
       },
     );
 
     if (!createdRoom) throw new BadRequestException('Creation failed');
-    return {
-      ...createdRoom,
-      capacity: this.seatService.calculateCapacity(createdRoom.seatMap),
-    };
+    return createdRoom;
   }
 
   /** */
@@ -172,15 +160,19 @@ export class RoomService {
     const seatMap = seatMapRaw
       ? this.seatService.buildSeatMap(seatMapRaw)
       : undefined;
+    const capacity = seatMap
+      ? this.seatService.calculateCapacity(seatMap)
+      : undefined;
 
     const { modifiedItem: updatedRoom } =
       await this.roomRepo.command.updateOneById({
-        id,
+        id: id,
         update: {
-          roomName,
-          roomType,
-          seatMap,
-          isActive,
+          roomName: roomName,
+          roomType: roomType,
+          seatMap: seatMap,
+          capacity: capacity,
+          isActive: isActive,
         },
       });
 

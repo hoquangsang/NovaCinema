@@ -1,4 +1,5 @@
 import escapeStringRegexp from 'escape-string-regexp';
+import { FilterQuery, Types } from 'mongoose';
 import {
   BadRequestException,
   ConflictException,
@@ -6,18 +7,13 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { FilterQuery, Types } from 'mongoose';
+import { pickSortableFields } from 'src/modules/base/helpers';
 import { TimeHHmm } from 'src/common/types';
 import { DateUtil, TimeUtil } from 'src/common/utils';
 import { MovieService } from 'src/modules/movies';
-import { RoomService } from 'src/modules/theaters';
+import { RoomService, TheaterService } from 'src/modules/theaters';
 import { ShowtimeDocument } from '../schemas';
 import { ShowtimeRepository } from '../repositories/showtime.repository';
-import {
-  SHOWTIME_QUERY_FIELDS as QUERY_FIELDS,
-  SHOWTIME_ROUND_STEP_MIN as ROUND_STEP_MIN,
-  SHOWTIME_GAP_MIN as GAP_MIN,
-} from './showtime.service.constant';
 import {
   MovieLike,
   RoomLike,
@@ -28,45 +24,72 @@ import {
 } from './showtime.service.type';
 import { RoomType } from 'src/modules/theaters/types';
 
+const GAP_MIN = 10;
+const ROUND_STEP_MIN = 5;
+const QUERY_FIELDS = {
+  SEARCHABLE: [] as readonly string[],
+  REGEX_MATCH: [] as readonly string[],
+  ARRAY_MATCH: [] as readonly string[],
+  EXACT_MATCH: ['isActive'],
+  SORTABLE: ['startAt'],
+} as const;
+
 @Injectable()
 export class ShowtimeService {
   public constructor(
     private readonly showtimeRepo: ShowtimeRepository,
     private readonly roomService: RoomService,
+    private readonly theaterService: TheaterService,
     private readonly movieService: MovieService,
   ) {}
 
   /******************************** */
   public async findShowtimeById(id: string) {
-    return this.showtimeRepo.query.findOneByIdPopulated(id);
+    return this.showtimeRepo.query.findOneById({ id });
+  }
+
+  public async findShowtimeDetailById(id: string) {
+    const showtime = await this.findShowtimeById(id);
+    if (!showtime) return null;
+    const { movieId, theaterId, roomId, roomType: _, ...rest } = showtime;
+
+    const existingtheater =
+      await this.theaterService.findTheaterById(theaterId);
+    if (!existingtheater) throw new Error('Theater not found');
+    const { ...theater } = existingtheater;
+
+    const existingroom = await this.roomService.findRoomById(roomId);
+    if (!existingroom) throw new Error('Room not found');
+    const { seatMap, ...room } = existingroom;
+
+    const existingmovie = await this.movieService.findMovieById(movieId);
+    if (!existingmovie) throw new Error('Movie not found');
+    const { ...movie } = existingmovie;
+
+    return {
+      ...rest,
+      movie,
+      theater,
+      room,
+    };
   }
 
   public async findShowtimes(options: Criteria.QueryRange) {
-    const { ...rest } = options;
+    const { sort: rawSort, ...rest } = options;
     const filter = this.buildShowtimeFilter(rest);
+    const sort = pickSortableFields(rawSort, QUERY_FIELDS.SORTABLE);
 
-    return this.showtimeRepo.query.findManyLight({
-      filter,
-      sort: { startAt: 1 },
-    });
-  }
-
-  public async findShowtimesByDate(options: Criteria.QueryByDate) {
-    const { date, ...rest } = options;
-
-    const startAt = DateUtil.startOfDay(date);
-    const endAt = DateUtil.endOfDay(date);
-
-    return this.findShowtimes({
-      ...rest,
-      from: startAt,
-      to: endAt,
+    return this.showtimeRepo.query.findMany({
+      filter: filter,
+      sort: sort,
     });
   }
 
   public async findAvailableShowtimes(options: Criteria.QueryAvailable) {
     const now = DateUtil.now();
-    const { date = now, ...rest } = options;
+    const { movieId, date = now, ...rest } = options;
+    const movie = await this.movieService.findMovieById(movieId);
+
     const startDay = DateUtil.startOfDay(date);
     const endDay = DateUtil.endOfDay(date);
 
@@ -82,14 +105,15 @@ export class ShowtimeService {
   }
 
   public async findShowtimesPaginated(options: Criteria.PaginatedQueryRange) {
-    const { page, limit, ...rest } = options;
+    const { page, limit, sort: rawSort, ...rest } = options;
     const filter = this.buildShowtimeFilter(rest);
+    const sort = pickSortableFields(rawSort, QUERY_FIELDS.SORTABLE);
 
-    const result = await this.showtimeRepo.query.findManyPaginatedLight({
-      filter,
-      page,
-      limit,
-      sort: { startAt: 1 },
+    const result = await this.showtimeRepo.query.findManyPaginated({
+      filter: filter,
+      page: page,
+      limit: limit,
+      sort: sort,
     });
 
     return {
