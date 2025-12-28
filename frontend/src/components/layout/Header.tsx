@@ -109,12 +109,6 @@ export default function Header() {
 
           <nav className="flex items-center gap-6">
             <Link
-              to="/showtimes"
-              className="font-semibold text-white transition-colors hover:text-yellow-400"
-            >
-              Showtimes
-            </Link>
-            <Link
               to="/now-showing"
               className="font-semibold text-white transition-colors hover:text-yellow-400"
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}

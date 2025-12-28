@@ -1,5 +1,6 @@
 import { Building2, Plus } from 'lucide-react';
 import type { Theater } from '../../../api/endpoints/theater.api';
+import { SearchableTheaterSelect } from '../../../components/common/SearchableTheaterSelect';
 
 interface RoomHeaderProps {
     theaters: Theater[];
@@ -16,11 +17,6 @@ export default function RoomHeader({
     onTheaterChange,
     onAddClick,
 }: RoomHeaderProps) {
-    const getSelectedTheaterName = () => {
-        const theater = theaters.find(t => t._id === selectedTheaterId);
-        return theater?.theaterName || 'Select Theater';
-    };
-
     return (
         <>
             {/* Page Header */}
@@ -45,7 +41,7 @@ export default function RoomHeader({
                     <div className="p-3 bg-yellow-400 rounded-lg">
                         <Building2 size={24} className="text-[#10142C]" />
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 max-w-xl">
                         <label className="block text-gray-300 text-sm font-medium mb-2">
                             Select Theater to View Rooms
                         </label>
@@ -55,26 +51,14 @@ export default function RoomHeader({
                                 Loading theaters...
                             </div>
                         ) : (
-                            <select
+                            <SearchableTheaterSelect
+                                theaters={theaters}
                                 value={selectedTheaterId}
-                                onChange={(e) => onTheaterChange(e.target.value)}
-                                className="w-full md:w-[500px] lg:w-[600px] px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
-                            >
-                                <option value="" className="text-gray-800">-- Select a Theater --</option>
-                                {theaters.map((theater) => (
-                                    <option key={theater._id} value={theater._id} className="text-gray-800">
-                                        {theater.theaterName} - {theater.address}
-                                    </option>
-                                ))}
-                            </select>
+                                onChange={onTheaterChange}
+                                placeholder="Chọn rạp để xem phòng chiếu"
+                            />
                         )}
                     </div>
-                    {selectedTheaterId && (
-                        <div className="text-right">
-                            <p className="text-gray-400 text-sm">Current Theater</p>
-                            <p className="text-white font-semibold">{getSelectedTheaterName()}</p>
-                        </div>
-                    )}
                 </div>
             </div>
         </>

@@ -10,6 +10,8 @@ interface Props {
     status?: string;
     genre?: string;
     ratingAge?: string;
+    from?: string;
+    to?: string;
     page?: number;
     limit?: number;
     onPageChange?: (nextPage: number) => void;
@@ -23,6 +25,8 @@ export default function MoviesTable({
     status = '',
     genre = '',
     ratingAge = '',
+    from = '',
+    to = '',
     page = 1, 
     limit = 10, 
     onPageChange, 
@@ -45,56 +49,104 @@ export default function MoviesTable({
             setLoading(true);
             setError(null);
             try {
-                // Build filter params
-                const now = new Date();
-                let from: string | undefined;
-                let to: string | undefined;
+                let res;
 
-                // Status filter logic
+                // Use different API based on status
                 if (status === 'showing') {
-                    // Now showing: releaseDate <= now <= endDate
-                    to = now.toISOString().split('T')[0];
+                    // Use /movies/showing API - no from/to filter supported
+                    res = await movieApi.getNowShowing(page, limit);
+                    // Client-side filtering for search, genre, ratingAge
+                    let filteredMovies = res.items || [];
+                    if (search) {
+                        const searchLower = search.toLowerCase();
+                        filteredMovies = filteredMovies.filter(movie => 
+                            movie.title.toLowerCase().includes(searchLower) ||
+                            movie.director?.toLowerCase().includes(searchLower)
+                        );
+                    }
+                    if (genre) {
+                        filteredMovies = filteredMovies.filter(movie => 
+                            movie.genres.includes(genre)
+                        );
+                    }
+                    if (ratingAge) {
+                        filteredMovies = filteredMovies.filter(movie => 
+                            movie.ratingAge === ratingAge
+                        );
+                    }
+                    if (mounted) {
+                        setMovies(filteredMovies);
+                        // Use res.total for pagination when no client-side filtering
+                        const hasClientFilter = search || genre || ratingAge;
+                        setTotal(hasClientFilter ? filteredMovies.length : (res.total || 0));
+                    }
                 } else if (status === 'upcoming') {
-                    // Coming soon: releaseDate > now
-                    from = now.toISOString().split('T')[0];
-                } else if (status === 'ended') {
-                    // Ended: endDate < now
-                    to = now.toISOString().split('T')[0];
-                }
+                    // Use /movies/upcoming API - no from/to filter supported
+                    res = await movieApi.getComingSoon(page, limit);
+                    // Client-side filtering for search, genre, ratingAge
+                    let filteredMovies = res.items || [];
+                    if (search) {
+                        const searchLower = search.toLowerCase();
+                        filteredMovies = filteredMovies.filter(movie => 
+                            movie.title.toLowerCase().includes(searchLower) ||
+                            movie.director?.toLowerCase().includes(searchLower)
+                        );
+                    }
+                    if (genre) {
+                        filteredMovies = filteredMovies.filter(movie => 
+                            movie.genres.includes(genre)
+                        );
+                    }
+                    if (ratingAge) {
+                        filteredMovies = filteredMovies.filter(movie => 
+                            movie.ratingAge === ratingAge
+                        );
+                    }
+                    if (mounted) {
+                        setMovies(filteredMovies);
+                        // Use res.total for pagination when no client-side filtering
+                        const hasClientFilter = search || genre || ratingAge;
+                        setTotal(hasClientFilter ? filteredMovies.length : (res.total || 0));
+                    }
+                } else {
+                    // Use /movies API for 'all' (empty) or 'ended' status
+                    // from/to filter is supported
+                    const now = new Date();
+                    let filterFrom = from || undefined;
+                    let filterTo = to || undefined;
 
-                const res = await movieApi.getAllMoviesWithFilters({ 
-                    search: search || undefined, 
-                    page, 
-                    limit,
-                    genres: genre ? [genre] : undefined,
-                    ratingAge: ratingAge || undefined,
-                    from: status === 'upcoming' ? from : undefined,
-                    to: status === 'ended' ? to : undefined,
-                });
-                if (!mounted) return;
-                
-                // Client-side filtering for status if API doesn't fully support it
-                let filteredMovies = res.items || [];
-                if (status === 'showing') {
-                    filteredMovies = filteredMovies.filter(movie => {
-                        const releaseDate = movie.releaseDate ? new Date(movie.releaseDate) : null;
-                        const endDate = movie.endDate ? new Date(movie.endDate) : null;
-                        return releaseDate && releaseDate <= now && (!endDate || endDate >= now);
-                    });
-                } else if (status === 'upcoming') {
-                    filteredMovies = filteredMovies.filter(movie => {
-                        const releaseDate = movie.releaseDate ? new Date(movie.releaseDate) : null;
-                        return releaseDate && releaseDate > now;
-                    });
-                } else if (status === 'ended') {
-                    filteredMovies = filteredMovies.filter(movie => {
-                        const endDate = movie.endDate ? new Date(movie.endDate) : null;
-                        return endDate && endDate < now;
-                    });
-                }
+                    // For 'ended' status, set 'to' to today if not already set
+                    // to filter movies with endDate < now
+                    if (status === 'ended' && !filterTo) {
+                        filterTo = now.toISOString().split('T')[0];
+                    }
 
-                setMovies(filteredMovies);
-                setTotal(status ? filteredMovies.length : (res.total || 0));
+                    res = await movieApi.getAllMoviesWithFilters({ 
+                        search: search || undefined, 
+                        page, 
+                        limit,
+                        genres: genre ? [genre] : undefined,
+                        ratingAge: ratingAge || undefined,
+                        from: filterFrom,
+                        to: filterTo,
+                    });
+
+                    if (!mounted) return;
+                    
+                    // Client-side filtering for 'ended' status
+                    let filteredMovies = res.items || [];
+                    if (status === 'ended') {
+                        filteredMovies = filteredMovies.filter(movie => {
+                            const endDate = movie.endDate ? new Date(movie.endDate) : null;
+                            return endDate && endDate < now;
+                        });
+                        setMovies(filteredMovies);
+                        setTotal(filteredMovies.length);
+                    } else {
+                        setMovies(filteredMovies);
+                        setTotal(res.total || 0);
+                    }
+                }
             } catch (err: any) {
                 if (mounted) {
                     setError(err?.message || 'Failed to load movies');
@@ -109,7 +161,7 @@ export default function MoviesTable({
         return () => {
             mounted = false;
         };
-    }, [search, status, genre, ratingAge, page, limit, refreshTrigger]);
+    }, [search, status, genre, ratingAge, from, to, page, limit, refreshTrigger]);
 
     const totalPages = Math.max(1, Math.ceil(total / limit));
 
