@@ -4,7 +4,18 @@ import { ToBoolean } from 'src/common/decorators';
 import { PaginatedQueryReqDto } from 'src/modules/base/dtos/requests';
 
 export class PaginatedQueryTheatersReqDto extends PaginatedQueryReqDto {
-  @ApiPropertyOptional({ type: String, description: 'Filter by theater name' })
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Regex match: theaterName, address',
+  })
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Filter by theater name',
+  })
   @IsOptional()
   @IsString()
   theaterName?: string;

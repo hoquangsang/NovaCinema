@@ -5,11 +5,6 @@ import { IsOptional, IsString } from 'class-validator';
 type SortDirection = 'asc' | 'desc';
 
 export class QueryReqDto {
-  @ApiPropertyOptional({ type: String, description: 'Search keyword' })
-  @IsOptional()
-  @IsString()
-  search?: string;
-
   @ApiPropertyOptional({
     type: [String],
     description: 'Sort rules. Each item: field:asc|desc|1|-1.',

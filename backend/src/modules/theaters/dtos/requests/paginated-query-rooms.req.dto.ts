@@ -12,7 +12,18 @@ import { ROOM_TYPE_VALUES, ROOM_TYPES } from '../../constants';
 import { RoomType } from '../../types';
 
 export class PaginatedQueryRoomsReqDto extends PaginatedQueryReqDto {
-  @ApiPropertyOptional({ type: String, description: 'Filter by room name' })
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Regex match: roomName',
+  })
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Filter by room name',
+  })
   @IsOptional()
   @IsString()
   roomName?: string;

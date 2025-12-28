@@ -4,7 +4,18 @@ import { ToBoolean } from 'src/common/decorators';
 import { QueryReqDto } from 'src/modules/base/dtos/requests';
 
 export class QueryTheatersReqDto extends QueryReqDto {
-  @ApiPropertyOptional({ type: String, description: 'Filter by theater name' })
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Regex match: theaterName, address',
+  })
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Filter by theater name',
+  })
   @IsOptional()
   @IsString()
   theaterName?: string;

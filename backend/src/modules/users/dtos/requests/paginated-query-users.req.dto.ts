@@ -6,22 +6,42 @@ import { USER_ROLE_VALUES, USER_ROLES } from '../../constants';
 import { UserRoleType } from '../../types';
 
 export class PaginatedQueryUsersReqDto extends PaginatedQueryReqDto {
-  @ApiPropertyOptional({ type: String, description: 'Filter by email' })
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Regex match: username, fullName, email',
+  })
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Filter by email',
+  })
   @IsOptional()
   @IsString()
   email?: string;
 
-  @ApiPropertyOptional({ type: String, description: 'Filter by phone number' })
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Filter by phone number',
+  })
   @IsOptional()
   @IsString()
   phoneNumber?: string;
 
-  @ApiPropertyOptional({ type: String, description: 'Filter by username' })
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Filter by username',
+  })
   @IsOptional()
   @IsString()
   username?: string;
 
-  @ApiPropertyOptional({ type: String, description: 'Filter by full name' })
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Filter by full name',
+  })
   @IsOptional()
   @IsString()
   fullName?: string;
