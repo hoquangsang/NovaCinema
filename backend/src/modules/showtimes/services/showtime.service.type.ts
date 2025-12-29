@@ -1,4 +1,3 @@
-import { TimeHHmm } from 'src/common/types';
 import {
   QueryInput,
   PaginatedQueryInput,
@@ -32,10 +31,14 @@ export interface ShowtimeLike {
   isActive?: Boolean;
 }
 
-export interface Range {
+export type ShowtimeRange = {
+  movieId: string;
+  roomId: string;
+  theaterId: string;
+  roomType: RoomType;
   startAt: Date;
   endAt: Date;
-}
+};
 
 export namespace ShowtimeCriteria {
   type Filter = {
@@ -72,17 +75,14 @@ export namespace ShowtimeCriteria {
     startAt: Date;
   };
 
-  export type CreateBulk = {
-    movieId: string;
-    roomIds: string[];
+  export type RoomSchedule = {
+    roomId: string;
     startAts: Date[];
   };
 
-  export type CreateRepeated = {
+  export type CreateBulk = {
     movieId: string;
-    roomIds: string[];
-    repeatDates: Date[];
-    startTimes: TimeHHmm[];
+    schedules: RoomSchedule[];
   };
 
   /** */
@@ -96,31 +96,4 @@ export namespace ShowtimeCriteria {
   export type DeleteBulk = {
     ids: string[];
   };
-}
-
-export namespace ShowtimeResult {
-  export type ValidationError = {
-    // TODO: BaseResult
-    field?: string;
-    messages: string[];
-    code?: string;
-  };
-
-  export type ValidationSuccess = {
-    valid: true;
-    message?: string;
-  };
-
-  export type ValidationFailure = {
-    valid: false;
-    field?: string;
-    errors: string[];
-    message?: string;
-  };
-
-  export type Validation = ValidationSuccess | ValidationFailure;
-
-  export type ValidationResult<T> =
-    | (ValidationSuccess & { value: T })
-    | (ValidationFailure & { value?: never });
 }
