@@ -8,8 +8,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { pickSortableFields } from 'src/modules/base/helpers';
-import { TimeHHmm } from 'src/common/types';
-import { DateUtil, TimeUtil } from 'src/common/utils';
+import { DateUtil } from 'src/common/utils';
 import { MovieService } from 'src/modules/movies';
 import { RoomService, TheaterService } from 'src/modules/theaters';
 import { ShowtimeDocument } from '../schemas';
@@ -18,9 +17,8 @@ import {
   MovieLike,
   RoomLike,
   ShowtimeLike,
-  Range,
+  ShowtimeRange,
   ShowtimeCriteria as Criteria,
-  ShowtimeResult as Result,
 } from './showtime.service.type';
 import { RoomType } from 'src/modules/theaters/types';
 
@@ -30,7 +28,7 @@ const QUERY_FIELDS = {
   SEARCHABLE: [] as readonly string[],
   REGEX_MATCH: [] as readonly string[],
   ARRAY_MATCH: [] as readonly string[],
-  EXACT_MATCH: ['isActive'],
+  EXACT_MATCH: ['isActive', 'movieId', 'theaterId', 'roomId'],
   SORTABLE: ['startAt'],
 } as const;
 
@@ -87,8 +85,7 @@ export class ShowtimeService {
 
   public async findAvailableShowtimes(options: Criteria.QueryAvailable) {
     const now = DateUtil.now();
-    const { movieId, date = now, ...rest } = options;
-    const movie = await this.movieService.findMovieById(movieId);
+    const { date = now, ...rest } = options;
 
     const startDay = DateUtil.startOfDay(date);
     const endDay = DateUtil.endOfDay(date);
@@ -127,86 +124,38 @@ export class ShowtimeService {
   /******************************** */
   public async createSingleShowtime(data: Criteria.Create) {
     const { movieId, roomId, startAt } = data;
+    const schedule = {
+      roomId: roomId,
+      startAts: [startAt],
+    };
 
-    // Delegate qua bulk
     const showtimes = await this.createBulkShowtimes({
       movieId,
-      roomIds: [roomId],
-      startAts: [startAt],
+      schedules: [schedule],
     });
 
+    if (!showtimes.length) {
+      throw new BadRequestException('Creation failed');
+    }
     return showtimes[0];
   }
 
   public async createBulkShowtimes(data: Criteria.CreateBulk) {
-    const { movieId, roomIds, startAts } = data;
+    const { movieId, schedules } = data;
+    const movie = await this.getValidatedMovie(movieId);
+    const rooms = await this.getValidatedRooms(schedules);
+    const showtimes = this.buildShowtimeSchedules(movie, rooms, schedules);
+    await this.assertShowtimeAvailability(showtimes, rooms);
 
-    // 1. input
-    const inputVal = this.validateCreationInput(data);
-    if (!inputVal.valid) {
-      throw new BadRequestException({
-        message: 'Invalid input',
-        errors: inputVal.errors,
-      });
-    }
-
-    // 2. movie
-    const movieVal = await this.getValidatedMovie(movieId);
-    if (!movieVal.valid) {
-      throw new BadRequestException({
-        message: 'Invalid movie',
-        errors: movieVal.errors,
-      });
-    }
-    const movie = movieVal.value;
-
-    // 3. rooms
-    const roomsVal = await this.getValidatedRooms(roomIds);
-    if (!roomsVal.valid) {
-      throw new BadRequestException({
-        message: 'Invalid roomIds',
-        errors: roomsVal.errors,
-      });
-    }
-    const rooms = roomsVal.value;
-
-    // 4. ranges
-    const rangesVal = this.getValidatedShowtimeRanges(startAts, movie);
-    if (!rangesVal.valid) {
-      throw new BadRequestException({
-        message: 'Invalid showtime ranges',
-        errors: rangesVal.errors,
-      });
-    }
-    const ranges = rangesVal.value;
-
-    // 5. conflicts
-    const conflictVal = await this.getValidatedConflicts(movie, rooms, ranges);
-    if (!conflictVal.valid) {
-      throw new ConflictException({
-        message: 'Showtime conflict',
-        errors: conflictVal.errors,
-      });
-    }
-
-    // 6. create docs
-    const docs = rooms.flatMap((room) =>
-      ranges.map((r) => ({
-        movieId,
-        theaterId: room.theaterId,
-        roomId: room._id,
-        roomType: room.roomType,
-        startAt: r.startAt,
-        endAt: r.endAt,
-      })),
-    );
-
+    // TODO: add transaction
     try {
       const { insertedCount, insertedItems } =
-        await this.showtimeRepo.command.createMany({ data: docs });
+        await this.showtimeRepo.command.createMany({
+          data: showtimes,
+        });
 
-      if (insertedCount !== docs.length) {
-        throw new InternalServerErrorException('Create failed');
+      if (insertedCount !== showtimes.length) {
+        throw new InternalServerErrorException('Failed to create showtimes');
       }
 
       return insertedItems;
@@ -216,93 +165,6 @@ export class ShowtimeService {
       }
       throw err;
     }
-  }
-
-  public async createRepeatedShowtimes(data: Criteria.CreateRepeated) {
-    const { movieId, roomIds, startTimes, repeatDates } = data;
-
-    // 1. build + validate startAts
-    const startAtsVal = this.getValidatedRepeatedStartAts(
-      startTimes,
-      repeatDates,
-    );
-    if (!startAtsVal.valid) {
-      throw new BadRequestException({
-        message: 'Invalid repeated start times',
-        errors: startAtsVal.errors,
-      });
-    }
-    const startAts = startAtsVal.value;
-
-    // 2. delegate bulk
-    return this.createBulkShowtimes({
-      movieId,
-      roomIds,
-      startAts,
-    });
-  }
-
-  /** */
-  public async validateSingleCreation(
-    data: Criteria.Create,
-  ): Promise<Result.Validation> {
-    const { movieId, roomId, startAt } = data;
-    return await this.validateBulkCreation({
-      movieId: movieId,
-      roomIds: [roomId],
-      startAts: [startAt],
-    });
-  }
-
-  public async validateBulkCreation(
-    data: Criteria.CreateBulk,
-  ): Promise<Result.Validation> {
-    // 1. input
-    const inputVal = this.validateCreationInput(data);
-    if (!inputVal.valid) return inputVal;
-
-    const { movieId, roomIds, startAts } = data;
-    // 2. movie
-    const movieVal = await this.getValidatedMovie(movieId);
-    if (!movieVal.valid) return movieVal;
-    const { value: movie } = movieVal;
-
-    // 3. rooms
-    const roomsVal = await this.getValidatedRooms(roomIds);
-    if (!roomsVal.valid) return roomsVal;
-    const { value: rooms } = roomsVal;
-
-    // 4. ranges
-    const rangesVal = this.getValidatedShowtimeRanges(startAts, movie);
-    if (!rangesVal.valid) return rangesVal;
-    const { value: ranges } = rangesVal;
-
-    // 5. conflicts (room conflict + unique roomType conflict)
-    const conflictVal = await this.getValidatedConflicts(movie, rooms, ranges);
-    if (!conflictVal.valid) return conflictVal;
-
-    return this.success();
-  }
-
-  public async validateRepeatedCreation(
-    data: Criteria.CreateRepeated,
-  ): Promise<Result.Validation> {
-    const { movieId, roomIds, startTimes, repeatDates } = data;
-
-    // 1. Validate & build startAts
-    const startAtsVal = this.getValidatedRepeatedStartAts(
-      startTimes,
-      repeatDates,
-    );
-    if (!startAtsVal.valid) return startAtsVal;
-    const { value: startAts } = startAtsVal;
-
-    // 2. Delegate bulk creation
-    return this.validateBulkCreation({
-      movieId,
-      roomIds,
-      startAts,
-    });
   }
 
   /******************************** */
@@ -350,18 +212,18 @@ export class ShowtimeService {
   private buildShowtimeFilter(options: Criteria.QueryRange) {
     const {
       search,
-      movieId,
-      theaterId,
-      roomId,
+      // movieId,
+      // theaterId,
+      // roomId,
       from: startAt,
       to: endAt,
       ...rest
     } = options;
 
     const filter: FilterQuery<ShowtimeDocument> = {};
-    if (movieId) filter.movieId = new Types.ObjectId(movieId);
-    if (theaterId) filter.theaterId = new Types.ObjectId(theaterId);
-    if (roomId) filter.roomId = new Types.ObjectId(roomId);
+    // if (movieId) filter.movieId = new Types.ObjectId(movieId);
+    // if (theaterId) filter.theaterId = new Types.ObjectId(theaterId);
+    // if (roomId) filter.roomId = new Types.ObjectId(roomId);
 
     // search fields
     if (search && QUERY_FIELDS.SEARCHABLE.length) {
@@ -401,481 +263,259 @@ export class ShowtimeService {
     return filter;
   }
 
-  /** */
-  private validateCreationInput(data: Criteria.CreateBulk): Result.Validation {
-    const { movieId, roomIds, startAts } = data;
-    const errors: string[] = [];
-
+  /******************************** */
+  private async getValidatedMovie(movieId: string): Promise<MovieLike> {
     if (!movieId) {
-      errors.push('movieId is required');
+      throw new BadRequestException('Movie is required');
     }
 
-    if (!roomIds?.length) {
-      errors.push('roomIds is required');
+    const movie = await this.movieService.findMovieById(movieId);
+
+    if (!movie) {
+      throw new BadRequestException('Movie not found');
     }
 
-    if (!startAts?.length) {
-      errors.push('startAts is required');
+    if (movie.duration <= 0) {
+      throw new BadRequestException('Invalid movie duration');
     }
 
-    if (startAts?.length) {
+    if (!movie.releaseDate) {
+      throw new BadRequestException('Movie release date is required');
+    }
+
+    return movie;
+  }
+
+  private async getValidatedRooms(
+    schedules: Criteria.RoomSchedule[],
+  ): Promise<RoomLike[]> {
+    if (!Array.isArray(schedules) || !schedules?.length) {
+      throw new BadRequestException('Room schedules are required');
+    }
+
+    const roomIds: string[] = [];
+    const seenRooms = new Set<string>();
+    schedules.forEach((schedule, i) => {
+      const { roomId, startAts } = schedule;
+      if (!roomId) {
+        throw new BadRequestException(`schedules[${i}].roomId is required`);
+      }
+
+      if (seenRooms.has(roomId)) {
+        throw new BadRequestException(
+          `Duplicate room in schedules[${i}]: ${roomId}`,
+        );
+      }
+      seenRooms.add(roomId);
+
+      if (!Array.isArray(schedule.startAts) || !startAts?.length) {
+        throw new BadRequestException(
+          `schedules[${i}].startAts must not be empty`,
+        );
+      }
+
       const seen = new Set<number>();
-      const dupIndexes: number[] = [];
-
-      startAts.forEach((d, i) => {
+      startAts.forEach((d, j) => {
         if (!(d instanceof Date) || isNaN(+d)) {
-          errors.push(`startAts[${i}] is invalid date`);
-          return;
+          throw new BadRequestException(
+            `schedules[${i}].startAts[${j}] is not a valid date`,
+          );
         }
 
         const t = d.getTime();
-        if (seen.has(t)) dupIndexes.push(i);
-        else seen.add(t);
+        if (seen.has(t)) {
+          throw new BadRequestException(
+            `Duplicate showtime in schedules[${i}].startAts`,
+          );
+        }
+        seen.add(t);
       });
 
-      if (dupIndexes.length) {
-        dupIndexes.forEach((i) =>
-          errors.push(`Duplicate startAt at index ${i}`),
-        );
-      }
-    }
+      roomIds.push(roomId);
+    });
 
-    if (Object.keys(errors).length) {
-      return this.failure('input', errors);
-    }
-
-    return this.success();
-  }
-
-  /** */
-  private async getValidatedMovie(
-    movieId: string,
-  ): Promise<Result.ValidationResult<MovieLike>> {
-    const movie = await this.movieService.findMovieById(movieId);
-    if (!movie) {
-      return this.failure('movieId', ['Movie not found']);
-    }
-
-    const errors: string[] = [];
-    if (movie.duration <= 0)
-      errors.push('Movie duration must be greater than 0');
-    if (!movie.releaseDate) errors.push('Movie release date is required');
-    if (errors.length) return this.failure('movieId', errors);
-
-    return this.successResult(movie);
-  }
-
-  /** */
-  private async getValidatedRooms(
-    roomIds: string[],
-  ): Promise<Result.ValidationResult<RoomLike[]>> {
-    // check duplicate
-    const seen = new Set<string>();
-    const dup: string[] = [];
-    for (const id of roomIds) {
-      if (seen.has(id)) dup.push(id);
-      else seen.add(id);
-    }
-    if (dup.length) {
-      return this.failure(
-        'roomIds',
-        dup.map((id) => `Duplicate roomId: ${id}`),
-      );
-    }
-
-    // check missing room
     const rooms = await this.roomService.findRoomsByIds(roomIds);
-    const found = new Set(rooms.map((r) => r._id));
-    const missing = roomIds.filter((id) => !found.has(id));
-    if (missing.length) {
-      return this.failure(
-        'roomIds',
-        missing.map((id) => `Room not found: ${id}`),
+    if (rooms.length !== roomIds.length) {
+      throw new BadRequestException('One or more rooms do not exist');
+    }
+
+    const theaterId = rooms[0].theaterId;
+    if (rooms.some((r) => r.theaterId !== theaterId)) {
+      throw new BadRequestException(
+        'All rooms must belong to the same theater',
       );
     }
 
-    // check same theater
-    let theaterId: string | null = null;
-    for (const room of rooms) {
-      if (!theaterId) theaterId = room.theaterId;
-      else if (room.theaterId !== theaterId) {
-        return this.failure('roomIds', [
-          'All rooms must belong to the same theater',
-        ]);
-      }
-    }
-
-    return this.successResult(rooms);
+    return rooms;
   }
 
-  /** */
-  private getValidatedShowtimeRanges(
-    startAts: Date[],
+  private buildShowtimeSchedules(
     movie: MovieLike,
-  ): Result.ValidationResult<Range[]> {
-    // 1. build
-    const slots = startAts
-      .map((raw) => {
-        const startAt = DateUtil.roundDown(raw, ROUND_STEP_MIN);
-        const endAt = DateUtil.roundUp(
-          DateUtil.add(startAt, {
+    rooms: RoomLike[],
+    schedules: Criteria.RoomSchedule[],
+  ): ShowtimeRange[] {
+    const roomMap = new Map(rooms.map((r) => [r._id, r]));
+    const result: ShowtimeRange[] = [];
+
+    // unique (theaterId, roomType, startAt)
+    const roomTypeStartMap = new Map<RoomType, Set<number>>();
+
+    schedules.forEach((schedule, i) => {
+      const room = roomMap.get(schedule.roomId)!;
+
+      const ranges = schedule.startAts
+        .map((rawStart) => {
+          const startAt = DateUtil.roundUp(rawStart, ROUND_STEP_MIN);
+          const endAt = DateUtil.add(startAt, {
             minutes: movie.duration + GAP_MIN,
-          }),
-          ROUND_STEP_MIN,
-        );
-        return {
+          });
+          return { startAt, endAt };
+        })
+        .sort((a, b) => +a.startAt - +b.startAt);
+
+      // 1. overlap same room
+      for (let j = 1; j < ranges.length; j++) {
+        if (ranges[j - 1].endAt > ranges[j].startAt) {
+          const startStr = DateUtil.toDatetimeString(
+            schedule.startAts[i],
+            'dd-MM-yyyy HH:mm',
+          );
+          throw new BadRequestException(
+            `Showtimes overlap in schedules[${i}]: ${startStr}`,
+          );
+        }
+      }
+
+      // 2. unique by roomType
+      let used = roomTypeStartMap.get(room.roomType);
+      if (!used) {
+        used = new Set<number>();
+        roomTypeStartMap.set(room.roomType, used);
+      }
+
+      for (const { startAt, endAt } of ranges) {
+        const t = startAt.getTime();
+
+        if (used.has(t)) {
+          const startStr = DateUtil.toDatetimeString(
+            startAt,
+            'dd-MM-yyyy HH:mm',
+          );
+          throw new BadRequestException(
+            `Room type ${room.roomType} already has a showtime at ${startStr}`,
+          );
+        }
+        used.add(t);
+
+        result.push({
+          movieId: movie._id,
+          theaterId: room.theaterId,
+          roomId: room._id,
+          roomType: room.roomType,
           startAt,
           endAt,
-          label: DateUtil.toDatetimeString(startAt, 'yyyy-MM-dd HH:mm'),
-        };
-      })
-      .sort((a, b) => a.startAt.getTime() - b.startAt.getTime());
-
-    const rangeErrors: string[] = [];
-
-    // 1. validate
-    for (const it of slots) {
-      const validation = this.validateShowtimeRange(
-        it.startAt,
-        it.endAt,
-        movie,
-      );
-      if (!validation.valid) {
-        validation.errors.forEach((msg) => {
-          rangeErrors.push(`[${it.label}] ${msg}`);
         });
       }
-    }
-    if (rangeErrors.length) {
-      return this.failure('startAts', rangeErrors);
-    }
+    });
 
-    // 2. overlap
-    const overlapErrors: string[] = [];
-
-    for (let i = 1; i < slots.length; i++) {
-      const prev = slots[i - 1];
-      const curr = slots[i];
-
-      if (prev.endAt > curr.startAt) {
-        overlapErrors.push(
-          `[${prev.label}] overlaps with next showtime [${curr.label}]`,
-        );
-      }
-    }
-
-    if (overlapErrors.length) {
-      return this.failure('startAts', overlapErrors);
-    }
-
-    const ranges: Range[] = slots.map((it) => ({
-      startAt: it.startAt,
-      endAt: it.endAt,
-    }));
-
-    return this.successResult(ranges);
+    return result;
   }
 
-  private validateShowtimeRange(
-    startAt: Date,
-    endAt: Date,
-    movie: MovieLike,
-  ): Result.Validation {
-    const errors: string[] = [];
-    const now = DateUtil.roundDown(DateUtil.now(), ROUND_STEP_MIN);
-
-    const push = (msg: string) => {
-      errors.push(msg);
-    };
-
-    if (startAt < now) {
-      push('showtime is in the past');
-    }
-
-    if (startAt < movie.releaseDate) {
-      push(`before release date (${DateUtil.toDateString(movie.releaseDate)})`);
-    }
-
-    if (startAt >= endAt) {
-      push('invalid showtime range');
-    }
-
-    if (movie.endDate && endAt > movie.endDate) {
-      push(`exceeds movie end date (${DateUtil.toDateString(movie.endDate)})`);
-    }
-
-    if (errors.length) {
-      return {
-        valid: false,
-        field: 'startAts',
-        errors,
-      };
-    }
-
-    return { valid: true };
-  }
-
-  /** */
-  private async getValidatedConflicts(
-    movie: MovieLike,
+  private async assertShowtimeAvailability(
+    ranges: ShowtimeRange[],
     rooms: RoomLike[],
-    ranges: Range[],
-  ): Promise<Result.Validation> {
-    const theaterId = rooms[0].theaterId;
+  ) {
+    if (!ranges.length) return;
 
-    const sortedRanges = [...ranges].sort(
+    const { movieId, theaterId } = ranges[0];
+
+    const roomMap = new Map<string, RoomLike>();
+    for (const r of rooms) {
+      roomMap.set(r._id, r);
+    }
+
+    const roomIds = [...new Set(ranges.map((r) => r.roomId))];
+    const roomTypes = [...new Set(ranges.map((r) => r.roomType))];
+
+    const sorted = [...ranges].sort(
       (a, b) => a.startAt.getTime() - b.startAt.getTime(),
     );
+    const firstStart = sorted[0].startAt;
+    const lastEnd = sorted[sorted.length - 1].endAt;
 
-    const roomIds = rooms.map((r) => r._id);
-    const roomTypes = [...new Set(rooms.map((r) => r.roomType))];
+    const existing = await this.showtimeRepo.query.findMany({
+      filter: {
+        isActive: true,
+        startAt: { $lt: lastEnd },
+        endAt: { $gt: firstStart },
+        $or: [
+          { roomId: { $in: roomIds } },
+          { movieId, theaterId, roomType: { $in: roomTypes } },
+        ],
+      },
+      sort: { startAt: 1 },
+    });
 
-    const firstStart = sortedRanges[0].startAt;
-    const lastEnd = sortedRanges[sortedRanges.length - 1].endAt;
+    if (!existing.length) return;
 
-    // 1. Load các showtime có khả năng conflict
-    const existingVal = await this.queryExistingShowtimes(
-      movie,
-      theaterId,
-      roomIds,
-      roomTypes,
-      firstStart,
-      lastEnd,
-    );
-    if (!existingVal.valid) return existingVal;
-    const { value: existing } = existingVal;
-    if (!existing.length) return this.success();
-
-    // 2. Validate conflict by room
-    const roomVal = this.validateRoomConflicts(rooms, sortedRanges, existing);
-    if (!roomVal.valid) return roomVal;
-
-    // 3. Validate conflict unique index
-    const uniqueVal = this.validateUniqueConflicts(
-      movie,
-      theaterId,
-      rooms,
-      sortedRanges,
-      existing,
-    );
-    if (!uniqueVal.valid) return uniqueVal;
-
-    return this.success();
+    this.assertRoomAvailability(ranges, existing, roomMap);
+    this.assertRoomTypeUniqueness(ranges, existing);
   }
 
-  private async queryExistingShowtimes(
-    movie: MovieLike,
-    theaterId: string,
-    roomIds: string[],
-    roomTypes: RoomType[],
-    firstStart: Date,
-    lastEnd: Date,
-  ): Promise<Result.ValidationResult<ShowtimeLike[]>> {
-    try {
-      const result = await this.showtimeRepo.query.findMany({
-        filter: {
-          isActive: true,
-          startAt: { $lt: lastEnd },
-          endAt: { $gt: firstStart },
-          $or: [
-            { roomId: { $in: roomIds } },
-            {
-              movieId: movie._id,
-              theaterId,
-              roomType: { $in: roomTypes },
-            },
-          ],
-        },
-        sort: { startAt: 1 },
-      });
-
-      return this.successResult(result);
-    } catch (err) {
-      return this.failure('conflicts', ['Failed to load existing showtimes']);
-    }
-  }
-
-  private validateRoomConflicts(
-    rooms: RoomLike[],
-    ranges: Range[],
+  private assertRoomAvailability(
+    ranges: ShowtimeRange[],
     existing: ShowtimeLike[],
-  ): Result.Validation {
-    const errors: string[] = [];
-
-    // Group existing by room
-    const mapByRoom: Record<string, ShowtimeLike[]> = {};
+    roomMap: Map<string, RoomLike>,
+  ) {
+    const byRoom = new Map<string, ShowtimeLike[]>();
     for (const ex of existing) {
-      (mapByRoom[ex.roomId] ??= []).push(ex);
+      const list = byRoom.get(ex.roomId);
+      if (list) list.push(ex);
+      else byRoom.set(ex.roomId, [ex]);
     }
 
-    // For each room → check overlap
-    for (const room of rooms) {
-      const roomExisting = mapByRoom[room._id];
-      if (!roomExisting?.length) continue;
+    for (const r of ranges) {
+      const list = byRoom.get(r.roomId);
+      if (!list) continue;
 
-      const sortedExisting = [...roomExisting].sort(
-        (a, b) => a.startAt.getTime() - b.startAt.getTime(),
-      );
+      const room = roomMap.get(r.roomId);
+      const roomName = room?.roomName ?? 'Unknown room';
 
-      let i = 0;
-      let j = 0;
-
-      while (i < ranges.length && j < sortedExisting.length) {
-        const r = ranges[i];
-        const ex = sortedExisting[j];
-
-        if (r.endAt <= ex.startAt) {
-          i++;
-          continue;
-        }
-        if (r.startAt >= ex.endAt) {
-          j++;
-          continue;
-        }
-
-        // Overlap
-        errors.push(
-          `Room ${room.roomName} (${room._id}) conflicts with existing showtime at ${DateUtil.toDatetimeString(
+      for (const ex of list) {
+        if (r.startAt < ex.endAt && r.endAt > ex.startAt) {
+          const startStr = DateUtil.toDatetimeString(
             ex.startAt,
-          )}`,
-        );
+            'dd-MM-yyyy HH:mm',
+          );
+          const endStr = DateUtil.toDatetimeString(
+            ex.endAt,
+            'dd-MM-yyyy HH:mm',
+          );
 
-        i++;
-      }
-    }
-
-    if (Object.keys(errors).length) {
-      return this.failure('roomIds', errors);
-    }
-
-    return this.success();
-  }
-
-  private validateUniqueConflicts(
-    movie: MovieLike,
-    theaterId: string,
-    rooms: RoomLike[],
-    ranges: Range[],
-    existing: ShowtimeLike[],
-  ): Result.Validation {
-    const errors: string[] = [];
-
-    // Group existing by roomType
-    const mapByType: Record<RoomType, ShowtimeLike[]> = {
-      '2D': [],
-      '3D': [],
-      VIP: [],
-    };
-    for (const ex of existing) {
-      if (mapByType[ex.roomType]) {
-        mapByType[ex.roomType].push(ex);
-      }
-    }
-
-    for (const room of rooms) {
-      const rt = room.roomType;
-      const list = mapByType[rt];
-      if (!list?.length) continue;
-
-      const sortedExisting = [...list].sort(
-        (a, b) => a.startAt.getTime() - b.startAt.getTime(),
-      );
-
-      let i = 0;
-      let j = 0;
-
-      while (i < ranges.length && j < sortedExisting.length) {
-        const r = ranges[i];
-        const ex = sortedExisting[j];
-
-        const tR = r.startAt.getTime();
-        const tE = ex.startAt.getTime();
-
-        if (tR === tE) {
-          if (
-            ex.movieId === movie._id &&
-            ex.theaterId === theaterId &&
-            ex.roomType === rt
-          ) {
-            errors.push(
-              `Duplicate unique showtime: movie=${movie._id}, theater=${theaterId}, roomType=${rt}, startAt=${DateUtil.toDatetimeString(
-                r.startAt,
-              )}`,
-            );
-          }
-          i++;
-          continue;
+          throw new BadRequestException(
+            `${roomName} already has a showtime from ${startStr} to ${endStr}`,
+          );
         }
-
-        if (tR < tE) i++;
-        else j++;
       }
     }
-
-    if (Object.keys(errors).length) {
-      return this.failure('roomTypes', errors);
-    }
-
-    return this.success();
   }
 
-  /** */
-  private getValidatedRepeatedStartAts(
-    startTimes: TimeHHmm[],
-    repeatDates: Date[],
-  ): Result.ValidationResult<Date[]> {
-    // 1. Validate input required
-    if (!startTimes?.length) {
-      return this.failure('startTimes', ['startTimes is required']);
+  private assertRoomTypeUniqueness(
+    ranges: ShowtimeRange[],
+    existing: ShowtimeLike[],
+  ) {
+    const typeStartSet = new Set<string>();
+    for (const ex of existing) {
+      typeStartSet.add(`${ex.roomType}|${ex.startAt.getTime()}`);
     }
 
-    if (!repeatDates?.length) {
-      return this.failure('repeatDates', ['repeatDates is required']);
+    for (const r of ranges) {
+      const key = `${r.roomType}|${r.startAt.getTime()}`;
+      if (!typeStartSet.has(key)) continue;
+      const startStr = DateUtil.toDatetimeString(r.startAt, 'dd-MM-yyyy HH:mm');
+      throw new BadRequestException(
+        `A showtime already exists for room type ${r.roomType} at ${startStr}`,
+      );
     }
-
-    // 2. Validate time format
-    for (let i = 0; i < startTimes.length; i++) {
-      const t = startTimes[i];
-      if (!TimeUtil.isValidHHmm(t)) {
-        return this.failure('startTimes', [
-          `Invalid HH:mm format at index ${i}: ${t}`,
-        ]);
-      }
-    }
-
-    // 3. Build startAts
-    const startAts: Date[] = [];
-    for (const date of repeatDates) {
-      const base = DateUtil.startOfDay(date);
-      for (const time of startTimes) {
-        const minutesOfDay = TimeUtil.toMinutes(time);
-        const startAt = DateUtil.setMinutesOfDay(base, minutesOfDay);
-        startAts.push(startAt);
-      }
-    }
-
-    startAts.sort((a, b) => a.getTime() - b.getTime());
-
-    return this.successResult(startAts);
-  }
-
-  /** */
-  private success(): Result.ValidationSuccess {
-    return { valid: true };
-  }
-
-  private successResult<T>(
-    value: T,
-    message?: string,
-  ): Result.ValidationResult<T> {
-    return { valid: true, value, message };
-  }
-
-  private failure(
-    field: string,
-    errors: string[],
-    message?: string,
-  ): Result.ValidationFailure {
-    return { valid: false, field, errors, message };
   }
 }

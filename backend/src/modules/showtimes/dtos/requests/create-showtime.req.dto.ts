@@ -4,14 +4,6 @@ import { ToDateTime } from 'src/common/decorators';
 
 export class CreateShowtimeReqDto {
   @ApiProperty({
-    description: 'Movie ID for this showtime',
-    example: '67b0f3c65fa2c2c7a836a458',
-  })
-  @IsNotEmpty()
-  @IsMongoId()
-  movieId!: string;
-
-  @ApiProperty({
     description: 'Room ID for this showtime',
     example: '67b0f3c65fa2c2c7a836a459',
   })

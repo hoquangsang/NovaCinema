@@ -69,19 +69,19 @@ export class ShowtimeSeederService {
   ) {
     const rooms = await this.roomModel
       .find({ theaterId: theater._id })
-      .limit(5);
+      .limit(8);
 
     if (!rooms.length) return;
-    shuffle(rooms);
+    const shuffedRooms = shuffle(rooms);
 
-    const slots = this.buildRoomSlots(rooms, movies);
-    shuffle(slots);
+    const slots = this.buildRoomSlots(shuffedRooms, movies);
+    const shuffledSlot = shuffle(slots);
 
     const showtimes = this.generateShowtimesForTheater(
       theater,
-      rooms,
+      shuffedRooms,
       movies,
-      slots,
+      shuffledSlot,
     );
 
     if (showtimes.length) {

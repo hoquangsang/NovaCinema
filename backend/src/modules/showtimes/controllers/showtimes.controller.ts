@@ -21,22 +21,16 @@ import {
   WrapPaginatedResponse,
 } from 'src/common/decorators';
 import { USER_ROLES } from 'src/modules/users/constants';
-import { ShowtimeService } from '../services/showtime.service';
+import { ShowtimeService } from '../services';
 import {
   CreateBulkShowtimesReqDto,
-  CreateRepeatShowtimeReqDto,
   CreateShowtimeReqDto,
   DeleteShowtimeReqDto,
   PaginatedQueryRangeShowtimesReqDto,
   QueryAvailableShowtimesReqDto,
   QueryRangeShowtimesReqDto,
-  QueryShowtimesByDateReqDto,
 } from '../dtos/requests';
-import {
-  ShowtimeResDto,
-  ShowtimeDetailResDto,
-  CreateShowtimeValidationResDto,
-} from '../dtos/responses';
+import { ShowtimeResDto, ShowtimeDetailResDto } from '../dtos/responses';
 
 @ApiTags('Showtimes')
 @Controller('showtimes')
@@ -81,7 +75,7 @@ export class ShowtimesController {
   @HttpCode(HttpStatus.OK)
   @Get(':id')
   public async getShowtimeById(@Param('id', ParseObjectIdPipe) id: string) {
-    const showtime = this.showtimeService.findShowtimeById(id);
+    const showtime = this.showtimeService.findShowtimeDetailById(id);
     if (!showtime) throw new NotFoundException('Showtime not found');
     return showtime;
   }
@@ -89,58 +83,32 @@ export class ShowtimesController {
   @ApiOperation({ description: 'Create showtime' })
   @WrapOkResponse({ dto: ShowtimeResDto })
   @HttpCode(HttpStatus.CREATED)
-  @HttpCode(HttpStatus.CREATED)
   @RequireRoles(USER_ROLES.ADMIN)
-  @Post()
-  public async createShowtime(@Body() dto: CreateShowtimeReqDto) {
-    return await this.showtimeService.createSingleShowtime(dto);
+  @Post('movies/:movieId')
+  public async createShowtime(
+    @Param('movieId', ParseObjectIdPipe) movieId: string,
+    @Body() dto: CreateShowtimeReqDto,
+  ) {
+    return await this.showtimeService.createSingleShowtime({
+      movieId: movieId,
+      roomId: dto.roomId,
+      startAt: dto.startAt,
+    });
   }
 
   @ApiOperation({ description: 'Create bulk showtimes' })
   @WrapListResponse({ dto: ShowtimeResDto })
   @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.CREATED)
-  @Post('bulk')
-  public async createBulkShowtimes(@Body() dto: CreateBulkShowtimesReqDto) {
-    return await this.showtimeService.createBulkShowtimes(dto);
-  }
-
-  @ApiOperation({ description: 'Create repeated showtimes' })
-  @WrapListResponse({ dto: ShowtimeResDto })
-  @RequireRoles(USER_ROLES.ADMIN)
-  @HttpCode(HttpStatus.CREATED)
-  @Post('repeated')
-  public async createRepeatedShowtimes(
-    @Body() dto: CreateRepeatShowtimeReqDto,
+  @Post('movies/:movieId/bulk')
+  public async createBulkShowtimes(
+    @Param('movieId', ParseObjectIdPipe) movieId: string,
+    @Body() dto: CreateBulkShowtimesReqDto,
   ) {
-    return await this.showtimeService.createRepeatedShowtimes(dto);
-  }
-
-  @ApiOperation({ description: 'Validate create showtime' })
-  @WrapOkResponse({ dto: CreateShowtimeValidationResDto })
-  @RequireRoles(USER_ROLES.ADMIN)
-  @HttpCode(HttpStatus.OK)
-  @Post('validate')
-  public async validateCreate(@Body() dto: CreateShowtimeReqDto) {
-    return await this.showtimeService.validateSingleCreation(dto);
-  }
-
-  @ApiOperation({ description: 'Validate bulk create showtimes' })
-  @WrapOkResponse({ dto: CreateShowtimeValidationResDto })
-  @RequireRoles(USER_ROLES.ADMIN)
-  @HttpCode(HttpStatus.OK)
-  @Post('validate/bulk')
-  public async validateBulk(@Body() dto: CreateBulkShowtimesReqDto) {
-    return await this.showtimeService.validateBulkCreation(dto);
-  }
-
-  @ApiOperation({ description: 'Validate repeated showtimes creation' })
-  @WrapOkResponse({ dto: CreateShowtimeValidationResDto })
-  @RequireRoles(USER_ROLES.ADMIN)
-  @HttpCode(HttpStatus.OK)
-  @Post('validate/repeated')
-  public async validateRepeated(@Body() dto: CreateRepeatShowtimeReqDto) {
-    return await this.showtimeService.validateRepeatedCreation(dto);
+    return await this.showtimeService.createBulkShowtimes({
+      movieId,
+      schedules: dto.schedules,
+    });
   }
 
   @ApiOperation({ description: 'Hard delete showtime by ID' })

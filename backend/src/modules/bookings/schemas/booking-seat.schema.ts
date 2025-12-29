@@ -1,9 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Schema as MongooseSchema, Types } from 'mongoose';
-<<<<<<< HEAD
-import { Booking } from './booking.schema';
-=======
->>>>>>> fix/be/showtimes
 import { User } from 'src/modules/users';
 import { Room } from 'src/modules/theaters';
 import { Showtime } from 'src/modules/showtimes';
