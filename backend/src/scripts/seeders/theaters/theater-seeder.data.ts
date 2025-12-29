@@ -1,6 +1,6 @@
-import { Seat, SeatMap } from 'src/modules/theaters';
+import { Seat, SeatMap, Theater } from 'src/modules/theaters';
 
-export const THEATERS_MOCK = [
+export const THEATERS_DATA: Theater[] = [
   {
     theaterName: 'NovaCinema Landmark 81',
     address: '720A Điện Biên Phủ, Phường 22, Bình Thạnh, TP.HCM',
