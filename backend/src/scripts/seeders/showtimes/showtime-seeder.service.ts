@@ -54,7 +54,7 @@ export class ShowtimeSeederService {
     const theaters = await this.theaterModel.find({ isActive: true });
 
     this.logger.log(`Movies=${movies.length}`);
-    this.logger.log(`Theaters=${theaters.length}`);
+    this.logger.log(`Theaters=${theaters.length}\n`);
 
     for (const theater of theaters) {
       await this.seedForTheater(theater, movies);
@@ -67,39 +67,75 @@ export class ShowtimeSeederService {
     theater: TheaterDocument,
     movies: MovieDocument[],
   ) {
-    const rooms = await this.roomModel.find({
-      theaterId: theater._id,
-      isActive: true,
-    });
+    const rooms = await this.roomModel
+      .find({ theaterId: theater._id })
+      .limit(5);
 
     if (!rooms.length) return;
+    shuffle(rooms);
 
     const slots = this.buildRoomSlots(rooms, movies);
     shuffle(slots);
 
+    const showtimes = this.generateShowtimesForTheater(
+      theater,
+      rooms,
+      movies,
+      slots,
+    );
+
+    if (showtimes.length) {
+      await this.showtimeModel.insertMany(showtimes, { ordered: false });
+    }
+
+    const shortName =
+      theater.theaterName.length > 30
+        ? theater.theaterName.slice(0, 27) + '...'
+        : theater.theaterName;
+
+    this.logger.log(
+      `[Theater] ${shortName.padEnd(30)} | rooms used: ${rooms.length} | showtimes inserted: ${showtimes.length}`,
+    );
+  }
+
+  private generateShowtimesForTheater(
+    theater: TheaterDocument,
+    rooms: RoomDocument[],
+    movies: MovieDocument[],
+    slots: RoomSlot[],
+  ): ShowtimeDocument[] {
     const showtimes: ShowtimeDocument[] = [];
     const usedMovieUnique = new Set<string>();
+    const shuffledMovies = [...movies];
+    shuffle(shuffledMovies);
 
-    for (const movie of movies) {
+    for (const movie of shuffledMovies) {
       const movieEnd = computeMovieEndDate(movie);
       const { start, end } = pickMovieShowWindow(movie.releaseDate, movieEnd);
 
-      const movieSlots = slots.filter(
-        (s) => !s.used && s.startAt >= start && s.endAt <= end,
-      );
+      const shortTitle =
+        movie.title.length > 30
+          ? movie.title.slice(0, 27) + '...'
+          : movie.title;
 
+      const unusedSlots = slots.filter((s) => !s.used);
+      if (!unusedSlots.length) {
+        this.logger.warn(`[Movie] ${shortTitle.padEnd(32)} | (all used)`);
+        continue;
+      }
+      const movieSlots = unusedSlots.filter(
+        (s) => s.startAt >= start && s.endAt <= end,
+      );
       if (!movieSlots.length) continue;
 
       const weeks = Math.max(
         1,
         Math.ceil((end.getTime() - start.getTime()) / 604_800_000),
       );
-
       const weeklyTarget = Math.max(3, Math.floor(rooms.length * 0.7));
       const target = weeklyTarget * weeks;
 
       let picked = 0;
-
       for (const slot of movieSlots) {
         if (picked >= target) break;
 
@@ -110,7 +146,10 @@ export class ShowtimeSeederService {
           slot.startAt,
         );
 
-        if (usedMovieUnique.has(uniqueKey)) continue;
+        if (usedMovieUnique.has(uniqueKey)) {
+          this.logger.warn(`[Movie] ${shortTitle.padEnd(32)} | (Unique)`);
+          continue;
+        }
 
         slot.used = true;
         usedMovieUnique.add(uniqueKey);
@@ -130,13 +169,7 @@ export class ShowtimeSeederService {
       }
     }
 
-    if (showtimes.length) {
-      await this.showtimeModel.insertMany(showtimes, { ordered: false });
-    }
-
-    this.logger.log(
-      `[Result] ${theater.theaterName}: inserted=${showtimes.length}`,
-    );
+    return showtimes;
   }
 
   private buildRoomSlots(
@@ -145,34 +178,35 @@ export class ShowtimeSeederService {
   ): RoomSlot[] {
     const slots: RoomSlot[] = [];
 
-    const minRelease = new Date(
-      Math.min(...movies.map((m) => m.releaseDate.getTime())),
-    );
-    const maxEnd = new Date(
-      Math.max(...movies.map((m) => computeMovieEndDate(m).getTime())),
+    const minRelease = startOfDay(
+      new Date(Math.min(...movies.map((m) => m.releaseDate.getTime()))),
     );
 
-    const days =
-      Math.ceil(
-        (startOfDay(maxEnd).getTime() - startOfDay(minRelease).getTime()) /
-          86_400_000,
-      ) || randomInt(14, 28);
+    const maxEnd = startOfDay(
+      new Date(
+        Math.max(...movies.map((m) => computeMovieEndDate(m).getTime())),
+      ),
+    );
+
+    const totalDays =
+      Math.ceil((maxEnd.getTime() - minRelease.getTime()) / 86_400_000) + 1;
 
     const maxDuration = Math.max(...movies.map((m) => m.duration));
 
-    for (const room of rooms) {
-      for (let i = 0; i < days; i++) {
-        const date = addDays(startOfDay(minRelease), i);
+    rooms.forEach((room, roomIndex) => {
+      const roomOffset = (roomIndex + 1) * 3;
+
+      for (let i = 0; i < totalDays; i++) {
+        const date = addDays(minRelease, i);
 
         const showCount = randomInt(4, 6);
-
         const availableMinutes = CLOSE_MINUTE - OPEN_MINUTE;
         const avgBlock = Math.floor(availableMinutes / showCount);
 
-        let cursor = OPEN_MINUTE;
+        let cursor = OPEN_MINUTE + roomOffset;
 
         for (let j = 0; j < showCount; j++) {
-          const jitter = randomInt(-10, 10);
+          const jitter = randomInt(0, 30);
 
           const rawStart = minuteToDate(date, cursor + jitter);
           const startAt = roundUp(rawStart, 5);
@@ -195,7 +229,7 @@ export class ShowtimeSeederService {
           cursor += avgBlock;
         }
       }
-    }
+    });
 
     return slots;
   }

@@ -13,25 +13,25 @@ export const roundUp = DateUtil.roundUp;
 export const roundDown = DateUtil.roundDown;
 
 /* ========= RANDOM ========= */
-export function randomInt(min: number, max: number): number {
+export const randomInt = (min: number, max: number): number => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+};
 
-export function shuffle<T>(arr: T[]): T[] {
+export const shuffle = <T>(arr: T[]): T[] => {
   return [...arr].sort(() => Math.random() - 0.5);
-}
+};
 
 /* ========= MOVIE ========= */
-export function computeMovieEndDate(movie: MovieDocument): Date {
+export const computeMovieEndDate = (movie: MovieDocument): Date => {
   if (movie.endDate) {
     return endOfDay(movie.endDate);
   }
 
   const days = randomInt(14, 28);
   return endOfDay(addDays(movie.releaseDate, days));
-}
+};
 
-export function pickMovieShowWindow(releaseDate: Date, endDate: Date) {
+export const pickMovieShowWindow = (releaseDate: Date, endDate: Date) => {
   const MIN_DAYS = 14;
   const MAX_DAYS = 28;
 
@@ -54,4 +54,4 @@ export function pickMovieShowWindow(releaseDate: Date, endDate: Date) {
   const end = addDays(start, windowDays);
 
   return { start, end };
-}
+};

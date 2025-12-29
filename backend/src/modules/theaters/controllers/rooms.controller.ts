@@ -72,10 +72,7 @@ export class RoomsController {
   }
 
   @ApiOperation({ description: 'Create room' })
-  @WrapCreatedResponse({
-    dto: RoomDetailResDto,
-    message: 'Created successfully',
-  })
+  @WrapCreatedResponse({ dto: RoomDetailResDto })
   @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.CREATED)
   @Post('/theaters/:theaterId')

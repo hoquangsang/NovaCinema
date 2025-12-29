@@ -1,6 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Schema as MongooseSchema, Types } from 'mongoose';
+<<<<<<< HEAD
 import { Booking } from './booking.schema';
+=======
+>>>>>>> fix/be/showtimes
 import { User } from 'src/modules/users';
 import { Room } from 'src/modules/theaters';
 import { Showtime } from 'src/modules/showtimes';
@@ -9,6 +12,7 @@ import {
   BOOKING_SEAT_STATUSES,
 } from '../constants';
 import { BookingSeatStatus } from '../types';
+import { Booking } from './booking.schema';
 
 export type BookingSeatDocument = HydratedDocument<BookingSeat>;
 

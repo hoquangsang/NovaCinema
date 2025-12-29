@@ -4,17 +4,34 @@ import { ToArray } from 'src/common/decorators';
 import { PaginatedQueryReqDto } from 'src/modules/base/dtos/requests';
 
 export class PaginatedQueryMoviesReqDto extends PaginatedQueryReqDto {
-  @ApiPropertyOptional({ type: String, description: 'Filter by movie title' })
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Regex match: title, director, producer, genres, actors',
+  })
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Filter by movie title',
+  })
   @IsOptional()
   @IsString()
   title?: string;
 
-  @ApiPropertyOptional({ type: String, description: 'Filter by director name' })
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Filter by director name',
+  })
   @IsOptional()
   @IsString()
   director?: string;
 
-  @ApiPropertyOptional({ type: String, description: 'Filter by producer name' })
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Filter by producer name',
+  })
   @IsOptional()
   @IsString()
   producer?: string;
@@ -28,7 +45,10 @@ export class PaginatedQueryMoviesReqDto extends PaginatedQueryReqDto {
   @ToArray()
   genres?: string[];
 
-  @ApiPropertyOptional({ type: [String], description: 'Filter by actors' })
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'Filter by actors',
+  })
   @IsOptional()
   @ToArray()
   actors?: string[];
@@ -42,12 +62,18 @@ export class PaginatedQueryMoviesReqDto extends PaginatedQueryReqDto {
   @IsString()
   ratingAge?: string;
 
-  @ApiPropertyOptional({ type: String, description: 'Filter by country' })
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Filter by country',
+  })
   @IsOptional()
   @IsString()
   country?: string;
 
-  @ApiPropertyOptional({ type: String, description: 'Filter by language' })
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Filter by language',
+  })
   @IsOptional()
   @IsString()
   language?: string;

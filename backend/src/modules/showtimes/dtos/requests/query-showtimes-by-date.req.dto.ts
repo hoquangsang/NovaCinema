@@ -4,9 +4,6 @@ import { ToDateTime } from 'src/common/decorators';
 import { QueryReqDto } from 'src/modules/base/dtos/requests';
 
 export class QueryShowtimesByDateReqDto extends QueryReqDto {
-  declare search?: never;
-  declare sort?: never;
-
   @ApiPropertyOptional({
     description: 'Filter by movie ID',
     example: '67a1234bcf90123456789def',

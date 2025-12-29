@@ -20,7 +20,11 @@ export class RoomResDto {
   @Expose()
   theaterId!: string;
 
-  @ApiProperty({ type: String, description: 'Room name', example: 'Room A' })
+  @ApiProperty({
+    type: String,
+    description: 'Room name',
+    example: 'Room A',
+  })
   @Expose()
   roomName!: string;
 
@@ -41,7 +45,11 @@ export class RoomResDto {
   @Expose()
   isActive?: boolean;
 
-  @ApiPropertyOptional({ type: Number, description: 'Capacity', example: 84 })
+  @ApiPropertyOptional({
+    type: Number,
+    description: 'Capacity',
+    example: 84,
+  })
   @Expose()
   capacity?: number;
 

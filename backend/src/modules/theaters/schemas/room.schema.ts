@@ -30,6 +30,9 @@ export class Room {
   @Prop({ type: [[{ type: SeatSchema }]], required: true })
   seatMap!: SeatMap;
 
+  @Prop({ type: Number, required: true })
+  capacity!: number;
+
   @Prop({ default: true })
   isActive?: boolean;
 }

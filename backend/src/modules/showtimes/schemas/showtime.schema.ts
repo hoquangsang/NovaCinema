@@ -18,7 +18,7 @@ export class Showtime {
   movieId!: Types.ObjectId;
 
   @Prop({
-    type: Types.ObjectId,
+    type: MongooseSchema.Types.ObjectId,
     ref: Theater.name,
     required: true,
     immutable: true,
@@ -26,7 +26,7 @@ export class Showtime {
   theaterId!: Types.ObjectId;
 
   @Prop({
-    type: Types.ObjectId,
+    type: MongooseSchema.Types.ObjectId,
     ref: Room.name,
     required: true,
     immutable: true,
