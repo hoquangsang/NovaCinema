@@ -4,7 +4,7 @@ import { UsersModule } from 'src/modules/users';
 import { MoviesModule } from 'src/modules/movies';
 import { TheatersModule } from 'src/modules/theaters';
 import { ShowtimesModule } from 'src/modules/showtimes';
-import { TicketPricingModule } from 'src/modules/ticket-pricing';
+import { PricingConfigModule } from 'src/modules/pricing-configs';
 import {
   Booking,
   BookingSchema,
@@ -32,7 +32,7 @@ import { BookingsController } from './controllers';
     MoviesModule,
     TheatersModule,
     ShowtimesModule,
-    TicketPricingModule,
+    PricingConfigModule,
   ],
   controllers: [BookingsController],
   providers: [

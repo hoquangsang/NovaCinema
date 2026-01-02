@@ -7,7 +7,7 @@ import {
 import { UserService } from 'src/modules/users';
 import { ShowtimeService } from 'src/modules/showtimes';
 import { RoomService, TheaterService } from 'src/modules/theaters';
-import { TicketPricingService } from 'src/modules/ticket-pricing';
+import { PricingConfigService } from 'src/modules/pricing-configs';
 import { BookingRepository } from '../repositories';
 import { BOOKING_STATUSES } from '../constants';
 import { BookingSeatService, AvailableSeat } from './booking-seat.service';
@@ -20,7 +20,7 @@ export class BookingService {
     private readonly roomService: RoomService,
     private readonly theaterService: TheaterService,
     private readonly showtimeService: ShowtimeService,
-    private readonly ticketPricingService: TicketPricingService,
+    private readonly ticketPricingService: PricingConfigService,
     private readonly bookingSeatService: BookingSeatService,
   ) {}
 
