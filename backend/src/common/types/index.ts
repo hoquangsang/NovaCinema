@@ -1,4 +1,4 @@
-export type { TimeHHmm, DaysOfWeek } from './time.type';
+export type { TimeHHmm, DayOfWeek } from './time.type';
 export {
   DAYS_OF_WEEK,
   DAYS_OF_WEEK_ORDER,

@@ -11,7 +11,7 @@ import { NotificationsModule } from './modules/notifications';
 import { AuthModule } from './modules/auth';
 import { MoviesModule } from './modules/movies';
 import { TheatersModule } from './modules/theaters';
-import { TicketPricingModule } from './modules/ticket-pricing';
+import { PricingConfigModule } from './modules/pricing-configs';
 import { ShowtimesModule } from './modules/showtimes';
 import { BookingsModule } from './modules/bookings';
 
@@ -24,7 +24,7 @@ import { BookingsModule } from './modules/bookings';
     MoviesModule,
     TheatersModule,
     NotificationsModule,
-    TicketPricingModule,
+    PricingConfigModule,
     ShowtimesModule,
     BookingsModule,
   ],
