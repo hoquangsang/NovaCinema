@@ -4,12 +4,21 @@ import { SeatType } from 'src/modules/theaters/types';
 
 @Schema({ _id: false })
 export class SeatTypePricingModifier {
-  @Prop({ type: String, enum: SEAT_TYPE_VALUES, required: true })
+  @Prop({
+    type: String,
+    enum: SEAT_TYPE_VALUES,
+    required: true,
+  })
   seatType!: SeatType;
 
-  @Prop({ type: Number, min: 0, required: true })
+  @Prop({
+    type: Number,
+    min: 0,
+    required: true,
+  })
   deltaPrice!: number;
 }
+
 export const SeatTypePricingModifierSchema = SchemaFactory.createForClass(
   SeatTypePricingModifier,
 );

@@ -1,14 +1,9 @@
 export type { PricingConfigDocument } from './pricing-config.schema';
 
 export {
-  DailyTimeRangePricingModifierSchema,
-  DailyTimeRangePricingModifier,
-} from './daily-time-range-pricing-modifier.schema';
-
-export {
   DayOfWeekPricingModifierSchema,
   DayOfWeekPricingModifier,
-} from './days-of-week-pricing-modifier.schema';
+} from './day-of-week-pricing-modifier.schema';
 
 export {
   RoomTypePricingModifierSchema,
@@ -23,6 +18,6 @@ export {
 export {
   PricingModifiersSchema,
   PricingModifiers,
-} from './pricing-modifier.schema';
+} from './pricing-modifiers.schema';
 
 export { PricingConfigSchema, PricingConfig } from './pricing-config.schema';

@@ -1,4 +1,4 @@
-import { DaysOfWeek, TimeHHmm } from 'src/common/types';
+import { DayOfWeek } from 'src/common/types';
 import { RoomType, SeatType } from 'src/modules/theaters/types';
 
 export namespace PricingConfigCriteria {
@@ -12,27 +12,25 @@ export namespace PricingConfigCriteria {
     deltaPrice: number;
   };
 
-  export type DaysOfWeekModifier = {
-    applicableDays: DaysOfWeek[];
+  export type DayOfWeekModifier = {
+    dayOfWeek: DayOfWeek;
     deltaPrice: number;
   };
 
-  export type DailyTimeRangeModifier = {
-    startTime: TimeHHmm;
-    endTime: TimeHHmm;
-    deltaPrice: number;
-  };
-
-  export type PricingModifier = {
+  export type PricingModifiers = {
     seatTypes?: SeatTypeModifier[];
     roomTypes?: RoomTypeModifier[];
-    daysOfWeek?: DaysOfWeekModifier[];
-    dailyTimeRanges?: DailyTimeRangeModifier[];
+    daysOfWeek?: DayOfWeekModifier[];
   };
 
-  export type Upsert = {
+  export type Create = {
+    basePrice: number;
+    modifiers?: PricingModifiers;
+  };
+
+  export type Update = {
     basePrice?: number;
-    modifiers?: PricingModifier;
+    modifiers?: PricingModifiers;
   };
 
   export type SeatTypePrices = {
@@ -42,7 +40,5 @@ export namespace PricingConfigCriteria {
 }
 
 export namespace PricingConfigResult {
-  export type SeatTypePrices = {
-    readonly [K in SeatType]: number;
-  };
+  export type SeatTypePrices = Record<SeatType, number>;
 }

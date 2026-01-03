@@ -3,7 +3,7 @@ import { IsNumber, IsOptional, Min, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { PricingModifiersReqDto } from './pricing-modifiers.req.dto';
 
-export class UpsertPricingConfigReqDto {
+export class UpdatePricingConfigReqDto {
   @ApiPropertyOptional({
     type: Number,
     description: 'Base price of the ticket',

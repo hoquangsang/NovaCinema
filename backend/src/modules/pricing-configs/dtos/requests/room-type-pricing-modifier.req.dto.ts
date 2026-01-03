@@ -10,7 +10,9 @@ export class RoomTypePricingModifierReqDto {
     enum: ROOM_TYPE_VALUES,
     example: ROOM_TYPES._3D,
   })
-  @IsEnum(ROOM_TYPE_VALUES)
+  @IsEnum(ROOM_TYPE_VALUES, {
+    message: `roomType must be one of: ${ROOM_TYPE_VALUES.join(', ')}`,
+  })
   roomType!: RoomType;
 
   @ApiProperty({

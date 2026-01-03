@@ -3,12 +3,12 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
-import { DaysOfWeek, TimeHHmm } from 'src/common/types';
-import { DateUtil, TimeUtil, WeekUtil } from 'src/common/utils';
+import { DayOfWeek } from 'src/common/types';
+import { WeekUtil } from 'src/common/utils';
 import { SEAT_TYPE_VALUES } from 'src/modules/theaters/constants';
 import { SeatType, RoomType } from 'src/modules/theaters/types';
 import { PRICING_LIMITS } from '../constants';
-import { PricingConfig } from '../schemas';
+import { PricingConfig, PricingModifiers } from '../schemas';
 import { PricingConfigRepository } from '../repositories';
 import { PricingConfigCriteria as Criteria } from './pricing-config.service.type';
 import { PricingConfigResult as Result } from './pricing-config.service.type';
@@ -17,9 +17,12 @@ import { PricingConfigResult as Result } from './pricing-config.service.type';
 export class PricingConfigService {
   public constructor(private readonly pricingRepo: PricingConfigRepository) {}
 
+  public async findPricingConfig() {
+    return this.pricingRepo.query.findOne({ filter: {} });
+  }
+
   public async getPricingConfig() {
-    // PricingConfig is a singleton document
-    const pricing = await this.pricingRepo.query.findOne({ filter: {} });
+    const pricing = await this.findPricingConfig();
     if (!pricing)
       throw new NotFoundException('Pricing configuration is not set');
     return pricing;
@@ -28,249 +31,190 @@ export class PricingConfigService {
   public async getSeatTypePrices(
     input: Criteria.SeatTypePrices,
   ): Promise<Result.SeatTypePrices> {
-    const pricing = await this.getPricingConfig();
     const { roomType, effectiveAt } = input;
-    const { basePrice, modifiers } = pricing;
 
-    const currentDayOfWeek = WeekUtil.dayOfWeek(effectiveAt);
-    const minuteOfDay = DateUtil.minutesOfDay(effectiveAt);
+    const {
+      basePrice,
+      modifiers: { seatTypes, roomTypes, daysOfWeek },
+    } = await this.getPricingConfig();
 
-    const roomTypeModifier = modifiers.roomTypes.find(
-      (x) => x.roomType === roomType,
-    );
-    const dayOfWeekModifier = modifiers.daysOfWeek.find((x) =>
-      x.applicableDays.includes(currentDayOfWeek),
-    );
-    const timeRangeModifier = modifiers.dailyTimeRanges.find((x) =>
-      this.matchTimeRange(minuteOfDay, x.startTime, x.endTime),
-    );
+    const roomDelta =
+      roomTypes.find(({ roomType: rt }) => rt === roomType)?.deltaPrice ?? 0;
 
-    const baseDelta =
-      (roomTypeModifier?.deltaPrice ?? 0) +
-      (dayOfWeekModifier?.deltaPrice ?? 0) +
-      (timeRangeModifier?.deltaPrice ?? 0);
+    const dayOfWeek = WeekUtil.dayOfWeek(effectiveAt);
+    const dayDelta =
+      daysOfWeek.find(({ dayOfWeek: d }) => d === dayOfWeek)?.deltaPrice ?? 0;
 
-    const result: Record<SeatType, number> = { COUPLE: 0, NORMAL: 0, VIP: 0 };
-    for (const seatType of SEAT_TYPE_VALUES) {
-      const seatModifier = modifiers.seatTypes.find(
-        (x) => x.seatType === seatType,
-      );
-      const rawPrice = basePrice + baseDelta + (seatModifier?.deltaPrice ?? 0);
-      const finalPrice = Math.max(
-        PRICING_LIMITS.TOTAL_PRICE.MIN,
-        Math.min(PRICING_LIMITS.TOTAL_PRICE.MAX, rawPrice),
-      );
+    const nonSeatPrice = basePrice + roomDelta + dayDelta;
 
-      result[seatType] = finalPrice;
-    }
-    return result;
+    return Object.fromEntries(
+      SEAT_TYPE_VALUES.map((seatType) => {
+        const seatDelta =
+          seatTypes.find(({ seatType: st }) => st === seatType)?.deltaPrice ??
+          0;
+
+        const rawPrice = nonSeatPrice + seatDelta;
+        return [seatType, this.clampTotalPrice(rawPrice)];
+      }),
+    ) as Record<SeatType, number>;
   }
 
-  public async upsertPricingConfig(data: Criteria.Upsert) {
-    this.assertUpsertInputValid(data);
-    const { basePrice: nextBasePrice, modifiers: nextModifiers } = data;
+  public async createPricingConfig(data: Criteria.Create) {
+    const existing = await this.findPricingConfig();
+    if (existing)
+      throw new BadRequestException('Pricing configuration already exists');
 
-    const existingPricing = await this.pricingRepo.query.findOne({
-      filter: {},
-    });
-    if (!existingPricing && nextBasePrice === undefined)
-      throw new BadRequestException(
-        'Base price is required when initializing pricing configuration',
-      );
-
-    const currentBasePrice =
-      existingPricing?.basePrice ?? PRICING_LIMITS.BASE_PRICE.MIN;
-    const currentModifiers = existingPricing?.modifiers;
-
-    const updatedBasePrice = nextBasePrice ?? currentBasePrice;
-    const updatedModifiers = {
-      seatTypes: nextModifiers?.seatTypes ?? currentModifiers?.seatTypes ?? [],
-      roomTypes: nextModifiers?.roomTypes ?? currentModifiers?.roomTypes ?? [],
-      daysOfWeek:
-        nextModifiers?.daysOfWeek ?? currentModifiers?.daysOfWeek ?? [],
-      dailyTimeRanges:
-        nextModifiers?.dailyTimeRanges ??
-        currentModifiers?.dailyTimeRanges ??
-        [],
-    };
-    const updatedPricing = {
-      basePrice: updatedBasePrice,
-      modifiers: updatedModifiers,
-    };
-    this.assertTotalPriceWithinLimit(updatedPricing);
-
-    const { upsertedItem: upsertedPricing } =
-      await this.pricingRepo.command.upsertOne({
-        filter: {},
-        update: updatedPricing,
-      });
-
-    return upsertedPricing;
-  }
-
-  /** */
-  private matchTimeRange(time: number, startTime: TimeHHmm, endTime: TimeHHmm) {
-    const start = TimeUtil.toMinutes(startTime);
-    const end = TimeUtil.toMinutes(endTime);
-
-    return start <= end
-      ? time >= start && time < end
-      : time >= start || time < end;
-  }
-
-  private assertUpsertInputValid(data: Criteria.Upsert) {
     const { basePrice, modifiers } = data;
-    if (basePrice === undefined && !modifiers)
+
+    this.validatePricingInput(basePrice, modifiers);
+    const pricing: PricingConfig = {
+      basePrice,
+      modifiers: this.normalizeModifiers(modifiers),
+    };
+
+    const { insertedItem } = await this.pricingRepo.command.createOne({
+      data: pricing,
+    });
+
+    return insertedItem;
+  }
+
+  public async updatePricingConfig(data: Criteria.Update) {
+    if (data.basePrice === undefined && !data.modifiers)
       throw new BadRequestException('Nothing to update');
 
-    if (basePrice !== undefined) this.assertBasePriceValid(basePrice);
-    if (modifiers) this.assertPricingModifiersValid(modifiers);
+    const existing = await this.getPricingConfig();
+
+    const basePrice = data.basePrice ?? existing.basePrice;
+    const modifiers = data.modifiers ?? existing.modifiers;
+
+    this.validatePricingInput(basePrice, modifiers);
+
+    const { modifiedItem } = await this.pricingRepo.command.updateOne({
+      filter: {},
+      update: {
+        basePrice,
+        modifiers: this.normalizeModifiers(modifiers),
+      },
+    });
+
+    return modifiedItem;
   }
 
-  private assertBasePriceValid(basePrice: number) {
+  private validatePricingInput(
+    basePrice: number,
+    modifiers?: Criteria.PricingModifiers,
+  ) {
+    this.validateBasePrice(basePrice);
+    this.validateModifiers(modifiers);
+    this.validateTotalPrice(basePrice, modifiers);
+  }
+
+  private validateBasePrice(basePrice: number) {
     const { MIN, MAX } = PRICING_LIMITS.BASE_PRICE;
-    if (basePrice < MIN || basePrice > MAX) {
+    if (basePrice < MIN || basePrice > MAX)
       throw new BadRequestException(
         `basePrice must be between ${MIN} and ${MAX}`,
       );
+  }
+
+  private validateModifiers(modifiers?: Criteria.PricingModifiers) {
+    if (!modifiers) return;
+
+    const { seatTypes, roomTypes, daysOfWeek } = modifiers;
+
+    if (seatTypes) this.validateSeatTypeModifiers(seatTypes);
+    if (roomTypes) this.validateRoomTypeModifiers(roomTypes);
+    if (daysOfWeek) this.validateDayOfWeekModifiers(daysOfWeek);
+  }
+
+  private validateSeatTypeModifiers(arr: Criteria.SeatTypeModifier[]) {
+    const used = new Set<SeatType>();
+
+    for (const { seatType, deltaPrice } of arr) {
+      if (used.has(seatType))
+        throw new BadRequestException(`Duplicate seatType [${seatType}]`);
+
+      this.validateDeltaPrice(deltaPrice);
+      used.add(seatType);
     }
   }
 
-  private assertPricingModifiersValid(modifiers: Criteria.PricingModifier) {
-    if (modifiers.seatTypes)
-      this.assertSeatTypeModifiersValid(modifiers.seatTypes);
-    if (modifiers.roomTypes)
-      this.assertRoomTypeModifiersValid(modifiers.roomTypes);
-    if (modifiers.daysOfWeek)
-      this.assertDayOfWeekModifiersValid(modifiers.daysOfWeek);
-    if (modifiers.dailyTimeRanges)
-      this.assertDailyTimeRangeModifiersValid(modifiers.dailyTimeRanges);
+  private validateRoomTypeModifiers(arr: Criteria.RoomTypeModifier[]) {
+    const used = new Set<RoomType>();
+
+    for (const { roomType, deltaPrice } of arr) {
+      if (used.has(roomType))
+        throw new BadRequestException(`Duplicate roomType [${roomType}]`);
+
+      this.validateDeltaPrice(deltaPrice);
+      used.add(roomType);
+    }
   }
 
-  private assertDeltaPriceValid(delta: number) {
+  private validateDayOfWeekModifiers(arr: Criteria.DayOfWeekModifier[]) {
+    const used = new Set<DayOfWeek>();
+
+    for (const { dayOfWeek, deltaPrice } of arr) {
+      if (used.has(dayOfWeek))
+        throw new BadRequestException(`Duplicate dayOfWeek [${dayOfWeek}]`);
+
+      this.validateDeltaPrice(deltaPrice);
+      used.add(dayOfWeek);
+    }
+  }
+
+  private validateDeltaPrice(deltaPrice: number) {
     const { MIN_DELTA, MAX_DELTA } = PRICING_LIMITS.PRICING_MODIFIER;
-    if (delta < MIN_DELTA || delta > MAX_DELTA) {
+    if (deltaPrice < MIN_DELTA || deltaPrice > MAX_DELTA)
       throw new BadRequestException(
         `deltaPrice must be between ${MIN_DELTA} and ${MAX_DELTA}`,
       );
-    }
   }
 
-  private assertSeatTypeModifiersValid(arr: Criteria.SeatTypeModifier[]) {
-    const used = new Set<SeatType>();
-    for (const m of arr) {
-      if (used.has(m.seatType))
-        throw new BadRequestException(`Duplicate seatType [${m.seatType}]`);
-      this.assertDeltaPriceValid(m.deltaPrice);
-      used.add(m.seatType);
-    }
-  }
-
-  private assertRoomTypeModifiersValid(arr: Criteria.RoomTypeModifier[]) {
-    const used = new Set<RoomType>();
-    for (const m of arr) {
-      if (used.has(m.roomType))
-        throw new BadRequestException(`Duplicate roomType [${m.roomType}]`);
-      this.assertDeltaPriceValid(m.deltaPrice);
-      used.add(m.roomType);
-    }
-  }
-
-  private assertDayOfWeekModifiersValid(arr: Criteria.DaysOfWeekModifier[]) {
-    const used = new Set<DaysOfWeek>();
-    for (const m of arr) {
-      this.assertDeltaPriceValid(m.deltaPrice);
-      for (const d of m.applicableDays) {
-        if (used.has(d)) throw new BadRequestException(`Duplicate day [${d}]`);
-        used.add(d);
-      }
-    }
-  }
-
-  private assertDailyTimeRangeModifiersValid(
-    arr: Criteria.DailyTimeRangeModifier[],
+  private validateTotalPrice(
+    basePrice: number,
+    modifiers?: Criteria.PricingModifiers,
   ) {
-    const ranges: { start: number; end: number; original: string }[] = [];
+    const { seatTypes = [], roomTypes = [], daysOfWeek = [] } = modifiers ?? {};
 
-    for (const m of arr) {
-      if (!TimeUtil.isValidHHmm(m.startTime)) {
-        throw new BadRequestException(`Invalid startTime [${m.startTime}]`);
-      }
-
-      if (!TimeUtil.isValidHHmm(m.endTime)) {
-        throw new BadRequestException(`Invalid endTime [${m.endTime}]`);
-      }
-
-      const startTime = TimeUtil.roundDown(m.startTime);
-      const endTime = TimeUtil.roundUp(m.endTime);
-
-      if (startTime === endTime) {
-        throw new BadRequestException(
-          `Invalid time range [${startTime}] - [${endTime}]`,
-        );
-      }
-
-      this.assertDeltaPriceValid(m.deltaPrice);
-
-      const start = TimeUtil.toMinutes(startTime);
-      const end = TimeUtil.toMinutes(endTime);
-
-      // normalize
-      if (start < end) {
-        ranges.push({ start, end, original: `${startTime}-${endTime}` });
-      } else {
-        ranges.push({
-          start,
-          end: 24 * 60,
-          original: `${startTime}-${endTime}`,
-        });
-        ranges.push({ start: 0, end, original: `${startTime}-${endTime}` });
-      }
-    }
-
-    ranges.sort((a, b) => a.start - b.start);
-
-    // check overlap
-    for (let i = 1; i < ranges.length; i++) {
-      const prev = ranges[i - 1];
-      const cur = ranges[i];
-
-      if (cur.start < prev.end) {
-        throw new BadRequestException(
-          `Overlapping daily time ranges: [${prev.original}] overlaps with [${cur.original}]`,
-        );
-      }
-    }
-  }
-
-  private assertTotalPriceWithinLimit(pricing: PricingConfig) {
-    const seatDeltas = pricing.modifiers.seatTypes.map((x) => x.deltaPrice);
-    const roomDeltas = pricing.modifiers.roomTypes.map((x) => x.deltaPrice);
-    const dayDeltas = pricing.modifiers.daysOfWeek.map((x) => x.deltaPrice);
-    const timeDeltas = pricing.modifiers.dailyTimeRanges.map(
-      (x) => x.deltaPrice,
-    );
+    const seatDeltas = seatTypes.map(({ deltaPrice }) => deltaPrice);
+    const roomDeltas = roomTypes.map(({ deltaPrice }) => deltaPrice);
+    const dayDeltas = daysOfWeek.map(({ deltaPrice }) => deltaPrice);
 
     const worst =
-      pricing.basePrice +
+      basePrice +
       Math.max(0, ...seatDeltas) +
       Math.max(0, ...roomDeltas) +
-      Math.max(0, ...dayDeltas) +
-      Math.max(0, ...timeDeltas);
+      Math.max(0, ...dayDeltas);
 
     const best =
-      pricing.basePrice +
+      basePrice +
       Math.min(0, ...seatDeltas) +
       Math.min(0, ...roomDeltas) +
-      Math.min(0, ...dayDeltas) +
-      Math.min(0, ...timeDeltas);
+      Math.min(0, ...dayDeltas);
 
     const { MIN, MAX } = PRICING_LIMITS.TOTAL_PRICE;
 
-    if (worst > MAX || best < MIN) {
+    if (worst > MAX || best < MIN)
       throw new BadRequestException(
         `Total price may exceed allowed range (${MIN} - ${MAX})`,
       );
-    }
+  }
+
+  private normalizeModifiers(
+    modifiers?: Criteria.PricingModifiers,
+  ): PricingModifiers {
+    const { seatTypes, roomTypes, daysOfWeek } = modifiers ?? {};
+    return {
+      seatTypes: seatTypes ?? [],
+      roomTypes: roomTypes ?? [],
+      daysOfWeek: daysOfWeek ?? [],
+    };
+  }
+
+  private clampTotalPrice(price: number) {
+    const { MIN, MAX } = PRICING_LIMITS.TOTAL_PRICE;
+    return Math.max(MIN, Math.min(MAX, price));
   }
 }

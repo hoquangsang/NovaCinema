@@ -1,15 +1,25 @@
 import { HydratedDocument } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { PricingModifiers } from './pricing-modifier.schema';
+import {
+  PricingModifiers,
+  PricingModifiersSchema,
+} from './pricing-modifiers.schema';
 
 export type PricingConfigDocument = HydratedDocument<PricingConfig>;
 
 @Schema({ timestamps: true })
 export class PricingConfig {
-  @Prop({ type: Number, min: 0, required: true })
+  @Prop({
+    type: Number,
+    required: true,
+    min: 0,
+  })
   basePrice!: number;
 
-  @Prop({ default: {} })
+  @Prop({
+    type: PricingModifiersSchema,
+    default: {},
+  })
   modifiers!: PricingModifiers;
 }
 

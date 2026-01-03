@@ -10,25 +10,27 @@ import {
 import {
   DayOfWeekPricingModifierSchema,
   DayOfWeekPricingModifier,
-} from './days-of-week-pricing-modifier.schema';
-import {
-  DailyTimeRangePricingModifierSchema,
-  DailyTimeRangePricingModifier,
-} from './daily-time-range-pricing-modifier.schema';
+} from './day-of-week-pricing-modifier.schema';
 
 @Schema({ _id: false })
 export class PricingModifiers {
-  @Prop({ type: [SeatTypePricingModifierSchema], default: [] })
+  @Prop({
+    type: [SeatTypePricingModifierSchema],
+    default: [],
+  })
   seatTypes!: SeatTypePricingModifier[];
 
-  @Prop({ type: [RoomTypePricingModifierSchema], default: [] })
+  @Prop({
+    type: [RoomTypePricingModifierSchema],
+    default: [],
+  })
   roomTypes!: RoomTypePricingModifier[];
 
-  @Prop({ type: [DayOfWeekPricingModifierSchema], default: [] })
+  @Prop({
+    type: [DayOfWeekPricingModifierSchema],
+    default: [],
+  })
   daysOfWeek!: DayOfWeekPricingModifier[];
-
-  @Prop({ type: [DailyTimeRangePricingModifierSchema], default: [] })
-  dailyTimeRanges!: DailyTimeRangePricingModifier[];
 }
 
 export const PricingModifiersSchema =

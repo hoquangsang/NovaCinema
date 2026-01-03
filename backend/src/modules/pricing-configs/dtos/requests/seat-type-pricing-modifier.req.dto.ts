@@ -10,7 +10,9 @@ export class SeatTypePricingModifierReqDto {
     enum: SEAT_TYPE_VALUES,
     example: SEAT_TYPES.VIP,
   })
-  @IsEnum(SEAT_TYPE_VALUES)
+  @IsEnum(SEAT_TYPE_VALUES, {
+    message: `seatType must be one of: ${SEAT_TYPE_VALUES.join(', ')}`,
+  })
   seatType!: SeatType;
 
   @ApiProperty({

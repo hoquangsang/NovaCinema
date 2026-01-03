@@ -1,6 +1,5 @@
 export type { PricingConfigDocument } from './schemas';
 export {
-  DailyTimeRangePricingModifier,
   DayOfWeekPricingModifier,
   RoomTypePricingModifier,
   SeatTypePricingModifier,

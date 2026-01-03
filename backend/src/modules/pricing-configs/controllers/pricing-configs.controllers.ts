@@ -4,13 +4,17 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  Put,
+  Patch,
+  Post,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RequireRoles, WrapOkResponse } from 'src/common/decorators';
 import { USER_ROLES } from 'src/modules/users/constants';
 import { PricingConfigService } from '../services';
-import { UpsertPricingConfigReqDto } from '../dtos/requests';
+import {
+  CreatePricingConfigReqDto,
+  UpdatePricingConfigReqDto,
+} from '../dtos/requests';
 import { PricingConfigResDto } from '../dtos/responses';
 
 @ApiTags('Pricing configuration')
@@ -27,12 +31,21 @@ export class PricingConfigController {
     return await this.pricingService.getPricingConfig();
   }
 
-  @ApiOperation({ description: 'Create or update pricing config' })
+  @ApiOperation({ description: 'Create pricing config' })
   @WrapOkResponse({ dto: PricingConfigResDto })
   @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.OK)
-  @Put()
-  public async upsertPricingConfig(@Body() dto: UpsertPricingConfigReqDto) {
-    return await this.pricingService.upsertPricingConfig(dto);
+  @Post()
+  public async createPricingConfig(@Body() dto: CreatePricingConfigReqDto) {
+    return await this.pricingService.createPricingConfig(dto);
+  }
+
+  @ApiOperation({ description: 'Update pricing config' })
+  @WrapOkResponse({ dto: PricingConfigResDto })
+  @RequireRoles(USER_ROLES.ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @Patch()
+  public async updatePricingConfig(@Body() dto: UpdatePricingConfigReqDto) {
+    return await this.pricingService.updatePricingConfig(dto);
   }
 }

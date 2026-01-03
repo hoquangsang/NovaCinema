@@ -5,8 +5,7 @@ import { DAYS_OF_WEEK } from 'src/common/types';
 import { ROOM_TYPES, SEAT_TYPES } from 'src/modules/theaters/constants';
 import { SeatTypePricingModifierReqDto } from './seat-type-pricing-modifier.req.dto';
 import { RoomTypePricingModifierReqDto } from './room-type-pricing-modifier.req.dto';
-import { DaysOfWeekPricingModifierReqDto } from './days-of-week-pricing-modifier.req.dto';
-import { DailyTimeRangePricingModifierReqDto } from './daily-time-range-pricing-modifier.req.dto';
+import { DayOfWeekPricingModifierReqDto } from './day-of-week-pricing-modifier.req.dto';
 
 export class PricingModifiersReqDto {
   @ApiPropertyOptional({
@@ -40,11 +39,11 @@ export class PricingModifiersReqDto {
   roomTypes?: RoomTypePricingModifierReqDto[];
 
   @ApiPropertyOptional({
-    type: [DaysOfWeekPricingModifierReqDto],
+    type: [DayOfWeekPricingModifierReqDto],
     description: 'Day of week pricing modifiers',
     example: [
       {
-        applicableDays: [DAYS_OF_WEEK.SAT, DAYS_OF_WEEK.SUN],
+        dayOfWeek: DAYS_OF_WEEK.SUN,
         deltaPrice: 15_000,
       },
     ],
@@ -52,20 +51,6 @@ export class PricingModifiersReqDto {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => DaysOfWeekPricingModifierReqDto)
-  daysOfWeek?: DaysOfWeekPricingModifierReqDto[];
-
-  @ApiPropertyOptional({
-    type: [DailyTimeRangePricingModifierReqDto],
-    description: 'Daily time range pricing modifiers',
-    example: [
-      { startTime: '16:00', endTime: '22:00', deltaPrice: 10_000 },
-      { startTime: '22:00', endTime: '06:00', deltaPrice: 20_000 },
-    ],
-  })
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => DailyTimeRangePricingModifierReqDto)
-  dailyTimeRanges?: DailyTimeRangePricingModifierReqDto[];
+  @Type(() => DayOfWeekPricingModifierReqDto)
+  daysOfWeek?: DayOfWeekPricingModifierReqDto[];
 }

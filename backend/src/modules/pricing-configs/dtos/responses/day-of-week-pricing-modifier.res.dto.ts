@@ -1,15 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
-import { DAYS_OF_WEEK, DaysOfWeek } from 'src/common/types';
+import { DAYS_OF_WEEK, DayOfWeek } from 'src/common/types';
 
-export class DaysOfWeekPricingModifierResDto {
+export class DayOfWeekPricingModifierResDto {
   @ApiProperty({
-    type: [String],
+    type: String,
     description: 'Days of the week this modifier applies',
-    example: [DAYS_OF_WEEK.SAT, DAYS_OF_WEEK.SUN],
+    example: DAYS_OF_WEEK.SUN,
   })
   @Expose()
-  applicableDays!: DaysOfWeek[];
+  dayOfWeek!: DayOfWeek;
 
   @ApiProperty({
     type: Number,
