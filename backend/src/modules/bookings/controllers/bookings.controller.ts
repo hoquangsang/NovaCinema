@@ -9,18 +9,20 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ParseObjectIdPipe } from '@nestjs/mongoose';
-import { CurrentUser, Public, WrapOkResponse } from 'src/common/decorators';
+import {
+  CurrentUser,
+  Public,
+  RequireRoles,
+  WrapOkResponse,
+} from 'src/common/decorators';
+import { USER_ROLES } from 'src/modules/users/constants';
 import { JwtPayload } from 'src/modules/auth/types';
 import { BookingService } from '../services';
-import {
-  AvailableSeatMapResDto,
-  BookingResDto,
-  SeatTypePricesResDto,
-} from '../dtos/responses';
 import { CreateBookingReqDto } from '../dtos/requests';
+import { BookingAvailabilityResDto, BookingResDto } from '../dtos/responses';
 
 @ApiTags('Bookings')
-@Controller('bookings')
+@Controller()
 export class BookingsController {
   public constructor(
     //
@@ -29,41 +31,39 @@ export class BookingsController {
     //
   }
 
-  @ApiOperation({ description: 'Get estimated ticket prices for a showtime' })
-  @WrapOkResponse({ dto: SeatTypePricesResDto })
+  @ApiOperation({
+    summary: 'Get booking availability for a showtime',
+    description:
+      'Returns seat availability map and seat type prices used to initialize a booking for the given showtime.',
+  })
+  @WrapOkResponse({ dto: BookingAvailabilityResDto })
   @Public()
   @HttpCode(HttpStatus.OK)
-  @Get('showtimes/:showtimeId/ticket-prices')
-  public async getSeatTypePrices(
+  @Get('showtimes/:showtimeId/bookings/availability')
+  public async getBookingAvailability(
     @Param('showtimeId', ParseObjectIdPipe) showtimeId: string,
   ) {
-    return await this.bookingService.getSeatTypePrices(showtimeId);
+    return await this.bookingService.getBookingAvailability(showtimeId);
   }
 
-  @ApiOperation({ description: 'Get available seats for a showtime' })
-  @WrapOkResponse({ dto: AvailableSeatMapResDto })
-  @HttpCode(HttpStatus.OK)
-  @Get('showtimes/:showtimeId/seats-available')
-  public async getSeatsAvailable(
-    @Param('showtimeId', ParseObjectIdPipe) showtimeId: string,
-    @CurrentUser() user: JwtPayload,
-  ) {
-    return await this.bookingService.getAvailableSeats(showtimeId, user.sub);
-  }
-
-  @ApiOperation({ description: 'Create a booking for a showtime' })
+  @ApiOperation({
+    summary: 'Create a booking',
+    description:
+      'Creates a draft booking for the given showtime using selected seat codes.',
+  })
   @WrapOkResponse({ dto: BookingResDto })
+  @RequireRoles(USER_ROLES.USER)
   @HttpCode(HttpStatus.OK)
-  @Post('showtimes/:showtimeId')
+  @Post('showtimes/:showtimeId/bookings')
   public async createBooking(
     @Param('showtimeId', ParseObjectIdPipe) showtimeId: string,
     @CurrentUser() user: JwtPayload,
     @Body() body: CreateBookingReqDto,
   ) {
-    return this.bookingService.createBooking(
+    return await this.bookingService.createBooking(
       showtimeId,
       user.sub,
-      body.selectedSeatCodes,
+      body.selectedSeats,
     );
   }
 }

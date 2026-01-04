@@ -10,7 +10,7 @@ export class Seat {
   seatCode!: string;
 
   @Prop({ type: String, enum: SEAT_TYPE_VALUES, default: SEAT_TYPES.NORMAL })
-  seatType?: SeatType;
+  seatType!: SeatType;
 
   @Prop({ default: true })
   isActive?: boolean;

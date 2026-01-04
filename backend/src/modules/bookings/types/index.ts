@@ -1,16 +1,8 @@
-import {
-  BOOKING_SEAT_STATES,
-  BOOKING_SEAT_STATUSES,
-  BOOKING_STATUSES,
-} from '../constants';
+import { BOOKING_STATUSES, BOOKING_SEAT_STATUSES } from '../constants';
 
 /** */
 export type BookingSeatStatus =
   (typeof BOOKING_SEAT_STATUSES)[keyof typeof BOOKING_SEAT_STATUSES];
-
-/** */
-export type BookingSeatState =
-  (typeof BOOKING_SEAT_STATES)[keyof typeof BOOKING_SEAT_STATES];
 
 /** */
 export type BookingStatus =

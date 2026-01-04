@@ -1,23 +1,8 @@
-export const BOOKING_SEAT_STATUSES = {
-  HOLDING: 'HOLDING',
-  SOLD: 'SOLD',
-} as const;
-
-export const BOOKING_SEAT_STATUS_VALUES = Object.values(BOOKING_SEAT_STATUSES);
-
-/** */
-export const BOOKING_SEAT_STATES = {
-  FREE: 'FREE',
-  HOLD: 'HOLD',
-  SOLD: 'SOLD',
-} as const;
-
-export const BOOKING_SEAT_STATE_VALUES = Object.values(BOOKING_SEAT_STATES);
-
 /** */
 export const BOOKING_STATUSES = {
-  PENDING: 'PENDING',
-  PAID: 'PAID',
+  DRAFT: 'DRAFT',
+  PENDING_PAYMENT: 'PENDING_PAYMENT',
+  CONFIRMED: 'CONFIRMED',
   CANCELLED: 'CANCELLED',
   EXPIRED: 'EXPIRED',
 } as const;
@@ -29,6 +14,16 @@ export const BOOKING_LIMITS = {
   MAX_SEATS_PER_BOOKING: 5,
 } as const;
 
-export const BOOKING_TIMINGS = {
-  EXPIRE_MINUTES: 5,
+export const BOOKING_EXPIRE_MINUTES = {
+  DRAFT: 5,
+  PENDING_PAYMENT: 10,
 } as const;
+
+/** */
+export const BOOKING_SEAT_STATUSES = {
+  AVAILABLE: 'AVAILABLE',
+  RESERVED: 'RESERVED',
+  SOLD: 'SOLD',
+} as const;
+
+export const BOOKING_SEAT_STATUS_VALUES = Object.values(BOOKING_SEAT_STATUSES);
