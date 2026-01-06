@@ -2,6 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { movieApi } from '../../api/endpoints/movie.api';
 import { MovieListSlider } from './MovieListSlider';
+import { MovieListSliderSkeleton } from './MovieListSliderSkeleton';
 
 export const NowShowing = () => {
   const { data: response, isLoading } = useQuery({
@@ -10,8 +11,9 @@ export const NowShowing = () => {
   });
 
   if (isLoading) {
-    return <div className="text-white text-center py-20">Loading...</div>;
+    return <MovieListSliderSkeleton title="NOW SHOWING" />;
   }
+
 
   return (
     <MovieListSlider
