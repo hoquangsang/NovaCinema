@@ -131,12 +131,13 @@ export default function Header() {
             >
               Discounts
             </a>
-            <a
-              href="/about"
+            <Link
+              to="/about-us"
               className="font-semibold text-white transition-colors hover:text-yellow-400 hover:border-b-2 border-yellow-400"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             >
               About us
-            </a>
+            </Link>
           </nav>
         </div>
       </div>
