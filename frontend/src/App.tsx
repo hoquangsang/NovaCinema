@@ -9,6 +9,7 @@ import MovieDetailPage from "./pages/MovieDetailPage";
 import AuthPage from "./pages/AuthPage";
 import NowShowingPage from "./pages/NowShowingPage";
 import ComingSoonPage from "./pages/ComingSoonPage";
+import AboutUsPage from "./pages/AboutUsPage";
 import DashboardPage from "./pages/management/DashboardPage";
 import MoviesManagementPage from "./pages/management/MoviesManagementPage";
 import TheatersManagementPage from "./pages/management/TheatersManagementPage";
@@ -47,6 +48,7 @@ function App() {
             <Route path="movie/:id" element={<MovieDetailPage />} />
             <Route path="now-showing" element={<NowShowingPage />} />
             <Route path="coming-soon" element={<ComingSoonPage />} />
+            <Route path="about-us" element={<AboutUsPage />} />
           </Route>
 
           {/* Management Routes - Protected for Admin only */}
