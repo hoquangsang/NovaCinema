@@ -3,6 +3,7 @@ import { movieApi } from "../api/endpoints/movie.api";
 import { MovieCard } from "../features/movies/MovieCard";
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { MovieListPageSkeleton } from "../features/movies/MovieListPageSkeleton";
 
 export default function NowShowingPage() {
     const [currentPage, setCurrentPage] = useState(1);
@@ -14,7 +15,12 @@ export default function NowShowingPage() {
     });
 
     if (isLoading) {
-        return <div className="text-white text-center py-20">Loading...</div>
+        return (
+            <MovieListPageSkeleton
+                title="Now Showing"
+                subtitle="Discover all movies currently playing in theaters"
+            />
+        );
     }
 
     const movies = response?.items || [];
