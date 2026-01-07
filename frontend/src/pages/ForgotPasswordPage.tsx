@@ -83,8 +83,11 @@ export const ForgotPasswordPage: React.FC = () => {
             await authApi.requestPasswordReset(email);
             showToast('OTP has been sent to your email', 'success');
             setStep('reset');
-        } catch (error: any) {
-            showToast(error.message || 'Failed to send OTP. Please try again.', 'error');
+        } catch (error: unknown) {
+            const message = error instanceof Error
+                ? error.message
+                : 'Failed to send OTP. Please try again.';
+            showToast(message, 'error');
         } finally {
             setIsLoading(false);
         }
@@ -108,8 +111,11 @@ export const ForgotPasswordPage: React.FC = () => {
             setTimeout(() => {
                 navigate('/login');
             }, 1500);
-        } catch (error: any) {
-            showToast(error.message || 'Failed to reset password. Please check your OTP and try again.', 'error');
+        } catch (error: unknown) {
+            const message = error instanceof Error
+                ? error.message
+                : 'Failed to reset password. Please check your OTP and try again.';
+            showToast(message, 'error');
         } finally {
             setIsLoading(false);
         }

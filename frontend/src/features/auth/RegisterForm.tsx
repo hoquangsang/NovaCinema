@@ -30,7 +30,8 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
     const [registeredEmail, setRegisteredEmail] = useState('');
 
     const validateForm = (): boolean => {
-        const newErrors: any = {};
+        const newErrors: Partial<Record<keyof RegisterParams | 'confirmPassword' | 'terms', string>> = {};
+
 
         if (!formData.fullName?.trim()) {
             newErrors.fullName = 'Full name is required';
@@ -105,9 +106,12 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
             // Show OTP verification modal
             setRegisteredEmail(formData.email);
             setShowOTPModal(true);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('❌ Registration error:', error);
-            setApiError(error.message || 'Registration failed. Please try again.');
+            const message = error instanceof Error
+                ? error.message
+                : 'Registration failed. Please try again.';
+            setApiError(message);
         } finally {
             setIsLoading(false);
         }
