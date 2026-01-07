@@ -7,6 +7,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { refreshTokenOptions } from 'src/config';
+import { HashUtil } from 'src/common/utils';
 import { OtpService } from 'src/modules/notifications';
 import { UserService } from 'src/modules/users';
 import { UserRoleType } from 'src/modules/users/types';
@@ -135,6 +136,30 @@ export class AuthService {
       throw new BadRequestException('Email already verified');
 
     await this.otpService.send(user.email);
+    return true;
+  }
+
+  /** Request password reset - send OTP to email */
+  public async requestPasswordReset(email: string) {
+    const user = await this.userService.findUserByEmail(email);
+    if (!user) throw new BadRequestException('Email not found');
+
+    await this.otpService.send(email);
+    return true;
+  }
+
+  /** Reset password with OTP verification */
+  public async resetPassword(email: string, otp: string, newPassword: string) {
+    const user = await this.userService.findUserByEmail(email);
+    if (!user) throw new BadRequestException('Email not found');
+
+    // Verify OTP
+    await this.otpService.verify(email, otp);
+
+    // Hash and update password
+    const hashedPassword = await HashUtil.hash(newPassword);
+    await this.userService.updateUserPasswordById(user._id, hashedPassword);
+
     return true;
   }
 }

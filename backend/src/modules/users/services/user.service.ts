@@ -211,6 +211,17 @@ export class UserService {
     return this.stripPassword(updatedUser);
   }
 
+  public async updateUserPasswordById(id: string, hashedPassword: string) {
+    const { modifiedItem: updatedUser } =
+      await this.userRepo.command.updateOneById({
+        id,
+        update: { password: hashedPassword },
+      });
+
+    if (!updatedUser) throw new NotFoundException('User not found');
+    return this.stripPassword(updatedUser);
+  }
+
   private async updateUserStatusById(id: string, active: boolean) {
     const { modifiedItem: updatedUser } =
       await this.userRepo.command.updateOneById({
