@@ -22,7 +22,7 @@ export const DAYS_OF_WEEK = {
   SAT: 'SAT',
 } as const;
 
-export const DAYS_OF_WEEK_ORDER: DaysOfWeek[] = [
+export const DAYS_OF_WEEK_ORDER: DayOfWeek[] = [
   DAYS_OF_WEEK.SUN,
   DAYS_OF_WEEK.MON,
   DAYS_OF_WEEK.TUE,
@@ -34,4 +34,4 @@ export const DAYS_OF_WEEK_ORDER: DaysOfWeek[] = [
 
 export const DAYS_OF_WEEK_VALUES = Object.values(DAYS_OF_WEEK);
 
-export type DaysOfWeek = (typeof DAYS_OF_WEEK)[keyof typeof DAYS_OF_WEEK];
+export type DayOfWeek = (typeof DAYS_OF_WEEK)[keyof typeof DAYS_OF_WEEK];

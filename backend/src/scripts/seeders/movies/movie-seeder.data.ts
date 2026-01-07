@@ -30,7 +30,7 @@ const generateRandomDates = (): { releaseDate: Date; endDate: Date } => {
 };
 
 // --- MAIN DATA ---
-export const MOVIES_DATA: Partial<Movie>[] = [
+export const MOVIES_DATA: Movie[] = [
   {
     title: 'HOÀNG TỬ QUỶ (T18)',
     genres: ['Horror'],

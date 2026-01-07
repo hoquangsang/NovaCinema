@@ -1,7 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
-import { ROOM_TYPE_VALUES, ROOM_TYPES } from 'src/modules/theaters/constants';
-import { RoomType } from 'src/modules/theaters/types';
 import { ShowtimeMovieResDto } from './showtime-movie.res.dto';
 import { ShowtimeRoomResDto } from './showtime-room.res.dto';
 import { ShowtimeTheaterResDto } from './showtime-theater.res.dto';
@@ -18,39 +16,6 @@ export class ShowtimeDetailResDto {
   })
   @Expose()
   _id!: string;
-
-  @ApiProperty({
-    type: String,
-    description: 'Movie ID',
-    example: '64b0c2f8e1f2a3a5d6b7c8d0',
-  })
-  @Expose()
-  movieId!: string;
-
-  @ApiProperty({
-    type: String,
-    description: 'Room ID',
-    example: '64b0c2f8e1f2a3a5d6b7c8d0',
-  })
-  @Expose()
-  roomId!: string;
-
-  @ApiProperty({
-    type: String,
-    enum: ROOM_TYPE_VALUES,
-    description: 'Type of room',
-    example: ROOM_TYPES._2D,
-  })
-  @Expose()
-  roomType!: RoomType;
-
-  @ApiProperty({
-    type: String,
-    description: 'Theater ID',
-    example: '64b0c2f8e1f2a3a5d6b7c8d0',
-  })
-  @Expose()
-  theaterId!: string;
 
   @ApiProperty({
     type: String,
@@ -92,7 +57,6 @@ export class ShowtimeDetailResDto {
   @Expose()
   updatedAt?: Date;
 
-  // Full populated objects
   @ApiPropertyOptional({
     type: ShowtimeMovieResDto,
     description: 'Full movie details',

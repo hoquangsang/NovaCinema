@@ -12,6 +12,14 @@ import { ROOM_TYPE_VALUES, ROOM_TYPES } from 'src/modules/theaters/constants';
 import { RoomType } from 'src/modules/theaters/types';
 
 export class QueryRoomsReqDto extends QueryReqDto {
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Regex match: roomName',
+  })
+  @IsOptional()
+  @IsString()
+  search?: string;
+
   @ApiPropertyOptional({ type: String, description: 'Filter by room name' })
   @IsOptional()
   @IsString()

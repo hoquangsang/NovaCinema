@@ -3,9 +3,6 @@ import { IsOptional, IsMongoId } from 'class-validator';
 import { QueryRangeReqDto } from 'src/modules/base/dtos/requests';
 
 export class QueryRangeShowtimesReqDto extends QueryRangeReqDto {
-  declare search?: never;
-  declare sort?: never;
-
   @ApiPropertyOptional({
     description: 'Filter by movie ID',
     example: '67a1234bcf90123456789def',

@@ -11,8 +11,23 @@ import { DateUtil } from 'src/common/utils';
 import { pickSortableFields } from 'src/modules/base/helpers';
 import { MovieRepository } from 'src/modules/movies/repositories';
 import { MovieDocument } from 'src/modules/movies/schemas';
-import { MOVIE_QUERY_FIELDS as QUERY_FIELDS } from './movie.service.constant';
 import { MovieCriteria as Criteria } from './movie.service.type';
+
+const QUERY_FIELDS = {
+  SEARCHABLE: ['title', 'director', 'producer', 'genres', 'actors'],
+  REGEX_MATCH: ['title', 'director', 'producer'],
+  ARRAY_MATCH: ['genres', 'actors'],
+  EXACT_MATCH: ['ratingAge', 'country', 'language'],
+  SORTABLE: [
+    'title',
+    'duration',
+    'releaseDate',
+    'endDate',
+    'ratingAge',
+    'country',
+    'language',
+  ],
+} as const;
 
 @Injectable()
 export class MovieService {

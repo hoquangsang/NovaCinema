@@ -3,9 +3,6 @@ import { IsMongoId, IsOptional } from 'class-validator';
 import { PaginatedQueryRangeReqDto } from 'src/modules/base/dtos/requests';
 
 export class PaginatedQueryRangeShowtimesReqDto extends PaginatedQueryRangeReqDto {
-  declare search: never;
-  declare sort: never;
-
   @ApiPropertyOptional({
     description: 'Filter by movie ID',
     example: '67a1234bcf90123456789def',

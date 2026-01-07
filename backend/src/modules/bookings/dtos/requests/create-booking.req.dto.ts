@@ -11,5 +11,5 @@ export class CreateBookingReqDto {
   @IsArray()
   @ArrayNotEmpty()
   @IsString({ each: true })
-  selectedSeatCodes!: string[];
+  selectedSeats!: string[];
 }
