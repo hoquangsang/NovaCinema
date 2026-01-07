@@ -19,6 +19,7 @@ import ShowtimesManagementPage from "./pages/management/ShowtimesManagementPage"
 import SettingsPage from "./pages/management/SettingsPage";
 
 import ProfilePage from "./pages/ProfilePage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 
 import "./App.css";
 
@@ -35,6 +36,7 @@ function App() {
 
             {/* Thêm các trang khác ở đây sau này, ví dụ: */}
             <Route path="login" element={<AuthPage />} />
+            <Route path="forgot-password" element={<ForgotPasswordPage />} />
             <Route
               path="profile"
               element={

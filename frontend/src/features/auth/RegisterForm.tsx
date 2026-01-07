@@ -4,6 +4,8 @@ import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { OTPVerificationModal } from './OTPVerificationModal';
 import { convertDateInputToUTC0 } from '../../utils/timezone';
+import { validatePassword } from '../../utils/passwordValidation';
+import { PasswordRequirements } from '../../components/common/PasswordRequirements';
 
 interface RegisterFormProps {
     onSuccess?: () => void;
@@ -56,8 +58,11 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
 
         if (!formData.password) {
             newErrors.password = 'Password is required';
-        } else if (formData.password.length < 6) {
-            newErrors.password = 'Password must be at least 6 characters';
+        } else {
+            const passwordValidation = validatePassword(formData.password);
+            if (!passwordValidation.isValid) {
+                newErrors.password = passwordValidation.errors[0]; // Show first error
+            }
         }
 
         if (!confirmPassword) {
@@ -185,17 +190,20 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
                     autoComplete="email"
                 />
 
-                <Input
-                    label="Password"
-                    type="password"
-                    required
-                    placeholder="Password"
-                    value={formData.password}
-                    onChange={handleChange('password')}
-                    error={errors.password}
-                    showPasswordToggle
-                    autoComplete="new-password"
-                />
+                <div>
+                    <Input
+                        label="Password"
+                        type="password"
+                        required
+                        placeholder="Password"
+                        value={formData.password}
+                        onChange={handleChange('password')}
+                        error={errors.password}
+                        showPasswordToggle
+                        autoComplete="new-password"
+                    />
+                    <PasswordRequirements password={formData.password} />
+                </div>
 
                 <Input
                     label="Confirm Password"
