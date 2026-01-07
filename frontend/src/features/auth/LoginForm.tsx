@@ -60,8 +60,11 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
             }
 
             onSuccess?.();
-        } catch (error: any) {
-            setApiError(error.message || 'Login failed. Please check your credentials.');
+        } catch (error: unknown) {
+            const message = error instanceof Error
+                ? error.message
+                : 'Login failed. Please check your credentials.';
+            setApiError(message);
         } finally {
             setIsLoading(false);
         }
@@ -117,12 +120,13 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
                     <span className="text-sm text-gray-700">Keep me signed in</span>
                 </label>
 
-                <a
-                    href="/forgot-password"
+                <button
+                    type="button"
+                    onClick={() => window.location.href = '/forgot-password'}
                     className="text-sm text-purple-600 hover:text-purple-700 hover:underline"
                 >
                     Forgot Password?
-                </a>
+                </button>
             </div>
 
             <Button

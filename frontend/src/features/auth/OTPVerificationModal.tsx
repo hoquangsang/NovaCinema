@@ -79,9 +79,12 @@ export const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({
             await authApi.verifyEmail(email, otp);
             console.log('✅ Email verified successfully');
             onSuccess();
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('❌ OTP verification error:', error);
-            setError(error.message || 'Invalid OTP. Please try again.');
+            const message = error instanceof Error
+                ? error.message
+                : 'Invalid OTP. Please try again.';
+            setError(message);
         } finally {
             setIsVerifying(false);
         }
@@ -101,9 +104,12 @@ export const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({
             setIsOtpExpired(false);
             setCanResend(false);
             setOtp('');
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('❌ Resend OTP error:', error);
-            setError(error.message || 'Failed to resend OTP. Please try again.');
+            const message = error instanceof Error
+                ? error.message
+                : 'Failed to resend OTP. Please try again.';
+            setError(message);
         } finally {
             setIsResending(false);
         }

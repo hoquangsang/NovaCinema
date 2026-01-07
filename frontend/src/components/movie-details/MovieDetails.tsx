@@ -5,6 +5,7 @@ import { CirclePlay, Tag, Clock, Globe, MessageSquareMore, UserCheck } from "luc
 import MetaItem from "./MetaItem";
 import TrailerModal from "./TrailerModal";
 import type { Movie } from "../../api/endpoints/movie.api";
+import { formatUTC0DateToLocal } from "../../utils/timezone";
 
 // Component: render description with a "Xem thêm / Thu gọn" toggle underneath
 function DescriptionWithToggle({
@@ -43,10 +44,37 @@ export interface MovieDetailsProps {
 export default function MovieDetails({ movie }: MovieDetailsProps) {
   const navigate = useNavigate();
 
-  const formatRatingAge = (age?: number | null) => {
+  const formatRatingAge = (age?: number | string | null) => {
     if (age === null || age === undefined) return "N/A";
-    if (age === 0) return "P: Phim dành cho khán giả mọi lứa tuổi";
-    return `T${age}: Phim dành cho khán giả từ đủ ${age} tuổi trở lên (${age}+)`;
+    
+    const ageStr = String(age).toUpperCase().trim();
+    
+    // P hoặc 0: Phim dành cho mọi lứa tuổi
+    if (ageStr === 'P' || ageStr === '0') {
+      return "P: Phim dành cho khán giả mọi lứa tuổi";
+    }
+    
+    // Cxx: Cấm chiếu dưới xx tuổi (nghiêm ngặt)
+    const cMatch = ageStr.match(/^C(\d+)$/);
+    if (cMatch) {
+      const ageNum = cMatch[1];
+      return `C${ageNum}: CẤM khán giả dưới ${ageNum} tuổi`;
+    }
+    
+    // Txx: Phim dành cho từ xx tuổi trở lên
+    const tMatch = ageStr.match(/^T(\d+)$/);
+    if (tMatch) {
+      const ageNum = tMatch[1];
+      return `T${ageNum}: Phim dành cho khán giả từ đủ ${ageNum} tuổi trở lên (${ageNum}+)`;
+    }
+    
+    // Số thuần túy: Tương tự Txx
+    if (/^\d+$/.test(ageStr)) {
+      return `T${ageStr}: Phim dành cho khán giả từ đủ ${ageStr} tuổi trở lên (${ageStr}+)`;
+    }
+    
+    // Trường hợp khác: hiển thị nguyên bản
+    return ageStr;
   };
 
   const [showTrailerModal, setShowTrailerModal] = useState(false);
@@ -69,7 +97,7 @@ export default function MovieDetails({ movie }: MovieDetailsProps) {
         </h1>
 
         <div className="text-lg space-y-1">
-          <MetaItem icon={Tag}>{movie.genre}</MetaItem>
+          <MetaItem icon={Tag}>{movie.genres.join(', ')}</MetaItem>
 
           <MetaItem icon={Clock}>{movie.duration}'</MetaItem>
 
@@ -85,7 +113,8 @@ export default function MovieDetails({ movie }: MovieDetailsProps) {
         <div className="mt-4 text-lm text-gray-300">
           <h3 className="font-bold text-white text-lg">MÔ TẢ</h3>
           <p className="mt-1">Đạo diễn: {movie.director}</p>
-          <p className="">Khởi chiếu: {movie.releaseDate}</p>
+          <p className="mt-1">Diễn viên: {movie.actors?.length ? movie.actors.join(', ') : "N/A"}</p>
+          <p className="">Khởi chiếu: {formatUTC0DateToLocal(movie.releaseDate)}</p>
         </div>
 
         <div className="mt-4 text-lm text-gray-300">

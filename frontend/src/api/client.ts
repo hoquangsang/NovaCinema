@@ -13,6 +13,19 @@ export const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  paramsSerializer: {
+    serialize: (params) => {
+      const searchParams = new URLSearchParams();
+      Object.entries(params).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          value.forEach((v) => searchParams.append(key, v));
+        } else if (value !== undefined && value !== null) {
+          searchParams.append(key, String(value));
+        }
+      });
+      return searchParams.toString();
+    },
+  },
 });
 
 // Request interceptor - add auth token
@@ -34,7 +47,17 @@ apiClient.interceptors.request.use(
 // Response interceptor - handle errors globally
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => {
-    // Extract data from success response
+    // If response has meta (pagination), map data to items
+    if (response.data?.meta) {
+      return {
+        items: response.data.data,
+        total: response.data.meta.total,
+        page: response.data.meta.page,
+        limit: response.data.meta.limit,
+        totalPages: response.data.meta.totalPages
+      };
+    }
+    // Otherwise, extract data from success response
     return response.data?.data ? response.data : response;
   },
   async (error: AxiosError<{ message?: string; errors?: unknown[] }>) => {
@@ -49,7 +72,7 @@ apiClient.interceptors.response.use(
 
         if (refreshToken) {
           const response = await axios.post(
-            `${config.apiBaseUrl}/api/auth/refresh`,
+            `${config.apiBaseUrl}/api/auth/refresh-token`,
             { refreshToken }
           );
 

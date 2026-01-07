@@ -2,21 +2,23 @@
 import { useQuery } from '@tanstack/react-query';
 import { movieApi } from '../../api/endpoints/movie.api';
 import { MovieListSlider } from './MovieListSlider';
+import { MovieListSliderSkeleton } from './MovieListSliderSkeleton';
 
 export const NowShowing = () => {
-  const { data: movies, isLoading } = useQuery({
-    queryKey: ['movies', 'now-showing'],
-    queryFn: movieApi.getNowShowing
+  const { data: response, isLoading } = useQuery({
+    queryKey: ['movies', 'now-showing', 1],
+    queryFn: () => movieApi.getNowShowing(1, 10)
   });
 
   if (isLoading) {
-    return <div className="text-white text-center py-20">Loading...</div>;
+    return <MovieListSliderSkeleton title="NOW SHOWING" />;
   }
+
 
   return (
     <MovieListSlider
       title="NOW SHOWING"
-      movies={movies || []}
+      movies={response?.items || []}
       variant="now-showing"
     />
   );
