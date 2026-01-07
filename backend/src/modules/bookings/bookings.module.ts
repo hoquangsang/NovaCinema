@@ -15,11 +15,8 @@ import {
   BookingCommandRepository,
   BookingQueryRepository,
   BookingRepository,
-  BookingSeatCommandRepository,
-  BookingSeatQueryRepository,
-  BookingSeatRepository,
 } from './repositories';
-import { BookingSeatService, BookingService } from './services';
+import { BookingService } from './services';
 import { BookingsController } from './controllers';
 
 @Module({
@@ -36,16 +33,11 @@ import { BookingsController } from './controllers';
   ],
   controllers: [BookingsController],
   providers: [
-    BookingSeatCommandRepository,
-    BookingSeatQueryRepository,
-    BookingSeatRepository,
-    BookingSeatService,
-
     BookingCommandRepository,
     BookingQueryRepository,
     BookingRepository,
     BookingService,
   ],
-  exports: [BookingSeatService, BookingService],
+  exports: [BookingService],
 })
 export class BookingsModule {}

@@ -46,6 +46,20 @@ export class RoomService {
     return await this.roomRepo.query.findOneById({ id });
   }
 
+  public async getSeatMapByRoomId(id: string) {
+    const existing = await this.roomRepo.query.findOneById({
+      id,
+      inclusion: {
+        seatMap: true,
+      },
+    });
+    if (!existing) {
+      throw new NotFoundException('Room not found');
+    }
+
+    return existing.seatMap;
+  }
+
   public async findRoomsByIds(roomIds: string[]) {
     return await this.roomRepo.query.findMany({
       filter: {

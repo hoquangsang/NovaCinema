@@ -73,7 +73,7 @@ export class ShowtimeService {
   }
 
   public async findShowtimes(options: Criteria.QueryRange) {
-    const { sort: rawSort, ...rest } = options;
+    const { sort: rawSort = { startAt: 'asc' }, ...rest } = options;
     const filter = this.buildShowtimeFilter(rest);
     const sort = pickSortableFields(rawSort, QUERY_FIELDS.SORTABLE);
 
@@ -102,7 +102,12 @@ export class ShowtimeService {
   }
 
   public async findShowtimesPaginated(options: Criteria.PaginatedQueryRange) {
-    const { page, limit, sort: rawSort, ...rest } = options;
+    const {
+      page,
+      limit,
+      sort: rawSort = { startAt: 'asc' },
+      ...rest
+    } = options;
     const filter = this.buildShowtimeFilter(rest);
     const sort = pickSortableFields(rawSort, QUERY_FIELDS.SORTABLE);
 
