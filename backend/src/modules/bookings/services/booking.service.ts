@@ -46,6 +46,12 @@ export class BookingService {
   ) {
     //
   }
+  //
+  public async findBookingById(bookingId: string) {
+    return await this.bookingRepository.query.findOneById({
+      id: bookingId,
+    });
+  }
 
   public async getBookingAvailability(showtimeId: string) {
     const showtime = await this.showtimeService.findShowtimeById(showtimeId);

@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  NotFoundException,
   Param,
   Post,
 } from '@nestjs/common';
@@ -29,6 +30,21 @@ export class BookingsController {
     private readonly bookingService: BookingService,
   ) {
     //
+  }
+
+  @ApiOperation({
+    summary: 'Get booking details',
+    description: 'Retrieve detailed information of a booking by its unique ID.',
+  })
+  @WrapOkResponse({ dto: BookingResDto })
+  @HttpCode(HttpStatus.OK)
+  @Get('bookings/:bookingId')
+  public async getBooking(
+    @Param('bookingId', ParseObjectIdPipe) bookingId: string,
+  ) {
+    const booking = await this.bookingService.findBookingById(bookingId);
+    if (!booking) throw new NotFoundException('Booking not found');
+    return booking;
   }
 
   @ApiOperation({
