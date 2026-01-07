@@ -117,12 +117,13 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
                     <span className="text-sm text-gray-700">Keep me signed in</span>
                 </label>
 
-                <a
-                    href="/forgot-password"
+                <button
+                    type="button"
+                    onClick={() => window.location.href = '/forgot-password'}
                     className="text-sm text-purple-600 hover:text-purple-700 hover:underline"
                 >
                     Forgot Password?
-                </a>
+                </button>
             </div>
 
             <Button
