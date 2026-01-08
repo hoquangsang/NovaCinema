@@ -126,7 +126,7 @@ export const showtimeApi = {
    */
   getAvailability: async (filters: Omit<ShowtimeFilters, "page" | "limit" | "from" | "to">): Promise<Showtime[]> => {
     const response = await apiClient.get("/showtimes/availability", { params: filters });
-    return response.data;
+    return (response as any).items || response.data || [];
   },
 
   /**
