@@ -20,6 +20,7 @@ import SettingsPage from "./pages/management/SettingsPage";
 
 import ProfilePage from "./pages/ProfilePage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import SearchResultsPage from "./pages/SearchResultsPage";
 
 import "./App.css";
 
@@ -51,6 +52,7 @@ function App() {
             <Route path="now-showing" element={<NowShowingPage />} />
             <Route path="coming-soon" element={<ComingSoonPage />} />
             <Route path="about-us" element={<AboutUsPage />} />
+            <Route path="search" element={<SearchResultsPage />} />
           </Route>
 
           {/* Management Routes - Protected for Admin only */}
