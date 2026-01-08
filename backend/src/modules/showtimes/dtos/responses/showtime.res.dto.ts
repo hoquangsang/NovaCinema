@@ -37,31 +37,13 @@ export class ShowtimeResDto {
   @Expose()
   moviePosterUrl?: string;
 
-  // room
-  @ApiProperty({
-    type: String,
-    description: 'Room ID',
-    example: '64b0c2f8e1f2a3a5d6b7c8d0',
-  })
-  @Expose()
-  roomId!: string;
-
   @ApiPropertyOptional({
     type: String,
-    description: 'Room name',
-    example: 'Room A',
+    description: 'Movie trailer URL',
+    example: 'https://example.com/trailer.jpg',
   })
   @Expose()
-  roomName?: string;
-
-  @ApiProperty({
-    type: String,
-    enum: ROOM_TYPE_VALUES,
-    description: 'Type of room',
-    example: ROOM_TYPES._2D,
-  })
-  @Expose()
-  roomType!: RoomType;
+  movieTrailerUrl?: string;
 
   // theater
   @ApiProperty({
@@ -79,6 +61,32 @@ export class ShowtimeResDto {
   })
   @Expose()
   theaterName?: string;
+
+  // room
+  @ApiProperty({
+    type: String,
+    description: 'Room ID',
+    example: '64b0c2f8e1f2a3a5d6b7c8d0',
+  })
+  @Expose()
+  roomId!: string;
+
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Room name',
+    example: 'Room 1',
+  })
+  @Expose()
+  roomName?: string;
+
+  @ApiProperty({
+    type: String,
+    enum: ROOM_TYPE_VALUES,
+    description: 'Type of room',
+    example: ROOM_TYPES._2D,
+  })
+  @Expose()
+  roomType!: RoomType;
 
   //
   @ApiProperty({

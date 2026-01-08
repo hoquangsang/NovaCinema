@@ -14,7 +14,7 @@ import { MovieService } from 'src/modules/movies';
 import { RoomService, TheaterService } from 'src/modules/theaters';
 import { RoomType } from 'src/modules/theaters/types';
 import { ShowtimeDocument } from '../schemas';
-import { ShowtimeRepository } from '../repositories/showtime.repository';
+import { ShowtimeRepository } from '../repositories';
 
 const GAP_MIN = 10;
 const ROUND_STEP_MIN = 5;
@@ -28,6 +28,9 @@ const QUERY_FIELDS = {
 
 interface MovieLike {
   _id: string;
+  title: string;
+  posterUrl?: string;
+  trailerUrl?: string;
   duration: number;
   releaseDate: Date;
   endDate?: Date;
@@ -40,25 +43,24 @@ interface RoomLike {
   roomType: RoomType;
 }
 
-interface ShowtimeLike {
+interface TheaterLike {
   _id: string;
-  movieId: string;
-  theaterId: string;
-  roomId: string;
-  roomType: RoomType;
-  startAt: Date;
-  endAt: Date;
-  isActive?: Boolean;
+  theaterName: string;
 }
 
-type ShowtimeRange = {
+interface ShowtimeCandidate {
   movieId: string;
+  movieTitle?: string;
+  moviePosterUrl?: string;
+  movieTrailerUrl?: string;
   roomId: string;
+  roomName?: string;
   theaterId: string;
+  theaterName?: string;
   roomType: RoomType;
   startAt: Date;
   endAt: Date;
-};
+}
 
 type FilterCriteria = {
   movieId?: string;
@@ -139,32 +141,6 @@ export class ShowtimeService {
     return this.showtimeRepo.query.findOneById({ id });
   }
 
-  public async findShowtimeDetailById(id: string) {
-    const showtime = await this.findShowtimeById(id);
-    if (!showtime) return null;
-    const { movieId, theaterId, roomId, roomType: _, ...rest } = showtime;
-
-    const existingtheater =
-      await this.theaterService.findTheaterById(theaterId);
-    if (!existingtheater) throw new Error('Theater not found');
-    const { ...theater } = existingtheater;
-
-    const existingroom = await this.roomService.findRoomById(roomId);
-    if (!existingroom) throw new Error('Room not found');
-    const { seatMap, ...room } = existingroom;
-
-    const existingmovie = await this.movieService.findMovieById(movieId);
-    if (!existingmovie) throw new Error('Movie not found');
-    const { ...movie } = existingmovie;
-
-    return {
-      ...rest,
-      movie,
-      theater,
-      room,
-    };
-  }
-
   public async findShowtimes(options: QueryRangeCriteria) {
     const { sort: rawSort = { startAt: 'asc' }, ...rest } = options;
     const filter = this.buildShowtimeFilter(rest);
@@ -242,7 +218,13 @@ export class ShowtimeService {
     const { movieId, schedules } = data;
     const movie = await this.getValidatedMovie(movieId);
     const rooms = await this.getValidatedRooms(schedules);
-    const showtimes = this.buildShowtimeSchedules(movie, rooms, schedules);
+    const theater = await this.getValidatedTheater(rooms[0].theaterId);
+    const showtimes = this.buildShowtimeSchedules(
+      movie,
+      theater,
+      rooms,
+      schedules,
+    );
     await this.assertShowtimeAvailability(showtimes, rooms);
 
     // TODO: add transaction
@@ -394,7 +376,6 @@ export class ShowtimeService {
         );
       }
       seenRooms.add(roomId);
-
       if (!Array.isArray(schedule.startAts) || !startAts?.length) {
         throw new BadRequestException(
           `schedules[${i}].startAts must not be empty`,
@@ -436,19 +417,36 @@ export class ShowtimeService {
     return rooms;
   }
 
+  private async getValidatedTheater(theaterId: string): Promise<TheaterLike> {
+    const theater = await this.theaterService.findTheaterById(theaterId);
+    if (!theater) throw new NotFoundException('Theater not found');
+    return theater;
+  }
+
   private buildShowtimeSchedules(
     movie: MovieLike,
+    theater: TheaterLike,
     rooms: RoomLike[],
     schedules: RoomScheduleCriteria[],
-  ): ShowtimeRange[] {
+  ): ShowtimeCandidate[] {
+    const {
+      _id: movieId,
+      title: movieTitle,
+      posterUrl: moviePosterUrl,
+      trailerUrl: movieTrailerUrl,
+    } = movie;
+    const { _id: theaterId, theaterName } = theater;
+
     const roomMap = new Map(rooms.map((r) => [r._id, r]));
-    const result: ShowtimeRange[] = [];
+    const result: ShowtimeCandidate[] = [];
 
     // unique (theaterId, roomType, startAt)
     const roomTypeStartMap = new Map<RoomType, Set<number>>();
 
     schedules.forEach((schedule, i) => {
-      const room = roomMap.get(schedule.roomId)!;
+      const room = roomMap.get(schedule.roomId);
+      if (!room) return;
+      const { _id: roomId, roomName, roomType } = room;
 
       const ranges = schedule.startAts
         .map((rawStart) => {
@@ -464,7 +462,7 @@ export class ShowtimeService {
       for (let j = 1; j < ranges.length; j++) {
         if (ranges[j - 1].endAt > ranges[j].startAt) {
           const startStr = DateUtil.toDatetimeString(
-            schedule.startAts[i],
+            ranges[i].startAt,
             'dd-MM-yyyy HH:mm',
           );
           throw new BadRequestException(
@@ -495,12 +493,17 @@ export class ShowtimeService {
         used.add(t);
 
         result.push({
-          movieId: movie._id,
-          theaterId: room.theaterId,
-          roomId: room._id,
-          roomType: room.roomType,
-          startAt,
-          endAt,
+          movieId: movieId,
+          movieTitle: movieTitle,
+          moviePosterUrl: moviePosterUrl,
+          movieTrailerUrl: movieTrailerUrl,
+          theaterId: theaterId,
+          theaterName: theaterName,
+          roomId: roomId,
+          roomName: roomName,
+          roomType: roomType,
+          startAt: startAt,
+          endAt: endAt,
         });
       }
     });
@@ -509,7 +512,7 @@ export class ShowtimeService {
   }
 
   private async assertShowtimeAvailability(
-    ranges: ShowtimeRange[],
+    ranges: ShowtimeCandidate[],
     rooms: RoomLike[],
   ) {
     if (!ranges.length) return;
@@ -550,11 +553,11 @@ export class ShowtimeService {
   }
 
   private assertRoomAvailability(
-    ranges: ShowtimeRange[],
-    existing: ShowtimeLike[],
+    ranges: ShowtimeCandidate[],
+    existing: ShowtimeCandidate[],
     roomMap: Map<string, RoomLike>,
   ) {
-    const byRoom = new Map<string, ShowtimeLike[]>();
+    const byRoom = new Map<string, ShowtimeCandidate[]>();
     for (const ex of existing) {
       const list = byRoom.get(ex.roomId);
       if (list) list.push(ex);
@@ -588,8 +591,8 @@ export class ShowtimeService {
   }
 
   private assertRoomTypeUniqueness(
-    ranges: ShowtimeRange[],
-    existing: ShowtimeLike[],
+    ranges: ShowtimeCandidate[],
+    existing: ShowtimeCandidate[],
   ) {
     const typeStartSet = new Set<string>();
     for (const ex of existing) {

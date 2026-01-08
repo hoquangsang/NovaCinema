@@ -23,12 +23,21 @@ export class Showtime {
   })
   movieTitle?: string;
 
+  @Prop({
+    type: String,
+  })
+  moviePostUrl?: string;
+
+  @Prop({
+    type: String,
+  })
+  movieTrailerUrl?: string;
+
   // theater
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     ref: Theater.name,
     required: true,
-    immutable: true,
   })
   theaterId!: Types.ObjectId;
 

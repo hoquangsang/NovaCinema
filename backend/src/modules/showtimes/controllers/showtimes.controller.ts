@@ -30,7 +30,7 @@ import {
   QueryAvailableShowtimesReqDto,
   QueryRangeShowtimesReqDto,
 } from '../dtos/requests';
-import { ShowtimeResDto, ShowtimeDetailResDto } from '../dtos/responses';
+import { ShowtimeResDto } from '../dtos/responses';
 
 @ApiTags('Showtimes')
 @Controller('showtimes')
@@ -70,12 +70,12 @@ export class ShowtimesController {
   }
 
   @ApiOperation({ description: 'Get showtime by id' })
-  @WrapOkResponse({ dto: ShowtimeDetailResDto })
+  @WrapOkResponse({ dto: ShowtimeResDto })
   @Public()
   @HttpCode(HttpStatus.OK)
   @Get(':id')
   public async getShowtimeById(@Param('id', ParseObjectIdPipe) id: string) {
-    const showtime = this.showtimeService.findShowtimeDetailById(id);
+    const showtime = this.showtimeService.findShowtimeById(id);
     if (!showtime) throw new NotFoundException('Showtime not found');
     return showtime;
   }
