@@ -10,6 +10,7 @@ import AuthPage from "./pages/AuthPage";
 import NowShowingPage from "./pages/NowShowingPage";
 import ComingSoonPage from "./pages/ComingSoonPage";
 import AboutUsPage from "./pages/AboutUsPage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import DashboardPage from "./pages/management/DashboardPage";
 import MoviesManagementPage from "./pages/management/MoviesManagementPage";
 import TheatersManagementPage from "./pages/management/TheatersManagementPage";
@@ -52,6 +53,7 @@ function App() {
             <Route path="now-showing" element={<NowShowingPage />} />
             <Route path="coming-soon" element={<ComingSoonPage />} />
             <Route path="about-us" element={<AboutUsPage />} />
+            <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
             <Route path="search" element={<SearchResultsPage />} />
           </Route>
 
