@@ -1,9 +1,19 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsDate, IsMongoId, IsOptional } from 'class-validator';
-import { ToDateTime } from 'src/common/decorators';
-import { QueryReqDto } from 'src/modules/base/dtos/requests';
+import { SortFields } from 'src/common/types';
+import { ToDateTime, ToSortObject } from 'src/common/decorators';
 
-export class QueryAvailableShowtimesReqDto extends QueryReqDto {
+export class QueryAvailableShowtimesReqDto {
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'Sort orders',
+    example: ['startAt:asc'],
+  })
+  @IsOptional()
+  @ToSortObject()
+  sort?: SortFields;
+
+  /******************* */
   @ApiProperty({
     description: 'Filter by movie ID',
     example: '67a1234bcf90123456789def',

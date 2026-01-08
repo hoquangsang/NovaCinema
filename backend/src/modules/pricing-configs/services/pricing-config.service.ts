@@ -10,8 +10,44 @@ import { SeatType, RoomType } from 'src/modules/theaters/types';
 import { PRICING_LIMITS } from '../constants';
 import { PricingConfig, PricingModifiers } from '../schemas';
 import { PricingConfigRepository } from '../repositories';
-import { PricingConfigCriteria as Criteria } from './pricing-config.service.type';
-import { PricingConfigResult as Result } from './pricing-config.service.type';
+
+type SeatTypeModifierCriteria = {
+  seatType: SeatType;
+  deltaPrice: number;
+};
+
+type RoomTypeModifierCriteria = {
+  roomType: RoomType;
+  deltaPrice: number;
+};
+
+type DayOfWeekModifierCriteria = {
+  dayOfWeek: DayOfWeek;
+  deltaPrice: number;
+};
+
+type PricingModifiersCriteria = {
+  seatTypes?: SeatTypeModifierCriteria[];
+  roomTypes?: RoomTypeModifierCriteria[];
+  daysOfWeek?: DayOfWeekModifierCriteria[];
+};
+
+type CreateCriteria = {
+  basePrice: number;
+  modifiers?: PricingModifiersCriteria;
+};
+
+type UpdateCriteria = {
+  basePrice?: number;
+  modifiers?: PricingModifiersCriteria;
+};
+
+type SeatTypePricesCriteria = {
+  roomType: RoomType;
+  effectiveAt: Date;
+};
+
+export type SeatTypePricesResult = Record<SeatType, number>;
 
 @Injectable()
 export class PricingConfigService {
@@ -29,8 +65,8 @@ export class PricingConfigService {
   }
 
   public async getSeatTypePrices(
-    input: Criteria.SeatTypePrices,
-  ): Promise<Result.SeatTypePrices> {
+    input: SeatTypePricesCriteria,
+  ): Promise<SeatTypePricesResult> {
     const { roomType, effectiveAt } = input;
 
     const {
@@ -59,7 +95,7 @@ export class PricingConfigService {
     ) as Record<SeatType, number>;
   }
 
-  public async createPricingConfig(data: Criteria.Create) {
+  public async createPricingConfig(data: CreateCriteria) {
     const existing = await this.findPricingConfig();
     if (existing)
       throw new BadRequestException('Pricing configuration already exists');
@@ -79,7 +115,7 @@ export class PricingConfigService {
     return insertedItem;
   }
 
-  public async updatePricingConfig(data: Criteria.Update) {
+  public async updatePricingConfig(data: UpdateCriteria) {
     if (data.basePrice === undefined && !data.modifiers)
       throw new BadRequestException('Nothing to update');
 
@@ -103,7 +139,7 @@ export class PricingConfigService {
 
   private validatePricingInput(
     basePrice: number,
-    modifiers?: Criteria.PricingModifiers,
+    modifiers?: PricingModifiersCriteria,
   ) {
     this.validateBasePrice(basePrice);
     this.validateModifiers(modifiers);
@@ -118,7 +154,7 @@ export class PricingConfigService {
       );
   }
 
-  private validateModifiers(modifiers?: Criteria.PricingModifiers) {
+  private validateModifiers(modifiers?: PricingModifiersCriteria) {
     if (!modifiers) return;
 
     const { seatTypes, roomTypes, daysOfWeek } = modifiers;
@@ -128,7 +164,7 @@ export class PricingConfigService {
     if (daysOfWeek) this.validateDayOfWeekModifiers(daysOfWeek);
   }
 
-  private validateSeatTypeModifiers(arr: Criteria.SeatTypeModifier[]) {
+  private validateSeatTypeModifiers(arr: SeatTypeModifierCriteria[]) {
     const used = new Set<SeatType>();
 
     for (const { seatType, deltaPrice } of arr) {
@@ -140,7 +176,7 @@ export class PricingConfigService {
     }
   }
 
-  private validateRoomTypeModifiers(arr: Criteria.RoomTypeModifier[]) {
+  private validateRoomTypeModifiers(arr: RoomTypeModifierCriteria[]) {
     const used = new Set<RoomType>();
 
     for (const { roomType, deltaPrice } of arr) {
@@ -152,7 +188,7 @@ export class PricingConfigService {
     }
   }
 
-  private validateDayOfWeekModifiers(arr: Criteria.DayOfWeekModifier[]) {
+  private validateDayOfWeekModifiers(arr: DayOfWeekModifierCriteria[]) {
     const used = new Set<DayOfWeek>();
 
     for (const { dayOfWeek, deltaPrice } of arr) {
@@ -174,7 +210,7 @@ export class PricingConfigService {
 
   private validateTotalPrice(
     basePrice: number,
-    modifiers?: Criteria.PricingModifiers,
+    modifiers?: PricingModifiersCriteria,
   ) {
     const { seatTypes = [], roomTypes = [], daysOfWeek = [] } = modifiers ?? {};
 
@@ -203,7 +239,7 @@ export class PricingConfigService {
   }
 
   private normalizeModifiers(
-    modifiers?: Criteria.PricingModifiers,
+    modifiers?: PricingModifiersCriteria,
   ): PricingModifiers {
     const { seatTypes, roomTypes, daysOfWeek } = modifiers ?? {};
     return {

@@ -84,15 +84,14 @@ export class BookingService {
   ) {
     const selectedSet = this.validateAndBuildSelectedSeatSet(selectedSeats);
 
-    const showtime =
-      await this.showtimeService.findShowtimeDetailById(showtimeId);
+    const showtime = await this.showtimeService.findShowtimeById(showtimeId);
     if (!showtime) throw new NotFoundException('Showtime not found');
 
     const user = await this.userService.findUserById(userId);
     if (!user) throw new NotFoundException('User not found');
 
     const rawSeatMap = await this.roomService.getSeatMapByRoomId(
-      showtime.room._id,
+      showtime.roomId,
     );
 
     //
@@ -106,7 +105,7 @@ export class BookingService {
 
     //
     const seatTypePrices = await this.resolveSeatTypePrices({
-      roomType: showtime.room.roomType,
+      roomType: showtime.roomType,
       startAt: showtime.startAt,
     });
 
@@ -168,10 +167,10 @@ export class BookingService {
 
             // --- Snapshot ---
             username: user.username,
-            movieTitle: showtime.movie.title,
-            theaterName: showtime.theater.theaterName,
-            roomName: showtime.room.roomName,
-            roomType: showtime.room.roomType,
+            movieTitle: showtime.movieTitle,
+            theaterName: showtime.theaterName,
+            roomName: showtime.roomName,
+            roomType: showtime.roomType,
             startAt: showtime.startAt,
           },
         });

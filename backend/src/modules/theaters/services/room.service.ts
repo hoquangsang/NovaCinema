@@ -7,13 +7,13 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { pickSortableFields } from 'src/modules/base/helpers';
+import { SortFields } from 'src/common/types';
+import { pickSortableFields } from 'src/common/helpers';
 import { ROOM_TYPES } from '../constants';
 import { RoomType, SeatType } from '../types';
 import { RoomDocument } from '../schemas';
 import { RoomRepository } from '../repositories';
 import { SeatService } from './seat.service';
-import { RoomCriteria as Criteria } from './room.service.type';
 
 const QUERY_FIELDS = {
   SEARCHABLE: ['roomName'] as const,
@@ -22,6 +22,35 @@ const QUERY_FIELDS = {
   EXACT_MATCH: ['isActive'] as const,
   SORTABLE: ['roomName', 'roomType'] as const,
 } as const;
+
+type FilterCriteria = {
+  roomName?: string;
+  roomType?: RoomType[];
+  isActive?: boolean;
+};
+
+type QueryCriteria = FilterCriteria & {
+  search?: string;
+  sort?: SortFields;
+};
+
+type PaginatedQueryCriteria = QueryCriteria & {
+  page?: number;
+  limit?: number;
+};
+
+type CreateCriteria = {
+  roomName: string;
+  roomType?: RoomType;
+  seatMap: (SeatType | null)[][];
+};
+
+type UpdateCriteria = {
+  roomName?: string;
+  roomType?: RoomType;
+  seatMap?: (SeatType | null)[][];
+  isActive?: boolean;
+};
 
 @Injectable()
 export class RoomService {
@@ -71,10 +100,7 @@ export class RoomService {
     });
   }
 
-  public async findRoomsByTheaterId(
-    theaterId: string,
-    options: Criteria.Query,
-  ) {
+  public async findRoomsByTheaterId(theaterId: string, options: QueryCriteria) {
     const { sort: rawSort, ...rest } = options;
     const filter = this.buildQueryFilterByTheaterId(theaterId, rest);
     const sort = pickSortableFields(rawSort, QUERY_FIELDS.SORTABLE);
@@ -90,7 +116,7 @@ export class RoomService {
 
   public async findRoomsPaginatedByTheaterId(
     theaterId: string,
-    options: Criteria.PaginatedQuery,
+    options: PaginatedQueryCriteria,
   ) {
     const { sort: rawSort, page, limit, ...rest } = options;
     const filter = this.buildQueryFilterByTheaterId(theaterId, rest);
@@ -115,7 +141,7 @@ export class RoomService {
   }
 
   /** */
-  public async createRoom(theaterId: string, data: Criteria.Create) {
+  public async createRoom(theaterId: string, data: CreateCriteria) {
     const { roomName, roomType = ROOM_TYPES._2D, seatMap: seatMapRaw } = data;
 
     //
@@ -146,7 +172,7 @@ export class RoomService {
   }
 
   /** */
-  public async updateRoomById(id: string, update: Criteria.Update) {
+  public async updateRoomById(id: string, update: UpdateCriteria) {
     const { roomName, roomType, seatMap: seatMapRaw, isActive } = update;
 
     const existedRoom = await this.roomRepo.query.findOneById({
@@ -226,7 +252,7 @@ export class RoomService {
   /** */
   private buildQueryFilterByTheaterId(
     theaterId: string,
-    options: Criteria.Query,
+    options: QueryCriteria,
   ) {
     const { search, sort, ...rest } = options;
     const filter: FilterQuery<RoomDocument> = {

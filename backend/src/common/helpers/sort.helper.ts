@@ -1,12 +1,12 @@
-import { SortByInput, SortDirection } from '../services/types/sort.type';
+import { SortBy, SortDirection } from '../types';
 
 export const pickSortableFields = <T extends object>(
   sort: Record<string, SortDirection> | undefined,
   allowedFields?: readonly (keyof T)[],
-): SortByInput<T> | undefined => {
+): SortBy<T> | undefined => {
   if (!sort || !allowedFields) return undefined;
 
-  const result = allowedFields.reduce<SortByInput<T>>((acc, field) => {
+  const result = allowedFields.reduce<SortBy<T>>((acc, field) => {
     const value = sort[field as string];
     if (value) {
       acc[field] = value;

@@ -1,9 +1,10 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
-import { ToBoolean } from 'src/common/decorators';
-import { PaginatedQueryReqDto } from 'src/modules/base/dtos/requests';
+import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { ToBoolean, ToSortObject } from 'src/common/decorators';
+import { SortFields } from 'src/common/types';
 
-export class PaginatedQueryTheatersReqDto extends PaginatedQueryReqDto {
+export class PaginatedQueryTheatersReqDto {
   @ApiPropertyOptional({
     type: String,
     description: 'Regex match: theaterName, address',
@@ -12,6 +13,36 @@ export class PaginatedQueryTheatersReqDto extends PaginatedQueryReqDto {
   @IsString()
   search?: string;
 
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'Sort orders',
+    example: ['theaterName:asc'],
+  })
+  @IsOptional()
+  @ToSortObject()
+  sort?: SortFields;
+
+  @ApiPropertyOptional({
+    type: Number,
+    description: 'Page number for pagination',
+    example: 1,
+  })
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  page?: number = 1;
+
+  @ApiPropertyOptional({
+    type: Number,
+    description: 'Number of items per page',
+    example: 10,
+  })
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  limit?: number = 10;
+
+  /******************* */
   @ApiPropertyOptional({
     type: String,
     description: 'Filter by theater name',

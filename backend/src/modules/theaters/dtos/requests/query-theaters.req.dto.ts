@@ -1,9 +1,9 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsBoolean, IsOptional, IsString } from 'class-validator';
-import { ToBoolean } from 'src/common/decorators';
-import { QueryReqDto } from 'src/modules/base/dtos/requests';
+import { SortFields } from 'src/common/types';
+import { ToBoolean, ToSortObject } from 'src/common/decorators';
 
-export class QueryTheatersReqDto extends QueryReqDto {
+export class QueryTheatersReqDto {
   @ApiPropertyOptional({
     type: String,
     description: 'Regex match: theaterName, address',
@@ -12,6 +12,16 @@ export class QueryTheatersReqDto extends QueryReqDto {
   @IsString()
   search?: string;
 
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'Sort orders',
+    example: ['roomName:asc'],
+  })
+  @IsOptional()
+  @ToSortObject()
+  sort?: SortFields;
+
+  /******************* */
   @ApiPropertyOptional({
     type: String,
     description: 'Filter by theater name',
