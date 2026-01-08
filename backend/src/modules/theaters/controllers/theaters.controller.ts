@@ -32,7 +32,7 @@ import {
 import { TheaterResDto } from '../dtos/responses';
 
 @ApiTags('Theaters')
-@Controller('theaters')
+@Controller()
 export class TheatersController {
   constructor(private readonly theaterService: TheaterService) {}
 
@@ -40,7 +40,7 @@ export class TheatersController {
   @WrapPaginatedResponse({ dto: TheaterResDto })
   @Public()
   @HttpCode(HttpStatus.OK)
-  @Get()
+  @Get('theaters')
   public async paginatedQueryTheaters(
     @Query() query: PaginatedQueryTheatersReqDto,
   ) {
@@ -51,7 +51,7 @@ export class TheatersController {
   @WrapListResponse({ dto: TheaterResDto })
   @Public()
   @HttpCode(HttpStatus.OK)
-  @Get('/list')
+  @Get('theaters/list')
   public async queryTheaters(@Query() query: QueryTheatersReqDto) {
     return this.theaterService.findTheaters(query);
   }
@@ -60,7 +60,7 @@ export class TheatersController {
   @WrapOkResponse({ dto: TheaterResDto })
   @Public()
   @HttpCode(HttpStatus.OK)
-  @Get(':id')
+  @Get('theaters:id')
   public async getById(@Param('id', ParseObjectIdPipe) id: string) {
     const existed = await this.theaterService.findTheaterById(id);
     if (!existed) throw new NotFoundException('Theater not found');
@@ -71,7 +71,7 @@ export class TheatersController {
   @WrapOkResponse({ dto: TheaterResDto, message: 'Created successfully' })
   @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.CREATED)
-  @Post()
+  @Post('theaters')
   public async createTheater(@Body() dto: CreateTheaterReqDto) {
     return this.theaterService.createTheater(dto);
   }
@@ -80,7 +80,7 @@ export class TheatersController {
   @WrapOkResponse({ dto: TheaterResDto, message: 'Updated successfully' })
   @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.OK)
-  @Patch(':id')
+  @Patch('theaters:id')
   public async updateTheater(
     @Param('id', ParseObjectIdPipe) id: string,
     @Body() dto: UpdateTheaterReqDto,
@@ -92,7 +92,7 @@ export class TheatersController {
   @WrapNoContentResponse({ message: 'Deleted successfully' })
   @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Delete(':id')
+  @Delete('theaters:id')
   public async deleteTheater(@Param('id', ParseObjectIdPipe) id: string) {
     await this.theaterService.deleteTheaterById(id);
   }

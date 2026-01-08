@@ -33,7 +33,7 @@ import {
 import { ShowtimeResDto } from '../dtos/responses';
 
 @ApiTags('Showtimes')
-@Controller('showtimes')
+@Controller()
 export class ShowtimesController {
   public constructor(private readonly showtimeService: ShowtimeService) {}
 
@@ -42,7 +42,7 @@ export class ShowtimesController {
   @Public()
   @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.OK)
-  @Get()
+  @Get('showtimes')
   public async getShowtimes(
     @Query() query: PaginatedQueryRangeShowtimesReqDto,
   ) {
@@ -53,7 +53,7 @@ export class ShowtimesController {
   @WrapListResponse({ dto: ShowtimeResDto })
   @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.OK)
-  @Get('/list')
+  @Get('/showtimes/list')
   public async getListShowtimes(@Query() query: QueryRangeShowtimesReqDto) {
     return await this.showtimeService.findShowtimes(query);
   }
@@ -62,7 +62,7 @@ export class ShowtimesController {
   @WrapListResponse({ dto: ShowtimeResDto })
   @Public()
   @HttpCode(HttpStatus.OK)
-  @Get('/availability')
+  @Get('/showtimes/availability')
   public async getAvailableShowtimesByDate(
     @Query() query: QueryAvailableShowtimesReqDto,
   ) {
@@ -73,7 +73,7 @@ export class ShowtimesController {
   @WrapOkResponse({ dto: ShowtimeResDto })
   @Public()
   @HttpCode(HttpStatus.OK)
-  @Get(':id')
+  @Get('showtimes/:id')
   public async getShowtimeById(@Param('id', ParseObjectIdPipe) id: string) {
     const showtime = this.showtimeService.findShowtimeById(id);
     if (!showtime) throw new NotFoundException('Showtime not found');
@@ -84,7 +84,7 @@ export class ShowtimesController {
   @WrapOkResponse({ dto: ShowtimeResDto })
   @HttpCode(HttpStatus.CREATED)
   @RequireRoles(USER_ROLES.ADMIN)
-  @Post('movies/:movieId')
+  @Post('movies/:movieId/showtimes')
   public async createShowtime(
     @Param('movieId', ParseObjectIdPipe) movieId: string,
     @Body() dto: CreateShowtimeReqDto,
@@ -100,7 +100,7 @@ export class ShowtimesController {
   @WrapListResponse({ dto: ShowtimeResDto })
   @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.CREATED)
-  @Post('movies/:movieId/bulk')
+  @Post('movies/:movieId/showtimes/bulk')
   public async createBulkShowtimes(
     @Param('movieId', ParseObjectIdPipe) movieId: string,
     @Body() dto: CreateBulkShowtimesReqDto,
@@ -115,7 +115,7 @@ export class ShowtimesController {
   @WrapNoContentResponse()
   @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Delete(':id')
+  @Delete('showtimes/:id')
   public async deleteShowtime(@Param('id', ParseObjectIdPipe) id: string) {
     await this.showtimeService.deleteShowtimeById(id);
   }
@@ -124,7 +124,7 @@ export class ShowtimesController {
   @WrapNoContentResponse()
   @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Delete()
+  @Delete('showtimes')
   public async deleteShowtimes(@Body() dto: DeleteShowtimeReqDto) {
     return await this.showtimeService.deleteShowtimes(dto);
   }
