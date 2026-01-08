@@ -73,7 +73,7 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
           <p className="mb-4 md:mb-0 text-white text-base">&copy; 2025 Nova Cinema. All rights reserved.</p>
           <nav className="flex gap-6">
-            <a href="#" className="hover:text-yellow-400 text-white text-base transition-colors">Privacy policy</a>
+            <Link to="/privacy-policy" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="hover:text-yellow-400 text-white text-base transition-colors">Privacy policy</Link>
             <a href="#" className="hover:text-yellow-400 text-white text-base transition-colors">Movie news</a>
           </nav>
         </div>
