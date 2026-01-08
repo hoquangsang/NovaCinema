@@ -20,10 +20,12 @@ import {
   roundUp,
   pickMovieShowWindow,
 } from './showtime-seeder.helper';
+import { RoomType } from 'src/modules/theaters/types';
 
 interface RoomSlot {
   roomId: Types.ObjectId;
-  roomType: string;
+  roomName: string;
+  roomType: RoomType;
   startAt: Date;
   endAt: Date;
   used: boolean;
@@ -103,8 +105,8 @@ export class ShowtimeSeederService {
     rooms: RoomDocument[],
     movies: MovieDocument[],
     slots: RoomSlot[],
-  ): ShowtimeDocument[] {
-    const showtimes: ShowtimeDocument[] = [];
+  ): Showtime[] {
+    const showtimes: Showtime[] = [];
     const usedMovieUnique = new Set<string>();
     const shuffledMovies = [...movies];
     shuffle(shuffledMovies);
@@ -158,8 +160,13 @@ export class ShowtimeSeederService {
         showtimes.push(
           new this.showtimeModel({
             movieId: movie._id,
+            movieTitle: movie.title,
+            moviePosterUrl: movie.posterUrl,
+            movieTrailerUrl: movie.trailerUrl,
             theaterId: theater._id,
+            theaterName: theater.theaterName,
             roomId: slot.roomId,
+            roomName: slot.roomName,
             roomType: slot.roomType,
             startAt: slot.startAt,
             endAt: slot.endAt,
@@ -220,6 +227,7 @@ export class ShowtimeSeederService {
 
           slots.push({
             roomId: room._id,
+            roomName: room.roomName,
             roomType: room.roomType,
             startAt,
             endAt,
