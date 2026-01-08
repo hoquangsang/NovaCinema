@@ -3,7 +3,7 @@ import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
 import { ToArray, ToBoolean } from 'src/common/decorators';
 import { PaginatedQueryReqDto } from 'src/modules/base/dtos/requests';
 import { USER_ROLE_VALUES, USER_ROLES } from '../../constants';
-import { UserRoleType } from '../../types';
+import { UserRole } from '../../types';
 
 export class PaginatedQueryUsersReqDto extends PaginatedQueryReqDto {
   @ApiPropertyOptional({
@@ -55,7 +55,7 @@ export class PaginatedQueryUsersReqDto extends PaginatedQueryReqDto {
   @IsOptional()
   @IsEnum(USER_ROLE_VALUES, { each: true })
   @ToArray()
-  roles?: UserRoleType[];
+  roles?: UserRole[];
 
   @ApiPropertyOptional({
     type: Boolean,

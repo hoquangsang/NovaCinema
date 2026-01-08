@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 import { USER_ROLES } from '../../constants';
-import { UserRoleType } from '../../types';
+import { UserRole } from '../../types';
 
 export class UserResDto {
   @ApiProperty({
@@ -66,7 +66,7 @@ export class UserResDto {
     example: [USER_ROLES.USER],
   })
   @Expose()
-  roles!: UserRoleType[];
+  roles!: UserRole[];
 
   @ApiPropertyOptional({
     type: Boolean,

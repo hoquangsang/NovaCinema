@@ -9,7 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { refreshTokenOptions } from 'src/config';
 import { OtpService } from 'src/modules/notifications';
 import { UserService } from 'src/modules/users';
-import { UserRoleType } from 'src/modules/users/types';
+import { UserRole } from 'src/modules/users/types';
 import { JwtPayload } from '../types';
 
 @Injectable()
@@ -56,7 +56,7 @@ export class AuthService {
   private signAccessToken(user: {
     _id: string;
     email: string;
-    roles: UserRoleType[];
+    roles: UserRole[];
   }) {
     const payload: JwtPayload = {
       sub: user._id,

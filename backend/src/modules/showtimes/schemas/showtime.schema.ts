@@ -9,6 +9,7 @@ export type ShowtimeDocument = HydratedDocument<Showtime>;
 
 @Schema({ timestamps: true })
 export class Showtime {
+  // movie
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     ref: Movie.name,
@@ -18,6 +19,12 @@ export class Showtime {
   movieId!: Types.ObjectId;
 
   @Prop({
+    type: String,
+  })
+  movieTitle?: string;
+
+  // theater
+  @Prop({
     type: MongooseSchema.Types.ObjectId,
     ref: Theater.name,
     required: true,
@@ -25,6 +32,12 @@ export class Showtime {
   })
   theaterId!: Types.ObjectId;
 
+  @Prop({
+    type: String,
+  })
+  theaterName?: string;
+
+  // room
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     ref: Room.name,
@@ -35,12 +48,17 @@ export class Showtime {
 
   @Prop({
     type: String,
+  })
+  roomName?: string;
+
+  @Prop({
+    type: String,
     enum: ROOM_TYPE_VALUES,
     default: ROOM_TYPES._2D,
     required: true,
     immutable: true,
   })
-  roomType!: RoomType; // snapshot, not 3NF, improve later
+  roomType!: RoomType;
 
   @Prop({ required: true })
   startAt!: Date;

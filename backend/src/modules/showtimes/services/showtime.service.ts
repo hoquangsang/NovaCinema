@@ -7,20 +7,14 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { pickSortableFields } from 'src/modules/base/helpers';
+import { SortFields } from 'src/common/types';
 import { DateUtil } from 'src/common/utils';
+import { pickSortableFields } from 'src/common/helpers';
 import { MovieService } from 'src/modules/movies';
 import { RoomService, TheaterService } from 'src/modules/theaters';
+import { RoomType } from 'src/modules/theaters/types';
 import { ShowtimeDocument } from '../schemas';
 import { ShowtimeRepository } from '../repositories/showtime.repository';
-import {
-  MovieLike,
-  RoomLike,
-  ShowtimeLike,
-  ShowtimeRange,
-  ShowtimeCriteria as Criteria,
-} from './showtime.service.type';
-import { RoomType } from 'src/modules/theaters/types';
 
 const GAP_MIN = 10;
 const ROUND_STEP_MIN = 5;
@@ -31,6 +25,105 @@ const QUERY_FIELDS = {
   EXACT_MATCH: ['isActive', 'movieId', 'theaterId', 'roomId'],
   SORTABLE: ['startAt'],
 } as const;
+
+interface MovieLike {
+  _id: string;
+  duration: number;
+  releaseDate: Date;
+  endDate?: Date;
+}
+
+interface RoomLike {
+  _id: string;
+  theaterId: string;
+  roomName: string;
+  roomType: RoomType;
+}
+
+interface ShowtimeLike {
+  _id: string;
+  movieId: string;
+  theaterId: string;
+  roomId: string;
+  roomType: RoomType;
+  startAt: Date;
+  endAt: Date;
+  isActive?: Boolean;
+}
+
+type ShowtimeRange = {
+  movieId: string;
+  roomId: string;
+  theaterId: string;
+  roomType: RoomType;
+  startAt: Date;
+  endAt: Date;
+};
+
+type FilterCriteria = {
+  movieId?: string;
+  theaterId?: string;
+  roomId?: string;
+  isActive?: boolean;
+};
+
+type QueryCriteria = FilterCriteria & {
+  search?: string;
+  sort?: SortFields;
+};
+
+type QueryRangeCriteria = QueryCriteria & {
+  from?: Date;
+  to?: Date;
+};
+
+type QueryByDateCriteria = QueryCriteria & {
+  date: Date;
+};
+
+type QueryAvailableCriteria = QueryCriteria & {
+  date?: Date;
+  movieId: string;
+};
+
+type PaginatedQueryCriteria = QueryCriteria & {
+  page?: number;
+  limit?: number;
+};
+
+type PaginatedQueryRangeCriteria = PaginatedQueryCriteria & {
+  from?: Date;
+  to?: Date;
+};
+
+/** */
+type CreateCriteria = {
+  movieId: string;
+  roomId: string;
+  startAt: Date;
+};
+
+type RoomScheduleCriteria = {
+  roomId: string;
+  startAts: Date[];
+};
+
+type CreateBulkCriteria = {
+  movieId: string;
+  schedules: RoomScheduleCriteria[];
+};
+
+/** */
+type UpdateCriteria = {
+  movieId: string;
+  roomId: string;
+  startAt: Date;
+};
+
+/** */
+type DeleteBulkCriteria = {
+  ids: string[];
+};
 
 @Injectable()
 export class ShowtimeService {
@@ -72,7 +165,7 @@ export class ShowtimeService {
     };
   }
 
-  public async findShowtimes(options: Criteria.QueryRange) {
+  public async findShowtimes(options: QueryRangeCriteria) {
     const { sort: rawSort = { startAt: 'asc' }, ...rest } = options;
     const filter = this.buildShowtimeFilter(rest);
     const sort = pickSortableFields(rawSort, QUERY_FIELDS.SORTABLE);
@@ -83,7 +176,7 @@ export class ShowtimeService {
     });
   }
 
-  public async findAvailableShowtimes(options: Criteria.QueryAvailable) {
+  public async findAvailableShowtimes(options: QueryAvailableCriteria) {
     const now = DateUtil.now();
     const { date = now, ...rest } = options;
 
@@ -101,7 +194,7 @@ export class ShowtimeService {
     });
   }
 
-  public async findShowtimesPaginated(options: Criteria.PaginatedQueryRange) {
+  public async findShowtimesPaginated(options: PaginatedQueryRangeCriteria) {
     const {
       page,
       limit,
@@ -127,7 +220,7 @@ export class ShowtimeService {
   }
 
   /******************************** */
-  public async createSingleShowtime(data: Criteria.Create) {
+  public async createSingleShowtime(data: CreateCriteria) {
     const { movieId, roomId, startAt } = data;
     const schedule = {
       roomId: roomId,
@@ -145,7 +238,7 @@ export class ShowtimeService {
     return showtimes[0];
   }
 
-  public async createBulkShowtimes(data: Criteria.CreateBulk) {
+  public async createBulkShowtimes(data: CreateBulkCriteria) {
     const { movieId, schedules } = data;
     const movie = await this.getValidatedMovie(movieId);
     const rooms = await this.getValidatedRooms(schedules);
@@ -185,7 +278,7 @@ export class ShowtimeService {
     return true;
   }
 
-  public async deleteShowtimes(options: Criteria.DeleteBulk) {
+  public async deleteShowtimes(options: DeleteBulkCriteria) {
     const { ids } = options;
 
     const existing = await this.showtimeRepo.query.findMany({
@@ -214,21 +307,10 @@ export class ShowtimeService {
   }
 
   /******************************** */
-  private buildShowtimeFilter(options: Criteria.QueryRange) {
-    const {
-      search,
-      // movieId,
-      // theaterId,
-      // roomId,
-      from: startAt,
-      to: endAt,
-      ...rest
-    } = options;
+  private buildShowtimeFilter(options: QueryRangeCriteria) {
+    const { search, from: startAt, to: endAt, ...rest } = options;
 
     const filter: FilterQuery<ShowtimeDocument> = {};
-    // if (movieId) filter.movieId = new Types.ObjectId(movieId);
-    // if (theaterId) filter.theaterId = new Types.ObjectId(theaterId);
-    // if (roomId) filter.roomId = new Types.ObjectId(roomId);
 
     // search fields
     if (search && QUERY_FIELDS.SEARCHABLE.length) {
@@ -292,7 +374,7 @@ export class ShowtimeService {
   }
 
   private async getValidatedRooms(
-    schedules: Criteria.RoomSchedule[],
+    schedules: RoomScheduleCriteria[],
   ): Promise<RoomLike[]> {
     if (!Array.isArray(schedules) || !schedules?.length) {
       throw new BadRequestException('Room schedules are required');
@@ -357,7 +439,7 @@ export class ShowtimeService {
   private buildShowtimeSchedules(
     movie: MovieLike,
     rooms: RoomLike[],
-    schedules: Criteria.RoomSchedule[],
+    schedules: RoomScheduleCriteria[],
   ): ShowtimeRange[] {
     const roomMap = new Map(rooms.map((r) => [r._id, r]));
     const result: ShowtimeRange[] = [];

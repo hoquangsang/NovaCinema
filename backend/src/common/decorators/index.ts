@@ -8,7 +8,12 @@ export {
 
 export { CurrentUser } from './current-user.decorator';
 
-export { ToArray, ToBoolean, ToDateTime } from './transform.decorator';
+export {
+  ToArray,
+  ToBoolean,
+  ToDateTime,
+  ToSortObject,
+} from './transform.decorator';
 
 export { Public } from './public.decorator';
 

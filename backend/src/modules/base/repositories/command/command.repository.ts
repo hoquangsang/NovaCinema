@@ -6,7 +6,7 @@ import {
   FilterQuery,
 } from 'mongoose';
 import { FlattenDocument, LeanDocument } from '../query';
-import { mapObjectIdsToStrings } from '../../mappers';
+import { mapObjectIdsToStrings } from '../../helpers';
 import {
   CreateOneResult,
   CreateManyResult,

@@ -48,3 +48,53 @@ export function ToArray() {
     }),
   );
 }
+
+/**
+ * Transform sort query:
+ *  - field:asc
+ *  - field:desc
+ *  - field:1
+ *  - field:-1
+ *  - multiple via array or comma
+ *
+ * Output:
+ *  { field: 'asc' | 'desc' }
+ */
+type SortDirection = 'asc' | 'desc';
+
+const normalizeSortOrder = (v: string | number): SortDirection | undefined => {
+  if (v === 1 || v === '1') return 'asc';
+  if (v === -1 || v === '-1') return 'desc';
+
+  const s = String(v).toLowerCase();
+  if (s === 'asc' || s === 'desc') return s;
+};
+
+export function ToSortObject() {
+  return applyDecorators(
+    Transform(({ value }) => {
+      if (!value) return undefined;
+
+      const rawParts = Array.isArray(value) ? value : [value];
+
+      const flattened = rawParts
+        .flatMap((v) => String(v).split(','))
+        .map((v) => v.trim())
+        .filter(Boolean);
+
+      const entries: [string, SortDirection][] = [];
+
+      for (const part of flattened) {
+        const [key, raw] = part.split(':').map((s) => s.trim());
+        if (!key || !raw) continue;
+
+        const order = normalizeSortOrder(raw);
+        if (!order) continue;
+
+        entries.push([key, order]);
+      }
+
+      return entries.length ? Object.fromEntries(entries) : undefined;
+    }),
+  );
+}
