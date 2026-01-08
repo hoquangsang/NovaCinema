@@ -1,3 +1,4 @@
-export { jwtAccessConfig } from "./jwt.access.config";
-export { refreshTokenOptions } from "./jwt.refresh.config";
-export { swaggerConfig } from "./swagger.config";
+export { jwtAccessConfig, refreshTokenOptions } from './jwt.config';
+export { swaggerConfig } from './swagger.config';
+export { mailConfig } from './mail.config';
+export { mongooseConfig } from './mongoose.config';

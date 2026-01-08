@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { X, Loader2, AlertCircle, Plus, Trash2, Calendar, Clock } from "lucide-react";
-import { showtimeApi, type CreateRepeatedShowtimesDto } from "../../../api/endpoints/showtime.api";
+import { showtimeApi, type CreateBulkShowtimesDto } from "../../../api/endpoints/showtime.api";
 import type { Movie } from "../../../api/endpoints/movie.api";
 import type { Theater, Room } from "../../../api/endpoints/theater.api";
 import { SearchableMovieSelect } from "../../../components/common/SearchableMovieSelect";
@@ -25,7 +25,7 @@ export function BulkShowtimeFormModal({
   fetchRoomsByTheaterId,
 }: BulkShowtimeFormModalProps) {
   const toast = useToast();
-  
+
   // Form state
   const [selectedMovieId, setSelectedMovieId] = useState("");
   const [selectedTheaterId, setSelectedTheaterId] = useState("");
@@ -96,7 +96,7 @@ export function BulkShowtimeFormModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate inputs
     if (!selectedMovieId) {
       setValidationError("Vui lòng chọn phim");
@@ -121,33 +121,41 @@ export function BulkShowtimeFormModal({
     setValidationError(null);
 
     try {
-      const data: CreateRepeatedShowtimesDto = {
+      // Build schedules array: for each room, create all combinations of dates and times
+      const schedules = selectedRoomIds.map(roomId => ({
+        roomId,
+        startAts: validDates.flatMap(date =>
+          validTimes.map(time => {
+            // Create local datetime and convert to ISO
+            const localDateTime = new Date(`${date}T${time}:00`);
+            return localDateTime.toISOString();
+          })
+        )
+      }));
+
+      const data: CreateBulkShowtimesDto = {
         movieId: selectedMovieId,
-        roomIds: selectedRoomIds,
-        repeatDates: validDates,
-        startTimes: validTimes,
+        schedules
       };
 
-      // Validate first
-      const validation = await showtimeApi.validateRepeatedShowtimes(data);
-      if (!validation.valid) {
-        setValidationError(validation.message || validation.errors?.join(", ") || "Validation failed");
-        setSubmitting(false);
-        return;
-      }
-
-      // Create repeated showtimes
-      console.log("Creating repeated showtimes:", data);
-      const result = await showtimeApi.createRepeatedShowtimes(data);
+      // Create bulk showtimes
+      console.log("Creating bulk showtimes:", data);
+      const result = await showtimeApi.createBulkShowtimes(data);
       console.log("API Response:", result);
       const count = Array.isArray(result) ? result.length : totalShowtimes;
       toast.push(`Tạo thành công ${count} suất chiếu!`, "success");
       onSuccess();
       onClose();
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Có lỗi xảy ra";
-      setValidationError(message);
-      toast.push(message, "error");
+    } catch (err: any) {
+      console.error('Bulk showtime creation error:', err);
+      let errorMsg = 'Có lỗi xảy ra';
+      if (err?.message) errorMsg = err.message;
+      if (err?.errors && Array.isArray(err.errors) && err.errors.length > 0) {
+        const details = err.errors.map((e: any) => typeof e === 'string' ? e : e?.message || JSON.stringify(e)).join(', ');
+        errorMsg += `. Chi tiết: ${details}`;
+      }
+      setValidationError(errorMsg);
+      toast.push(errorMsg, "error");
     } finally {
       setSubmitting(false);
     }

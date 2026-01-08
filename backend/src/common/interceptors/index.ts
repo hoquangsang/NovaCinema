@@ -1,2 +1,2 @@
-export { LoggingInterceptor } from "./logging.interceptor";
-export { ResponseInterceptor } from "./response.interceptor";
+export { LoggingInterceptor } from './logging.interceptor';
+export { ResponseInterceptor } from './response.interceptor';
