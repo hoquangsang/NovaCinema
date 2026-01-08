@@ -6,12 +6,12 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { ToArray, ToBoolean } from 'src/common/decorators';
-import { QueryReqDto } from 'src/modules/base/dtos/requests';
+import { ToArray, ToBoolean, ToSortObject } from 'src/common/decorators';
+import { SortFields } from 'src/common/types';
 import { ROOM_TYPE_VALUES, ROOM_TYPES } from 'src/modules/theaters/constants';
 import { RoomType } from 'src/modules/theaters/types';
 
-export class QueryRoomsReqDto extends QueryReqDto {
+export class QueryRoomsReqDto {
   @ApiPropertyOptional({
     type: String,
     description: 'Regex match: roomName',
@@ -20,6 +20,16 @@ export class QueryRoomsReqDto extends QueryReqDto {
   @IsString()
   search?: string;
 
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'Sort orders',
+    example: ['roomName:asc'],
+  })
+  @IsOptional()
+  @ToSortObject()
+  sort?: SortFields;
+
+  /******************* */
   @ApiPropertyOptional({ type: String, description: 'Filter by room name' })
   @IsOptional()
   @IsString()
