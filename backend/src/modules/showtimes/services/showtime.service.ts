@@ -15,6 +15,7 @@ import { RoomService, TheaterService } from 'src/modules/theaters';
 import { RoomType } from 'src/modules/theaters/types';
 import { ShowtimeDocument } from '../schemas';
 import { ShowtimeRepository } from '../repositories';
+import { raw } from '@nestjs/mongoose';
 
 const GAP_MIN = 10;
 const ROUND_STEP_MIN = 5;
@@ -29,8 +30,6 @@ const QUERY_FIELDS = {
 interface MovieLike {
   _id: string;
   title: string;
-  posterUrl?: string;
-  trailerUrl?: string;
   duration: number;
   releaseDate: Date;
   endDate?: Date;
@@ -51,8 +50,6 @@ interface TheaterLike {
 interface ShowtimeCandidate {
   movieId: string;
   movieTitle?: string;
-  moviePosterUrl?: string;
-  movieTrailerUrl?: string;
   roomId: string;
   roomName?: string;
   theaterId: string;
@@ -134,7 +131,9 @@ export class ShowtimeService {
     private readonly roomService: RoomService,
     private readonly theaterService: TheaterService,
     private readonly movieService: MovieService,
-  ) {}
+  ) {
+    //
+  }
 
   /******************************** */
   public async findShowtimeById(id: string) {
@@ -153,20 +152,11 @@ export class ShowtimeService {
   }
 
   public async findAvailableShowtimes(options: QueryAvailableCriteria) {
-    const now = DateUtil.now();
-    const { date = now, ...rest } = options;
-
-    const startDay = DateUtil.startOfDay(date);
-    const endDay = DateUtil.endOfDay(date);
-
-    if (endDay < now) {
-      return [];
-    }
-
+    const { date = DateUtil.now(), ...rest } = options;
     return this.findShowtimes({
       ...rest,
-      from: DateUtil.max(now, startDay),
-      to: endDay,
+      from: date,
+      to: date,
     });
   }
 
@@ -290,7 +280,7 @@ export class ShowtimeService {
 
   /******************************** */
   private buildShowtimeFilter(options: QueryRangeCriteria) {
-    const { search, from: startAt, to: endAt, ...rest } = options;
+    const { search, from: rawStart, to: rawEnd, ...rest } = options;
 
     const filter: FilterQuery<ShowtimeDocument> = {};
 
@@ -320,6 +310,9 @@ export class ShowtimeService {
         filter[f] = rest[f];
       }
     });
+
+    const startAt = rawStart ? DateUtil.startOfDay(rawStart) : undefined;
+    const endAt = rawEnd ? DateUtil.endOfDay(rawEnd) : undefined;
 
     // datetime window
     if (startAt || endAt) {
@@ -429,12 +422,7 @@ export class ShowtimeService {
     rooms: RoomLike[],
     schedules: RoomScheduleCriteria[],
   ): ShowtimeCandidate[] {
-    const {
-      _id: movieId,
-      title: movieTitle,
-      posterUrl: moviePosterUrl,
-      trailerUrl: movieTrailerUrl,
-    } = movie;
+    const { _id: movieId, title: movieTitle } = movie;
     const { _id: theaterId, theaterName } = theater;
 
     const roomMap = new Map(rooms.map((r) => [r._id, r]));
@@ -495,8 +483,6 @@ export class ShowtimeService {
         result.push({
           movieId: movieId,
           movieTitle: movieTitle,
-          moviePosterUrl: moviePosterUrl,
-          movieTrailerUrl: movieTrailerUrl,
           theaterId: theaterId,
           theaterName: theaterName,
           roomId: roomId,

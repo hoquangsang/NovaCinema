@@ -29,22 +29,6 @@ export class ShowtimeResDto {
   @Expose()
   movieTitle?: string;
 
-  @ApiPropertyOptional({
-    type: String,
-    description: 'Movie poster URL',
-    example: 'https://example.com/poster.jpg',
-  })
-  @Expose()
-  moviePosterUrl?: string;
-
-  @ApiPropertyOptional({
-    type: String,
-    description: 'Movie trailer URL',
-    example: 'https://example.com/trailer.jpg',
-  })
-  @Expose()
-  movieTrailerUrl?: string;
-
   // theater
   @ApiProperty({
     type: String,
