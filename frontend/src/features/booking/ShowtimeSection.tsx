@@ -41,12 +41,7 @@ export const ShowtimeSection: React.FC<ShowtimeSectionProps> = ({ movieId }) => 
         }, 100);
     };
 
-    const handleBookingCreate = (bookingId: string) => {
-        // Navigate to payment page or show success message
-        alert(`Booking created! ID: ${bookingId}\n\nChức năng thanh toán đang được phát triển...`);
-        // TODO: Navigate to payment page
-        // navigate(`/payment/${bookingId}`);
-    };
+
 
     // Show login prompt if not authenticated
     if (!isAuthenticated) {
@@ -113,7 +108,7 @@ export const ShowtimeSection: React.FC<ShowtimeSectionProps> = ({ movieId }) => 
             {/* Seat Selection (Expandable) */}
             {selectedShowtime && (
                 <div id="seat-selection" className="animate-fadeIn">
-                    <SeatSelection showtime={selectedShowtime} onBookingCreate={handleBookingCreate} />
+                    <SeatSelection showtime={selectedShowtime} />
                 </div>
             )}
         </div>

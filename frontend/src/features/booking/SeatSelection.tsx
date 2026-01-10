@@ -7,12 +7,10 @@ import BookingSummary from './BookingSummary';
 
 interface SeatSelectionProps {
     showtime: Showtime;
-    onBookingCreate: (bookingId: string) => void;
 }
 
 export const SeatSelection: React.FC<SeatSelectionProps> = ({
     showtime,
-    onBookingCreate,
 }) => {
     const [availability, setAvailability] = useState<BookingAvailability | null>(null);
     const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
@@ -91,13 +89,26 @@ export const SeatSelection: React.FC<SeatSelectionProps> = ({
 
         try {
             setIsCreatingBooking(true);
+
+            // Create booking
             const booking = await bookingApi.createBooking(showtime._id, {
                 selectedSeats,
             });
-            onBookingCreate(booking._id);
-        } catch (error) {
+
+            console.log('Booking created:', booking);
+
+            // Show success message
+            alert(`Đặt vé thành công!\n\nMã booking: ${booking._id}\nTổng tiền: ${booking.finalAmount.toLocaleString('vi-VN')} VNĐ\nTrạng thái: ${booking.status}`);
+
+            // Refresh availability to show booked seats
+            const data = await bookingApi.getAvailability(showtime._id);
+            setAvailability(data);
+            setSelectedSeats([]);
+
+        } catch (error: any) {
             console.error('Failed to create booking:', error);
-            alert('Không thể tạo booking. Vui lòng thử lại!');
+            const errorMsg = error?.message || 'Không thể tạo booking. Vui lòng thử lại!';
+            alert(errorMsg);
         } finally {
             setIsCreatingBooking(false);
         }
