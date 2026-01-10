@@ -8,12 +8,13 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { SortFields } from 'src/common/types';
 import { DateUtil, HashUtil } from 'src/common/utils';
-import { pickSortableFields } from 'src/modules/base/helpers';
+import { pickSortableFields } from 'src/common/helpers';
 import { USER_ROLES } from '../constants';
 import { UserDocument } from '../schemas';
 import { UserRepository } from '../repositories';
-import { UserCriteria as Criteria } from './user.service.type';
+import { UserRole } from '../types';
 
 const QUERY_FIELDS = {
   SEARCHABLE: ['username', 'fullName', 'email'],
@@ -22,6 +23,41 @@ const QUERY_FIELDS = {
   EXACT_MATCH: ['isActive', 'phoneNumber'],
   SORTABLE: ['username', 'email', 'fullName', 'createdAt', 'lastLoginAt'],
 } as const;
+
+type Filter = {
+  email?: string;
+  phoneNumber?: string;
+  username?: string;
+  fullName?: string;
+  roles?: UserRole[];
+  isActive?: boolean;
+};
+
+type Query = Filter & {
+  search?: string;
+  sort?: SortFields;
+};
+
+type PaginatedQuery = Query & {
+  page?: number;
+  limit?: number;
+};
+
+type Create = {
+  email: string;
+  password: string;
+  username?: string;
+  fullName?: string;
+  phoneNumber?: string;
+  dateOfBirth?: Date;
+};
+
+type Update = {
+  username?: string;
+  fullName?: string;
+  phoneNumber?: string;
+  dateOfBirth?: Date;
+};
 
 @Injectable()
 export class UserService {
@@ -66,7 +102,7 @@ export class UserService {
     });
   }
 
-  public async findUsersPaginated(options: Criteria.PaginatedQuery) {
+  public async findUsersPaginated(options: PaginatedQuery) {
     const { search, page, limit, sort, ...rest } = options;
     const filter: FilterQuery<UserDocument> = {};
 
@@ -113,14 +149,7 @@ export class UserService {
   }
 
   /** */
-  public async registerUser(data: {
-    email: string;
-    password: string;
-    username?: string;
-    fullName?: string;
-    phoneNumber?: string;
-    dateOfBirth?: Date;
-  }) {
+  public async registerUser(data: Create) {
     const {
       email,
       password,
@@ -159,7 +188,7 @@ export class UserService {
   }
 
   /** */
-  public async updateUserInfoById(id: string, update: Criteria.UpdateInfo) {
+  public async updateUserInfoById(id: string, update: Update) {
     const { modifiedItem: updatedUser } =
       await this.userRepo.command.updateOneById({
         id,

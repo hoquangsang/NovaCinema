@@ -6,11 +6,11 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { pickSortableFields } from 'src/modules/base/helpers';
-import { TheaterRepository } from '../repositories/theater.repository';
-import { TheaterDocument } from '../schemas/theater.schema';
+import { SortFields } from 'src/common/types';
+import { pickSortableFields } from 'src/common/helpers';
+import { TheaterRepository } from '../repositories/';
+import { TheaterDocument } from '../schemas';
 import { RoomService } from './room.service';
-import { TheaterCriteria as Criteria } from './theater.service.type';
 
 const QUERY_FIELDS = {
   SEARCHABLE: ['theaterName', 'address'] as const,
@@ -19,6 +19,32 @@ const QUERY_FIELDS = {
   EXACT_MATCH: ['isActive'] as const,
   SORTABLE: ['theaterName', 'address', 'hotline'] as const,
 } as const;
+
+type FilterCriteria = {
+  theaterName?: string;
+  address?: string;
+  hotline?: string;
+  isActive?: boolean;
+};
+
+type QueryCriteria = FilterCriteria & {
+  search?: string;
+  sort?: SortFields;
+};
+
+type PaginatedQueryCriteria = QueryCriteria & {
+  page?: number;
+  limit?: number;
+};
+
+type CreateCriteria = {
+  theaterName: string;
+  address?: string;
+  hotline?: string;
+  isActive?: boolean;
+};
+
+type UpdateCriteria = Partial<CreateCriteria>;
 
 @Injectable()
 export class TheaterService {
@@ -40,7 +66,7 @@ export class TheaterService {
   }
 
   /** */
-  public async findTheaters(options: Criteria.Query) {
+  public async findTheaters(options: QueryCriteria) {
     const { sort: rawSort, ...rest } = options;
     const filter = this.buildQueryFilter(rest);
     const sort = pickSortableFields(rawSort, QUERY_FIELDS.SORTABLE);
@@ -64,7 +90,7 @@ export class TheaterService {
   }
 
   /** */
-  public async findTheatersPaginated(options: Criteria.PaginatedQuery) {
+  public async findTheatersPaginated(options: PaginatedQueryCriteria) {
     const { page, limit, sort: rawSort, ...rest } = options;
     const filter = this.buildQueryFilter(rest);
     const sort = pickSortableFields(rawSort, QUERY_FIELDS.SORTABLE);
@@ -110,14 +136,7 @@ export class TheaterService {
   }
 
   /** */
-  public async updateTheaterById(
-    id: string,
-    update: {
-      theaterName?: string;
-      address?: string;
-      hotline?: string;
-    },
-  ) {
+  public async updateTheaterById(id: string, update: UpdateCriteria) {
     const { modifiedItem: updatedTheater } =
       await this.theaterRepo.command.updateOneById({
         id,
@@ -149,7 +168,7 @@ export class TheaterService {
   }
 
   /** */
-  private buildQueryFilter(options: Criteria.Query) {
+  private buildQueryFilter(options: QueryCriteria) {
     const { search, sort: rawSort, ...rest } = options;
     const filter: FilterQuery<TheaterDocument> = {};
 

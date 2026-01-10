@@ -30,14 +30,14 @@ import {
 import { UserResDto } from '../dtos/responses';
 
 @ApiTags('Users')
-@Controller('users')
+@Controller()
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @ApiOperation({ description: 'Get me' })
   @WrapOkResponse({ dto: UserResDto })
   @HttpCode(HttpStatus.OK)
-  @Get('me')
+  @Get('users/me')
   public async getMe(@CurrentUser() user: JwtPayload) {
     const existed = await this.userService.findUserById(user.sub);
     if (!existed) throw new NotFoundException('User not found');
@@ -47,7 +47,7 @@ export class UserController {
   @ApiOperation({ description: 'Update me' })
   @WrapOkResponse({ dto: UserResDto })
   @HttpCode(HttpStatus.OK)
-  @Patch('me')
+  @Patch('users/me')
   public async updateMe(
     @CurrentUser() user: JwtPayload,
     @Body() dto: UpdateProfileReqDto,
@@ -58,7 +58,7 @@ export class UserController {
   @ApiOperation({ description: 'Change password' })
   @WrapOkResponse({ dto: UserResDto })
   @HttpCode(HttpStatus.OK)
-  @Patch('/change-password')
+  @Patch('users/change-password')
   public async changePassword(
     @CurrentUser() user: JwtPayload,
     @Body() dto: ChangePasswordReqDto,
@@ -74,7 +74,7 @@ export class UserController {
   @WrapPaginatedResponse({ dto: UserResDto })
   @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.OK)
-  @Get()
+  @Get('users')
   public async getUsers(@Query() query: PaginatedQueryUsersReqDto) {
     return await this.userService.findUsersPaginated(query);
   }
@@ -83,7 +83,7 @@ export class UserController {
   @WrapOkResponse({ dto: UserResDto, message: 'Activated successful' })
   @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.OK)
-  @Patch(':id/activate')
+  @Patch('users:id/activate')
   public async activateUser(@Param('id', ParseObjectIdPipe) id: string) {
     return await this.userService.activateUserById(id);
   }
@@ -92,7 +92,7 @@ export class UserController {
   @WrapOkResponse({ dto: UserResDto, message: 'Deactivated successful' })
   @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.OK)
-  @Patch(':id/deactivate')
+  @Patch('users:id/deactivate')
   public async deactivateUser(@Param('id', ParseObjectIdPipe) id: string) {
     return await this.userService.deactivateUserById(id);
   }
@@ -101,7 +101,7 @@ export class UserController {
   @WrapNoContentResponse({ message: 'Deleted successfully' })
   @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Delete(':id')
+  @Delete('users:id')
   public async deleteUser(@Param('id', ParseObjectIdPipe) id: string) {
     return await this.userService.deleteUserById(id);
   }

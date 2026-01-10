@@ -5,7 +5,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { UserRoleType } from 'src/modules/users/types';
+import { UserRole } from 'src/modules/users/types';
 import { METADATA_KEYS } from '../constants';
 
 @Injectable()
@@ -19,7 +19,7 @@ export class RolesGuard implements CanActivate {
     );
     if (isPublic) return true;
 
-    const roles = this.reflector.getAllAndOverride<UserRoleType[]>(
+    const roles = this.reflector.getAllAndOverride<UserRole[]>(
       METADATA_KEYS.ROLES,
       [ctx.getHandler(), ctx.getClass()],
     );
@@ -32,7 +32,7 @@ export class RolesGuard implements CanActivate {
       throw new ForbiddenException('Invalid user roles');
     }
 
-    const hasRole = user.roles.some((r: UserRoleType) => roles.includes(r));
+    const hasRole = user.roles.some((r: UserRole) => roles.includes(r));
     if (!hasRole) {
       throw new ForbiddenException('Role not permitted');
     }

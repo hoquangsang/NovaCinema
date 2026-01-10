@@ -32,7 +32,7 @@ import {
 import { RoomDetailResDto, RoomResDto } from '../dtos/responses';
 
 @ApiTags('Theaters')
-@Controller('rooms')
+@Controller()
 export class RoomsController {
   constructor(private readonly roomService: RoomService) {}
 
@@ -40,7 +40,7 @@ export class RoomsController {
   @WrapOkResponse({ dto: RoomDetailResDto })
   @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.OK)
-  @Get(':id')
+  @Get('rooms/:id')
   public async getById(@Param('id', ParseObjectIdPipe) id: string) {
     const existed = await this.roomService.findRoomById(id);
     if (!existed) throw new NotFoundException('Room not found');
@@ -51,7 +51,7 @@ export class RoomsController {
   @WrapPaginatedResponse({ dto: RoomResDto })
   @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.OK)
-  @Get('theaters/:theaterId')
+  @Get('theaters/:theaterId/rooms')
   public async getRoomsByTheaterId(
     @Param('theaterId', ParseObjectIdPipe) theaterId: string,
     @Query() query: PaginatedQueryRoomsReqDto,
@@ -63,7 +63,7 @@ export class RoomsController {
   @WrapListResponse({ dto: RoomResDto })
   @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.OK)
-  @Get('theaters/:theaterId/list')
+  @Get('theaters/:theaterId/rooms/list')
   public async getAllRoomsByTheaterId(
     @Param('theaterId', ParseObjectIdPipe) theaterId: string,
     @Query() query: QueryRoomsReqDto,
@@ -75,7 +75,7 @@ export class RoomsController {
   @WrapCreatedResponse({ dto: RoomDetailResDto })
   @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.CREATED)
-  @Post('/theaters/:theaterId')
+  @Post('/theaters/:theaterId/rooms')
   public async createRoom(
     @Param('theaterId', ParseObjectIdPipe) theaterId: string,
     @Body() dto: CreateRoomReqDto,
@@ -87,7 +87,7 @@ export class RoomsController {
   @WrapOkResponse({ dto: RoomDetailResDto })
   @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.OK)
-  @Patch(':id')
+  @Patch('rooms/:id')
   public async updateRoom(
     @Param('id', ParseObjectIdPipe) id: string,
     @Body() dto: UpdateRoomReqDto,
@@ -99,7 +99,7 @@ export class RoomsController {
   @WrapNoContentResponse({ message: 'Deleted successfully' })
   @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Delete(':id')
+  @Delete('rooms/:id')
   public async deleteRoomById(@Param('id', ParseObjectIdPipe) id: string) {
     await this.roomService.deleteRoomById(id);
   }

@@ -7,11 +7,11 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+import { SortFields } from 'src/common/types';
 import { DateUtil } from 'src/common/utils';
-import { pickSortableFields } from 'src/modules/base/helpers';
+import { pickSortableFields } from 'src/common/helpers';
 import { MovieRepository } from 'src/modules/movies/repositories';
 import { MovieDocument } from 'src/modules/movies/schemas';
-import { MovieCriteria as Criteria } from './movie.service.type';
 
 const QUERY_FIELDS = {
   SEARCHABLE: ['title', 'director', 'producer', 'genres', 'actors'],
@@ -29,6 +29,55 @@ const QUERY_FIELDS = {
   ],
 } as const;
 
+type FilterCriteria = {
+  title?: string;
+  director?: string;
+  producer?: string;
+  genres?: string[];
+  actors?: string[];
+  ratingAge?: string;
+  country?: string;
+  language?: string;
+};
+
+type ReleaseWindowCriteria = {
+  releaseDate?: { $gte?: Date; $lte?: Date };
+  endDate?: { $gte?: Date; $lte?: Date };
+};
+
+type QueryCriteria = FilterCriteria & {
+  search?: string;
+  sort?: SortFields;
+};
+type PaginatedQueryCriteria = QueryCriteria & {
+  page?: number;
+  limit?: number;
+};
+
+type PaginatedQueryRangeCriteria = PaginatedQueryCriteria & {
+  from?: Date;
+  to?: Date;
+};
+
+type CreateCriteria = {
+  title: string;
+  genres: string[];
+  duration: number;
+  description?: string;
+  posterUrl?: string;
+  trailerUrl?: string;
+  releaseDate: Date;
+  endDate?: Date;
+  ratingAge?: string;
+  country?: string;
+  language?: string;
+  actors?: string[];
+  director?: string;
+  producer?: string;
+};
+
+type UpdateCriteria = Partial<CreateCriteria>;
+
 @Injectable()
 export class MovieService {
   constructor(private readonly movieRepo: MovieRepository) {}
@@ -39,7 +88,7 @@ export class MovieService {
 
   /** */
   private async findMoviesByQuery(
-    options: Criteria.PaginatedQuery & Criteria.ReleaseWindow,
+    options: PaginatedQueryCriteria & ReleaseWindowCriteria,
   ) {
     const {
       search,
@@ -104,7 +153,7 @@ export class MovieService {
     };
   }
 
-  public async findMoviesPaginated(options: Criteria.PaginatedQueryRange) {
+  public async findMoviesPaginated(options: PaginatedQueryRangeCriteria) {
     const { from: rawStart, to: rawEnd, ...rest } = options;
 
     const startDate = rawStart ? DateUtil.startOfDay(rawStart) : undefined;
@@ -115,7 +164,7 @@ export class MovieService {
       );
     }
 
-    const releaseWindow: Criteria.ReleaseWindow = {};
+    const releaseWindow: ReleaseWindowCriteria = {};
     if (endDate) releaseWindow.releaseDate = { $lte: endDate };
     if (startDate) releaseWindow.endDate = { $gte: startDate };
 
@@ -125,7 +174,7 @@ export class MovieService {
     });
   }
 
-  public async findShowingMoviesPaginated(options: Criteria.PaginatedQuery) {
+  public async findShowingMoviesPaginated(options: PaginatedQueryCriteria) {
     const today = DateUtil.startOfDay(DateUtil.now());
 
     return this.findMoviesByQuery({
@@ -135,7 +184,7 @@ export class MovieService {
     });
   }
 
-  public async findUpcomingMoviesPaginated(options: Criteria.PaginatedQuery) {
+  public async findUpcomingMoviesPaginated(options: PaginatedQueryCriteria) {
     const tomorrowStart = DateUtil.startOfDay(
       DateUtil.add(DateUtil.now(), { days: 1 }),
     );
@@ -147,7 +196,7 @@ export class MovieService {
   }
 
   /** */
-  public async createMovie(data: Criteria.Create) {
+  public async createMovie(data: CreateCriteria) {
     const { releaseDate: rawRelease, endDate: rawEnd, ...rest } = data;
     if (rawEnd && rawRelease > rawEnd)
       throw new ConflictException(
@@ -170,7 +219,7 @@ export class MovieService {
     return createdMovie;
   }
 
-  public async updateMovieById(id: string, update: Criteria.Update) {
+  public async updateMovieById(id: string, update: UpdateCriteria) {
     const existed = await this.movieRepo.query.findOneById({ id });
     if (!existed) throw new NotFoundException('Movie not found');
 

@@ -1,8 +1,41 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsMongoId } from 'class-validator';
-import { QueryRangeReqDto } from 'src/modules/base/dtos/requests';
+import { IsOptional, IsMongoId, IsDate } from 'class-validator';
+import { SortFields } from 'src/common/types';
+import { ToDateTime, ToSortObject } from 'src/common/decorators';
 
-export class QueryRangeShowtimesReqDto extends QueryRangeReqDto {
+export class QueryRangeShowtimesReqDto {
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'Sort orders',
+    example: ['startAt:asc'],
+  })
+  @IsOptional()
+  @ToSortObject()
+  sort?: SortFields;
+
+  @ApiPropertyOptional({
+    type: String,
+    description:
+      'Start date (yyyy-MM-dd, inclusive). Suggested format: yyyy-MM-dd',
+    example: '2025-12-20',
+  })
+  @IsOptional()
+  @IsDate({ message: 'from must be a date' })
+  @ToDateTime()
+  from?: Date;
+
+  @ApiPropertyOptional({
+    type: String,
+    description:
+      'End date (yyyy-MM-dd, inclusive). Suggested format: yyyy-MM-dd',
+    example: '2025-12-30',
+  })
+  @IsOptional()
+  @IsDate({ message: 'to must be a date' })
+  @ToDateTime()
+  to?: Date;
+
+  /******************* */
   @ApiPropertyOptional({
     description: 'Filter by movie ID',
     example: '67a1234bcf90123456789def',

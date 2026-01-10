@@ -3,10 +3,6 @@ import { Expose, Type } from 'class-transformer';
 import { ROOM_TYPE_VALUES, ROOM_TYPES } from 'src/modules/theaters/constants';
 import { RoomType } from 'src/modules/theaters/types';
 
-/**
- * Showtime response DTO for list/search APIs
- * Contains only essential info + names (not full objects)
- */
 export class ShowtimeResDto {
   @ApiProperty({
     type: String,
@@ -16,6 +12,7 @@ export class ShowtimeResDto {
   @Expose()
   _id!: string;
 
+  // movie
   @ApiProperty({
     type: String,
     description: 'Movie ID',
@@ -24,6 +21,32 @@ export class ShowtimeResDto {
   @Expose()
   movieId!: string;
 
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Movie title',
+    example: 'Inception',
+  })
+  @Expose()
+  movieTitle?: string;
+
+  // theater
+  @ApiProperty({
+    type: String,
+    description: 'Theater ID',
+    example: '64b0c2f8e1f2a3a5d6b7c8d0',
+  })
+  @Expose()
+  theaterId!: string;
+
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Theater name',
+    example: 'CGV Bitexco',
+  })
+  @Expose()
+  theaterName?: string;
+
+  // room
   @ApiProperty({
     type: String,
     description: 'Room ID',
@@ -31,6 +54,14 @@ export class ShowtimeResDto {
   })
   @Expose()
   roomId!: string;
+
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Room name',
+    example: 'Room 1',
+  })
+  @Expose()
+  roomName?: string;
 
   @ApiProperty({
     type: String,
@@ -41,14 +72,7 @@ export class ShowtimeResDto {
   @Expose()
   roomType!: RoomType;
 
-  @ApiProperty({
-    type: String,
-    description: 'Theater ID',
-    example: '64b0c2f8e1f2a3a5d6b7c8d0',
-  })
-  @Expose()
-  theaterId!: string;
-
+  //
   @ApiProperty({
     type: String,
     description: 'Start time',
@@ -72,37 +96,4 @@ export class ShowtimeResDto {
   })
   @Expose()
   isActive?: boolean;
-
-  // Light populated fields - only names
-  @ApiPropertyOptional({
-    type: String,
-    description: 'Movie title',
-    example: 'Inception',
-  })
-  @Expose()
-  movieTitle?: string;
-
-  @ApiPropertyOptional({
-    type: String,
-    description: 'Movie poster URL',
-    example: 'https://example.com/poster.jpg',
-  })
-  @Expose()
-  moviePosterUrl?: string;
-
-  @ApiPropertyOptional({
-    type: String,
-    description: 'Room name',
-    example: 'Room A',
-  })
-  @Expose()
-  roomName?: string;
-
-  @ApiPropertyOptional({
-    type: String,
-    description: 'Theater name',
-    example: 'CGV Bitexco',
-  })
-  @Expose()
-  theaterName?: string;
 }

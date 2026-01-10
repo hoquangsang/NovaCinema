@@ -16,7 +16,7 @@ import {
 import { AccessTokenResDto, AuthResDto } from '../dtos/responses';
 
 @ApiTags('Auth')
-@Controller('auth')
+@Controller()
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -24,7 +24,7 @@ export class AuthController {
   @WrapOkResponse({ dto: AuthResDto, message: 'Logged in successful' })
   @Public()
   @HttpCode(HttpStatus.OK)
-  @Post('login')
+  @Post('auth/login')
   public async login(@Body() dto: LoginReqDto) {
     return this.authService.login(dto.email, dto.password);
   }
@@ -33,7 +33,7 @@ export class AuthController {
   @WrapCreatedResponse({ message: 'Registered successful. Please verify OTP' })
   @Public()
   @HttpCode(HttpStatus.CREATED)
-  @Post('register')
+  @Post('auth/register')
   public async register(@Body() dto: RegisterReqDto) {
     return this.authService.register(dto);
   }
@@ -42,7 +42,7 @@ export class AuthController {
   @WrapOkResponse({ message: 'Email verified successful' })
   @Public()
   @HttpCode(HttpStatus.OK)
-  @Post('email/verify')
+  @Post('auth/email/verify')
   public async verify(@Body() dto: VerifyEmailReqDto) {
     return this.authService.verifyEmail(dto.email, dto.otp);
   }
@@ -54,7 +54,7 @@ export class AuthController {
   })
   @Public()
   @HttpCode(HttpStatus.OK)
-  @Post('refresh-token')
+  @Post('auth/refresh-token')
   public async refreshToken(@Body() dto: RefreshTokenReqDto) {
     return this.authService.refreshToken(dto.refreshToken);
   }
@@ -63,7 +63,7 @@ export class AuthController {
   @WrapOkResponse({ message: 'OTP resent successfully' })
   @Public()
   @HttpCode(HttpStatus.OK)
-  @Post('otp/resend')
+  @Post('auth/otp/resend')
   public async resendEmailOtp(@Body() dto: ResendOtpReqDto) {
     return this.authService.resendOtp(dto.email);
   }

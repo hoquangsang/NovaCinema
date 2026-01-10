@@ -1,1 +1,1 @@
-export { pickSortableFields } from './sort.helper';
+export { mapObjectIdsToStrings } from './document.helper';

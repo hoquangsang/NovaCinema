@@ -32,7 +32,7 @@ import {
 import { MovieResDto } from '../dtos/responses';
 
 @ApiTags('Movies')
-@Controller('movies')
+@Controller()
 export class MoviesController {
   constructor(private readonly movieService: MovieService) {}
 
@@ -40,7 +40,7 @@ export class MoviesController {
   @WrapPaginatedResponse({ dto: MovieResDto })
   @Public()
   @HttpCode(HttpStatus.OK)
-  @Get()
+  @Get('movies')
   public async getMovies(@Query() query: PaginatedQueryRangeMoviesReqDto) {
     return this.movieService.findMoviesPaginated(query);
   }
@@ -49,7 +49,7 @@ export class MoviesController {
   @WrapPaginatedResponse({ dto: MovieResDto })
   @Public()
   @HttpCode(HttpStatus.OK)
-  @Get('showing')
+  @Get('movies/showing')
   public async getShowingMovies(@Query() query: PaginatedQueryMoviesReqDto) {
     return this.movieService.findShowingMoviesPaginated(query);
   }
@@ -58,7 +58,7 @@ export class MoviesController {
   @WrapPaginatedResponse({ dto: MovieResDto })
   @Public()
   @HttpCode(HttpStatus.OK)
-  @Get('upcoming')
+  @Get('movies/upcoming')
   public async getUpcomingMovies(@Query() query: PaginatedQueryMoviesReqDto) {
     return this.movieService.findUpcomingMoviesPaginated(query);
   }
@@ -67,7 +67,7 @@ export class MoviesController {
   @WrapOkResponse({ dto: MovieResDto })
   @Public()
   @HttpCode(HttpStatus.OK)
-  @Get(':id')
+  @Get('movies/:id')
   public async getMovieById(@Param('id', ParseObjectIdPipe) id: string) {
     const existed = await this.movieService.findMovieById(id);
     if (!existed) throw new NotFoundException('Movie not found');
@@ -81,7 +81,7 @@ export class MoviesController {
   })
   @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.CREATED)
-  @Post()
+  @Post('movies')
   public async createMovie(@Body() dto: CreateMovieReqDto) {
     return this.movieService.createMovie(dto);
   }
@@ -93,7 +93,7 @@ export class MoviesController {
   })
   @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.OK)
-  @Patch(':id')
+  @Patch('movies:id')
   public async updateMovie(
     @Param('id', ParseObjectIdPipe) id: string,
     @Body() dto: UpdateMovieReqDto,
@@ -105,7 +105,7 @@ export class MoviesController {
   @WrapNoContentResponse({ message: 'Movie deleted successfully' })
   @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Delete(':id')
+  @Delete('movies:id')
   public async deleteMovie(@Param('id', ParseObjectIdPipe) id: string) {
     return this.movieService.deleteMovieById(id);
   }

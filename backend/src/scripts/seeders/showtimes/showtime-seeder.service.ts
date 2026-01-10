@@ -19,11 +19,14 @@ import {
   minuteToDate,
   roundUp,
   pickMovieShowWindow,
+  roundDown,
 } from './showtime-seeder.helper';
+import { RoomType } from 'src/modules/theaters/types';
 
 interface RoomSlot {
   roomId: Types.ObjectId;
-  roomType: string;
+  roomName: string;
+  roomType: RoomType;
   startAt: Date;
   endAt: Date;
   used: boolean;
@@ -103,8 +106,8 @@ export class ShowtimeSeederService {
     rooms: RoomDocument[],
     movies: MovieDocument[],
     slots: RoomSlot[],
-  ): ShowtimeDocument[] {
-    const showtimes: ShowtimeDocument[] = [];
+  ): Showtime[] {
+    const showtimes: Showtime[] = [];
     const usedMovieUnique = new Set<string>();
     const shuffledMovies = [...movies];
     shuffle(shuffledMovies);
@@ -155,17 +158,18 @@ export class ShowtimeSeederService {
         usedMovieUnique.add(uniqueKey);
         picked++;
 
-        showtimes.push(
-          new this.showtimeModel({
-            movieId: movie._id,
-            theaterId: theater._id,
-            roomId: slot.roomId,
-            roomType: slot.roomType,
-            startAt: slot.startAt,
-            endAt: slot.endAt,
-            isActive: true,
-          }),
-        );
+        showtimes.push({
+          movieId: movie._id,
+          movieTitle: movie.title,
+          theaterId: theater._id,
+          theaterName: theater.theaterName,
+          roomId: slot.roomId,
+          roomName: slot.roomName,
+          roomType: slot.roomType,
+          startAt: slot.startAt,
+          endAt: slot.endAt,
+          isActive: true,
+        });
       }
     }
 
@@ -212,7 +216,7 @@ export class ShowtimeSeederService {
           const startAt = roundUp(rawStart, 5);
 
           const buffer = randomInt(10, 15);
-          const endAt = addMinutes(startAt, maxDuration + buffer);
+          const endAt = roundDown(addMinutes(startAt, maxDuration + buffer));
 
           if (endAt.getHours() * 60 + endAt.getMinutes() > CLOSE_MINUTE) {
             break;
@@ -220,6 +224,7 @@ export class ShowtimeSeederService {
 
           slots.push({
             roomId: room._id,
+            roomName: room.roomName,
             roomType: room.roomType,
             startAt,
             endAt,

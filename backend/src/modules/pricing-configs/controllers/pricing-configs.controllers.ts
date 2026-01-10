@@ -18,7 +18,7 @@ import {
 import { PricingConfigResDto } from '../dtos/responses';
 
 @ApiTags('Pricing configuration')
-@Controller('pricing-configs')
+@Controller()
 export class PricingConfigController {
   constructor(private readonly pricingService: PricingConfigService) {}
 
@@ -26,7 +26,7 @@ export class PricingConfigController {
   @WrapOkResponse({ dto: PricingConfigResDto })
   @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.OK)
-  @Get()
+  @Get('pricing-configs')
   public async getPricingConfig() {
     return await this.pricingService.getPricingConfig();
   }
@@ -35,7 +35,7 @@ export class PricingConfigController {
   @WrapOkResponse({ dto: PricingConfigResDto })
   @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.OK)
-  @Post()
+  @Post('pricing-configs')
   public async createPricingConfig(@Body() dto: CreatePricingConfigReqDto) {
     return await this.pricingService.createPricingConfig(dto);
   }
@@ -44,7 +44,7 @@ export class PricingConfigController {
   @WrapOkResponse({ dto: PricingConfigResDto })
   @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.OK)
-  @Patch()
+  @Patch('pricing-configs')
   public async updatePricingConfig(@Body() dto: UpdatePricingConfigReqDto) {
     return await this.pricingService.updatePricingConfig(dto);
   }

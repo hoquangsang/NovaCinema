@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 import { USER_ROLES, USER_ROLE_VALUES } from 'src/modules/users/constants';
-import { UserRoleType } from 'src/modules/users/types';
+import { UserRole } from 'src/modules/users/types';
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -33,7 +33,7 @@ export class User {
     enum: USER_ROLE_VALUES,
     default: [USER_ROLES.USER],
   })
-  roles!: UserRoleType[];
+  roles!: UserRole[];
 
   @Prop({ default: true })
   isActive?: boolean;

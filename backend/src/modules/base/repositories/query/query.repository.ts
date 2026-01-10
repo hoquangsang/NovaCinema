@@ -5,7 +5,7 @@ import {
   ClientSession,
   FilterQuery,
 } from 'mongoose';
-import { mapObjectIdsToStrings } from '../../mappers';
+import { mapObjectIdsToStrings } from '../../helpers';
 import {
   ExcludeProjection,
   IncludeProjection,
