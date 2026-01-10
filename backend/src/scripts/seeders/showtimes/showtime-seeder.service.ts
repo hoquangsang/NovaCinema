@@ -19,6 +19,7 @@ import {
   minuteToDate,
   roundUp,
   pickMovieShowWindow,
+  roundDown,
 } from './showtime-seeder.helper';
 import { RoomType } from 'src/modules/theaters/types';
 
@@ -157,22 +158,18 @@ export class ShowtimeSeederService {
         usedMovieUnique.add(uniqueKey);
         picked++;
 
-        showtimes.push(
-          new this.showtimeModel({
-            movieId: movie._id,
-            movieTitle: movie.title,
-            moviePosterUrl: movie.posterUrl,
-            movieTrailerUrl: movie.trailerUrl,
-            theaterId: theater._id,
-            theaterName: theater.theaterName,
-            roomId: slot.roomId,
-            roomName: slot.roomName,
-            roomType: slot.roomType,
-            startAt: slot.startAt,
-            endAt: slot.endAt,
-            isActive: true,
-          }),
-        );
+        showtimes.push({
+          movieId: movie._id,
+          movieTitle: movie.title,
+          theaterId: theater._id,
+          theaterName: theater.theaterName,
+          roomId: slot.roomId,
+          roomName: slot.roomName,
+          roomType: slot.roomType,
+          startAt: slot.startAt,
+          endAt: slot.endAt,
+          isActive: true,
+        });
       }
     }
 
@@ -219,7 +216,7 @@ export class ShowtimeSeederService {
           const startAt = roundUp(rawStart, 5);
 
           const buffer = randomInt(10, 15);
-          const endAt = addMinutes(startAt, maxDuration + buffer);
+          const endAt = roundDown(addMinutes(startAt, maxDuration + buffer));
 
           if (endAt.getHours() * 60 + endAt.getMinutes() > CLOSE_MINUTE) {
             break;
