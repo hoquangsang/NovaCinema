@@ -1,0 +1,41 @@
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { HydratedDocument, Schema as MongooseSchema, Types } from 'mongoose';
+import { ROOM_TYPE_VALUES, ROOM_TYPES } from '../constants';
+import { RoomType } from '../types';
+import { Theater } from './theater.schema';
+import { SeatMap, SeatSchema } from './seat.schema';
+
+export type RoomDocument = HydratedDocument<Room>;
+
+@Schema({ timestamps: true })
+export class Room {
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: Theater.name,
+    required: true,
+    immutable: true,
+  })
+  theaterId!: Types.ObjectId;
+
+  @Prop({ required: true })
+  roomName!: string;
+
+  @Prop({
+    type: String,
+    enum: ROOM_TYPE_VALUES,
+    default: ROOM_TYPES._2D,
+  })
+  roomType!: RoomType;
+
+  @Prop({ type: [[{ type: SeatSchema }]], required: true })
+  seatMap!: SeatMap;
+
+  @Prop({ type: Number, required: true })
+  capacity!: number;
+
+  @Prop({ default: true })
+  isActive?: boolean;
+}
+
+export const RoomSchema = SchemaFactory.createForClass(Room);
+RoomSchema.index({ theaterId: 1, roomName: 1 }, { unique: true });

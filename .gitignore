@@ -1,0 +1,4 @@
+# Ignore npm lockfiles if you don't want to commit them
+package-lock.json
+# Also ignore the frontend's lockfile specifically
+frontend/package-lock.json
