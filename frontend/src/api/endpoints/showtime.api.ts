@@ -126,7 +126,7 @@ export const showtimeApi = {
    */
   createShowtime: async (data: CreateShowtimeDto): Promise<Showtime> => {
     const { movieId, ...payload } = data;
-    const response = await apiClient.post(`/showtimes/movies/${movieId}`, payload);
+    const response = await apiClient.post(`/movies/${movieId}/showtimes`, payload);
     return response.data;
   },
 
@@ -135,7 +135,7 @@ export const showtimeApi = {
    */
   createBulkShowtimes: async (data: CreateBulkShowtimesDto): Promise<Showtime[]> => {
     const { movieId, ...payload } = data;
-    const response = await apiClient.post(`/showtimes/movies/${movieId}/bulk`, payload);
+    const response = await apiClient.post(`/movies/${movieId}/showtimes/bulk`, payload);
     return response.data;
   },
 
