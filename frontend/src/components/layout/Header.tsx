@@ -33,7 +33,7 @@ export default function Header() {
         <div className="flex h-20 items-center justify-between">
 
           <a href="/" aria-label="Trang chủ NOVA CINEMA">
-            <img src="../public/logo.png" alt="NOVA CINEMA Logo" className="h-20 w-auto" />
+            <img src="/logo.png" alt="NOVA CINEMA Logo" className="h-20 w-auto" />
           </a>
 
           <div className="flex items-center gap-4">

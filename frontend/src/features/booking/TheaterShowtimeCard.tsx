@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Showtime } from '../../api/endpoints/showtime.api';
 
 interface TheaterShowtimeCardProps {
@@ -25,18 +24,7 @@ export const TheaterShowtimeCard: React.FC<TheaterShowtimeCardProps> = ({
         });
     };
 
-    const getRoomTypeBadgeColor = (roomType: string): string => {
-        switch (roomType) {
-            case '3D':
-                return 'bg-purple-600 text-white';
-            case 'VIP':
-                return 'bg-yellow-500 text-black';
-            case 'IMAX':
-                return 'bg-red-600 text-white';
-            default:
-                return 'bg-gray-600 text-white';
-        }
-    };
+
 
     return (
         <div className="bg-gray-800 rounded-lg p-6 mb-4 border border-gray-700">
@@ -56,8 +44,8 @@ export const TheaterShowtimeCard: React.FC<TheaterShowtimeCardProps> = ({
                                 key={showtime._id}
                                 onClick={() => onShowtimeSelect(showtime)}
                                 className={`px-4 py-2 rounded-lg font-semibold transition-all ${selectedShowtimeId === showtime._id
-                                        ? 'bg-yellow-400 text-black'
-                                        : 'bg-gray-700 text-white hover:bg-yellow-400 hover:text-black'
+                                    ? 'bg-yellow-400 text-black'
+                                    : 'bg-gray-700 text-white hover:bg-yellow-400 hover:text-black'
                                     }`}
                             >
                                 {formatTime(showtime.startAt)}
