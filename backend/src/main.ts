@@ -7,15 +7,19 @@ async function bootstrap() {
 
   // Enable CORS to allow frontend requests
   app.enableCors({
-    origin: [
-      'http://localhost:5173',
-      'http://localhost:5174',
-      'http://localhost:3000',
-    ],
+    origin: true, // for dev
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  });
+  });  
+  // app.enableCors({
+  //   origin: [
+  //     'http://localhost:5173',
+  //     'http://localhost:5174',
+  //     'http://localhost:3000',
+  //   ],
+  //   credentials: true,
+  //   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  //   allowedHeaders: ['Content-Type', 'Authorization'],
+  // });
 
   app.setGlobalPrefix('api', {
     exclude: ['health'],
