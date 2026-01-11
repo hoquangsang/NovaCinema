@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { bookingApi, type BookingAvailability, type BookingSeat } from '../../api/endpoints/booking.api';
 import type { Showtime } from '../../api/endpoints/showtime.api';
 import SeatMap from './SeatMap';
@@ -12,10 +13,10 @@ interface SeatSelectionProps {
 export const SeatSelection: React.FC<SeatSelectionProps> = ({
     showtime,
 }) => {
+    const navigate = useNavigate();
     const [availability, setAvailability] = useState<BookingAvailability | null>(null);
     const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [isCreatingBooking, setIsCreatingBooking] = useState(false);
     const [orphanWarning, setOrphanWarning] = useState<string | null>(null);
 
     useEffect(() => {
@@ -153,10 +154,10 @@ export const SeatSelection: React.FC<SeatSelectionProps> = ({
         });
     };
 
-    const handleCheckout = async () => {
+    const handleCheckout = () => {
         if (selectedSeats.length === 0) return;
 
-        // Check for orphan seats before booking
+        // Check for orphan seats before proceeding
         if (!availability) return;
 
         // Check if current selection would create orphan seats
@@ -167,31 +168,14 @@ export const SeatSelection: React.FC<SeatSelectionProps> = ({
             }
         }
 
-        try {
-            setIsCreatingBooking(true);
-
-            // Create booking
-            const booking = await bookingApi.createBooking(showtime._id, {
-                selectedSeats,
-            });
-
-            console.log('Booking created:', booking);
-
-            // Show success message
-            alert(`Booking successful!\n\nBooking ID: ${booking._id}\nTotal: ${booking.finalAmount.toLocaleString('vi-VN')} VND\nStatus: ${booking.status}`);
-
-            // Refresh availability to show booked seats
-            const data = await bookingApi.getAvailability(showtime._id);
-            setAvailability(data);
-            setSelectedSeats([]);
-
-        } catch (error: any) {
-            console.error('Failed to create booking:', error);
-            const errorMsg = error?.message || 'Cannot create booking. Please try again!';
-            alert(errorMsg);
-        } finally {
-            setIsCreatingBooking(false);
-        }
+        // Navigate to checkout page with booking data
+        navigate('/checkout', {
+            state: {
+                showtime,
+                selectedSeats: getSelectedSeatsDetails(),
+                totalAmount: calculateTotal(),
+            }
+        });
     };
 
     if (isLoading) {
@@ -247,7 +231,7 @@ export const SeatSelection: React.FC<SeatSelectionProps> = ({
                         seats={getSelectedSeatsDetails()}
                         totalAmount={calculateTotal()}
                         onCheckout={handleCheckout}
-                        isLoading={isCreatingBooking}
+                        isLoading={false}
                     />
                 </div>
             </div>

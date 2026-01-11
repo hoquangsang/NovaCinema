@@ -7,7 +7,11 @@ interface SeatButtonProps {
     onSelect: () => void;
 }
 
-export const SeatButton: React.FC<SeatButtonProps> = ({ seat, isSelected, onSelect }) => {
+export const SeatButton: React.FC<SeatButtonProps> = ({
+    seat,
+    isSelected,
+    onSelect,
+}) => {
     const getSeatColor = (): string => {
         if (!seat.isAvailable) {
             return 'bg-gray-600 cursor-not-allowed';
@@ -28,7 +32,13 @@ export const SeatButton: React.FC<SeatButtonProps> = ({ seat, isSelected, onSele
     };
 
     const getSeatSize = (): string => {
-        return seat.seatType === 'COUPLE' ? 'w-12 h-8' : 'w-8 h-8';
+        // Couple seat: double width of normal seat
+        return seat.seatType === 'COUPLE' ? 'w-18 h-8' : 'w-8 h-8';
+    };
+
+    const getSeatLabel = (): string => {
+        // Display full seat code (e.g., "A10")
+        return seat.seatCode;
     };
 
     return (
@@ -38,7 +48,7 @@ export const SeatButton: React.FC<SeatButtonProps> = ({ seat, isSelected, onSele
             className={`${getSeatSize()} ${getSeatColor()} rounded text-xs font-semibold transition-all flex items-center justify-center`}
             title={`${seat.seatCode} - ${seat.seatType}`}
         >
-            {seat.seatCode.replace(/[A-Z]/g, '')}
+            {getSeatLabel()}
         </button>
     );
 };

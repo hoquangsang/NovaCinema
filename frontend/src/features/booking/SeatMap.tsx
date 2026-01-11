@@ -13,10 +13,6 @@ export const SeatMap: React.FC<SeatMapProps> = ({
     selectedSeats,
     onSeatSelect,
 }) => {
-    const getRowLabel = (rowIndex: number): string => {
-        return String.fromCharCode(65 + rowIndex); // A, B, C, ...
-    };
-
     return (
         <div className="bg-gray-900 rounded-lg p-6">
             {/* Screen */}
@@ -29,11 +25,6 @@ export const SeatMap: React.FC<SeatMapProps> = ({
             <div className="flex flex-col items-center gap-2">
                 {seatMap.map((row, rowIndex) => (
                     <div key={rowIndex} className="flex items-center gap-2">
-                        {/* Row Label */}
-                        <div className="w-6 text-center text-gray-400 font-semibold text-sm">
-                            {getRowLabel(rowIndex)}
-                        </div>
-
                         {/* Seats */}
                         <div className="flex gap-2">
                             {row.map((seat, seatIndex) => {
@@ -42,22 +33,26 @@ export const SeatMap: React.FC<SeatMapProps> = ({
                                     return <div key={seatIndex} className="w-8 h-8"></div>;
                                 }
 
+                                // Check if this is the second seat of a couple pair (same seatCode as previous)
+                                if (seat.seatType === 'COUPLE' && seatIndex > 0) {
+                                    const prevSeat = row[seatIndex - 1];
+                                    if (prevSeat && prevSeat.seatCode === seat.seatCode && prevSeat.seatType === 'COUPLE') {
+                                        // This is the second seat of a couple pair, skip it
+                                        return null;
+                                    }
+                                }
+
                                 const isSelected = selectedSeats.includes(seat.seatCode);
 
                                 return (
                                     <SeatButton
-                                        key={seat.seatCode}
+                                        key={`${seat.seatCode}-${seatIndex}`}
                                         seat={seat}
                                         isSelected={isSelected}
                                         onSelect={() => onSeatSelect(seat.seatCode)}
                                     />
                                 );
                             })}
-                        </div>
-
-                        {/* Row Label (Right) */}
-                        <div className="w-6 text-center text-gray-400 font-semibold text-sm">
-                            {getRowLabel(rowIndex)}
                         </div>
                     </div>
                 ))}
