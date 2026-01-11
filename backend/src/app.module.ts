@@ -6,6 +6,7 @@ import { LoggingInterceptor, ResponseInterceptor } from './common/interceptors';
 import { HttpExceptionFilter, MongoExceptionFilter } from './common/filters';
 import { JwtAuthGuard, RolesGuard } from './common/guards';
 import { DatabaseModule } from './database';
+import { HealthModule } from './modules/health';
 import { UsersModule } from './modules/users';
 import { NotificationsModule } from './modules/notifications';
 import { AuthModule } from './modules/auth';
@@ -18,6 +19,7 @@ import { BookingsModule } from './modules/bookings';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }), // load .env toàn cục
+    HealthModule,
     DatabaseModule,
     UsersModule,
     AuthModule,
