@@ -24,6 +24,8 @@ import SettingsPage from "./pages/management/SettingsPage";
 import ProfilePage from "./pages/ProfilePage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import SearchResultsPage from "./pages/SearchResultsPage";
+import CheckoutPage from "./pages/CheckoutPage";
+import PaymentStatusPage from "./pages/PaymentStatusPage";
 
 import "./App.css";
 
@@ -57,6 +59,12 @@ function App() {
             <Route path="about-us" element={<AboutUsPage />} />
             <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
             <Route path="search" element={<SearchResultsPage />} />
+            <Route path="checkout" element={
+              <ProtectedRoute>
+                <CheckoutPage />
+              </ProtectedRoute>
+            } />
+            <Route path="payments/callback" element={<PaymentStatusPage />} />
           </Route>
 
           {/* Management Routes - Protected for Admin only */}
