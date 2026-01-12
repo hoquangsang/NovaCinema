@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Clock, MapPin, Calendar, Users } from 'lucide-react';
 import type { Showtime } from '../api/endpoints/showtime.api';
 import type { BookingSeat } from '../api/endpoints/booking.api';
+import { bookingApi } from '../api/endpoints/booking.api';
+import { paymentApi } from '../api/endpoints/payment.api';
 
 interface CheckoutState {
     showtime: Showtime;
@@ -80,28 +82,63 @@ export default function CheckoutPage() {
     const handlePayWithPayOS = async () => {
         setIsProcessing(true);
         try {
-            // TODO: Call backend API to create PayOS payment link
-            // const response = await bookingApi.createPayOSPayment(showtime._id, {
-            //     selectedSeats: selectedSeats.map(s => s.seatCode),
-            // });
-            // window.location.href = response.paymentUrl;
+            // Step 1: Create booking
+            const booking = await bookingApi.createBooking(showtime._id, {
+                selectedSeats: selectedSeats.map(s => s.seatCode),
+            });
+            console.log('Booking created:', booking);
 
-            // Temporary: Simulate payment for now
-            alert('PayOS integration will be implemented in backend.\n\nFor now, redirecting to success page...');
-            setTimeout(() => {
-                navigate('/payments/callback', {
-                    state: {
-                        bookingId: 'TEMP_' + Date.now(),
-                        showtime,
-                        selectedSeats,
-                        totalAmount,
-                    }
-                });
-            }, 1000);
-        } catch (error) {
+            // Step 2: Create payment
+            const payment = await paymentApi.createPayment(booking._id);
+            console.log('Payment created:', payment);
+
+            // Step 3: Redirect to PayOS checkout
+            if (payment.checkoutUrl) {
+                // Save booking info to localStorage for callback page
+                localStorage.setItem('pendingPayment', JSON.stringify({
+                    bookingId: booking._id,
+                    paymentId: payment._id,
+                    orderCode: payment.orderCode,
+                    showtime,
+                    selectedSeats,
+                    totalAmount
+                }));
+
+                // Redirect to PayOS
+                window.location.href = payment.checkoutUrl;
+            } else {
+                throw new Error('No checkout URL received from payment gateway');
+            }
+        } catch (error: unknown) {
             console.error('Payment error:', error);
-            alert('Failed to create payment. Please try again.');
-        } finally {
+
+            // Handle specific error types
+            let errorMessage = 'Failed to process payment. Please try again.';
+
+            if (error && typeof error === 'object' && 'response' in error) {
+                const apiError = error as { response?: { status: number; data?: { message?: string } }; request?: unknown; message?: string };
+
+                if (apiError.response) {
+                    // API error with response
+                    const status = apiError.response.status;
+                    const message = apiError.response.data?.message || apiError.message || '';
+
+                    if (status === 409) {
+                        errorMessage = 'These seats are no longer available. Please select different seats.';
+                    } else if (status === 410) {
+                        errorMessage = 'Your booking has expired. Please select seats again.';
+                    } else if (status === 400) {
+                        errorMessage = message || 'Invalid booking data. Please try again.';
+                    } else {
+                        errorMessage = `Error: ${message}`;
+                    }
+                } else if (apiError.request) {
+                    // Network error
+                    errorMessage = 'Network error. Please check your connection and try again.';
+                }
+            }
+
+            alert(errorMessage);
             setIsProcessing(false);
         }
     };

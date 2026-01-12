@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { CheckCircle, XCircle, Clock, Home, FileText, RotateCcw } from 'lucide-react';
 import type { Showtime } from '../api/endpoints/showtime.api';
@@ -47,6 +47,29 @@ export default function PaymentStatusPage() {
 
     const paymentStatus = getPaymentStatus();
 
+    // Try to get booking details from localStorage if not in state
+    const [bookingDetails, setBookingDetails] = useState<PaymentState | null>(state);
+
+    useEffect(() => {
+        // If we don't have state from navigation, try localStorage
+        if (!state) {
+            const pendingPayment = localStorage.getItem('pendingPayment');
+            if (pendingPayment) {
+                try {
+                    const parsed = JSON.parse(pendingPayment);
+                    setBookingDetails(parsed);
+
+                    // Clean up localStorage after successful payment
+                    if (paymentStatus === 'success') {
+                        localStorage.removeItem('pendingPayment');
+                    }
+                } catch (error) {
+                    console.error('Failed to parse pending payment data:', error);
+                }
+            }
+        }
+    }, [state, paymentStatus]);
+
     // Get failure reason
     const getFailureReason = () => {
         if (customReason) return customReason;
@@ -59,6 +82,11 @@ export default function PaymentStatusPage() {
     const failureReason = getFailureReason();
 
     useEffect(() => {
+        // Clean up localStorage on failure
+        if (paymentStatus === 'failed') {
+            localStorage.removeItem('pendingPayment');
+        }
+
         // If no booking info and not from PayOS, redirect to home after 3 seconds
         if (!bookingId && !paymentLinkId && paymentStatus === 'success') {
             setTimeout(() => navigate('/'), 3000);
@@ -185,27 +213,27 @@ export default function PaymentStatusPage() {
                         )}
 
                         {/* Booking Details (for success/pending) */}
-                        {state && state.showtime && paymentStatus !== 'failed' && (
+                        {bookingDetails && bookingDetails.showtime && paymentStatus !== 'failed' && (
                             <div className="space-y-4 mb-6">
                                 <div>
                                     <p className="text-gray-400 text-sm mb-1">Movie</p>
-                                    <p className="text-white text-xl font-bold">{state.showtime.movieTitle}</p>
+                                    <p className="text-white text-xl font-bold">{bookingDetails.showtime.movieTitle}</p>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <p className="text-gray-400 text-sm mb-1">Theater</p>
-                                        <p className="text-white font-semibold">{state.showtime.theaterName}</p>
-                                        <p className="text-gray-400 text-sm">Room: {state.showtime.roomName}</p>
+                                        <p className="text-white font-semibold">{bookingDetails.showtime.theaterName}</p>
+                                        <p className="text-gray-400 text-sm">Room: {bookingDetails.showtime.roomName}</p>
                                     </div>
 
                                     <div>
                                         <p className="text-gray-400 text-sm mb-1">Showtime</p>
                                         <p className="text-white font-semibold">
-                                            {formatDateTime(state.showtime.startAt).time}
+                                            {formatDateTime(bookingDetails.showtime.startAt).time}
                                         </p>
                                         <p className="text-gray-400 text-sm">
-                                            {formatDateTime(state.showtime.startAt).date}
+                                            {formatDateTime(bookingDetails.showtime.startAt).date}
                                         </p>
                                     </div>
                                 </div>
@@ -213,7 +241,7 @@ export default function PaymentStatusPage() {
                                 <div>
                                     <p className="text-gray-400 text-sm mb-2">Seats</p>
                                     <div className="flex flex-wrap gap-2">
-                                        {state.selectedSeats.map((seat) => (
+                                        {bookingDetails.selectedSeats.map((seat) => (
                                             <span
                                                 key={seat.seatCode}
                                                 className="bg-yellow-400 text-gray-900 px-3 py-1 rounded-full font-bold text-sm"
@@ -228,7 +256,7 @@ export default function PaymentStatusPage() {
                                     <div className="flex justify-between items-center">
                                         <span className="text-gray-400">Total {paymentStatus === 'success' ? 'Paid' : 'Amount'}</span>
                                         <span className={`text-2xl font-bold ${paymentStatus === 'success' ? 'text-green-400' : 'text-yellow-400'}`}>
-                                            {formatCurrency(state.totalAmount)}
+                                            {formatCurrency(bookingDetails.totalAmount)}
                                         </span>
                                     </div>
                                 </div>
