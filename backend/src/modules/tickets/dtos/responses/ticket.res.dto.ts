@@ -12,7 +12,7 @@ export class TicketResDto {
   @ApiProperty({
     type: String,
     description: 'Ticket Code',
-    example: '20232DN-12345',
+    example: '2D-K7A93NCW2X-NM',
   })
   @Expose()
   code!: string;
