@@ -23,9 +23,12 @@ export class TemplateRenderService {
    */
   private getOrLoadTemplate(templateName: string): TemplateDelegate {
     if (!this.cache[templateName]) {
+      // Support both development (src) and production (dist) paths
+      const baseDir = __dirname.includes('dist') ? 'dist' : 'src';
       const templatePath = join(
         process.cwd(),
-        'src/modules/notifications/templates',
+        baseDir,
+        'modules/notifications/templates',
         `${templateName}.hbs`,
       );
 
