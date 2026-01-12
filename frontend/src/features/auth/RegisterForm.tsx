@@ -3,12 +3,16 @@ import { authApi, type RegisterParams } from '../../api/endpoints/auth.api';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { OTPVerificationModal } from './OTPVerificationModal';
+import { convertDateInputToUTC0 } from '../../utils/timezone';
+import { validatePassword } from '../../utils/passwordValidation';
+import { PasswordRequirements } from '../../components/common/PasswordRequirements';
 
 interface RegisterFormProps {
+    onSuccess?: () => void;
     onSwitchToLogin?: () => void;
 }
 
-export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
+export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchToLogin }) => {
     const [formData, setFormData] = useState<RegisterParams>({
         email: '',
         password: '',
@@ -26,7 +30,8 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
     const [registeredEmail, setRegisteredEmail] = useState('');
 
     const validateForm = (): boolean => {
-        const newErrors: any = {};
+        const newErrors: Partial<Record<keyof RegisterParams | 'confirmPassword' | 'terms', string>> = {};
+
 
         if (!formData.fullName?.trim()) {
             newErrors.fullName = 'Full name is required';
@@ -54,8 +59,11 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
 
         if (!formData.password) {
             newErrors.password = 'Password is required';
-        } else if (formData.password.length < 6) {
-            newErrors.password = 'Password must be at least 6 characters';
+        } else {
+            const passwordValidation = validatePassword(formData.password);
+            if (!passwordValidation.isValid) {
+                newErrors.password = passwordValidation.errors[0]; // Show first error
+            }
         }
 
         if (!confirmPassword) {
@@ -85,16 +93,25 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
         try {
             console.log('📝 Attempting registration with:', { email: formData.email, username: formData.username });
 
-            await authApi.register(formData);
+            // Convert dateOfBirth sang UTC+0 trước khi gửi
+            const dataToSend = {
+                ...formData,
+                dateOfBirth: formData.dateOfBirth ? convertDateInputToUTC0(formData.dateOfBirth) : '',
+            };
+
+            await authApi.register(dataToSend as RegisterParams);
 
             console.log('✅ Registration successful, showing OTP modal');
 
             // Show OTP verification modal
             setRegisteredEmail(formData.email);
             setShowOTPModal(true);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('❌ Registration error:', error);
-            setApiError(error.message || 'Registration failed. Please try again.');
+            const message = error instanceof Error
+                ? error.message
+                : 'Registration failed. Please try again.';
+            setApiError(message);
         } finally {
             setIsLoading(false);
         }
@@ -105,6 +122,9 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
 
         // Close modal
         setShowOTPModal(false);
+
+        // Call onSuccess callback if provided
+        onSuccess?.();
 
         // Switch to login tab so user can sign in
         onSwitchToLogin?.();
@@ -174,17 +194,20 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
                     autoComplete="email"
                 />
 
-                <Input
-                    label="Password"
-                    type="password"
-                    required
-                    placeholder="Password"
-                    value={formData.password}
-                    onChange={handleChange('password')}
-                    error={errors.password}
-                    showPasswordToggle
-                    autoComplete="new-password"
-                />
+                <div>
+                    <Input
+                        label="Password"
+                        type="password"
+                        required
+                        placeholder="Password"
+                        value={formData.password}
+                        onChange={handleChange('password')}
+                        error={errors.password}
+                        showPasswordToggle
+                        autoComplete="new-password"
+                    />
+                    <PasswordRequirements password={formData.password} />
+                </div>
 
                 <Input
                     label="Confirm Password"

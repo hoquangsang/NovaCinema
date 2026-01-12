@@ -2,6 +2,7 @@ import { Ticket, Search, UserCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../common/Button';
 import { useAuth } from '../../context/AuthContext';
+import { useState } from 'react';
 
 // Helper function to get last name from full name
 const getLastName = (fullName: string): string => {
@@ -12,10 +13,17 @@ const getLastName = (fullName: string): string => {
 export default function Header() {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleLogout = () => {
     logout();
     navigate('/');
+  };
+
+  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
   };
 
   return (
@@ -25,7 +33,7 @@ export default function Header() {
         <div className="flex h-20 items-center justify-between">
 
           <a href="/" aria-label="Trang chủ NOVA CINEMA">
-            <img src="../public/logo.png" alt="NOVA CINEMA Logo" className="h-20 w-auto" />
+            <img src="/logo.png" alt="NOVA CINEMA Logo" className="h-20 w-auto" />
           </a>
 
           <div className="flex items-center gap-4">
@@ -33,7 +41,10 @@ export default function Header() {
             <div className="relative hidden lg:block">
               <input
                 type="text"
-                placeholder="Search..."
+                placeholder="Search movies..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleSearch}
                 className="w-56 rounded-full bg-white py-2 pl-10 pr-4 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
               <Search
@@ -83,6 +94,15 @@ export default function Header() {
                     >
                       My Bookings
                     </Link>
+                    {/* Management option - only visible for admin users */}
+                    {user?.roles?.includes('ADMIN') && (
+                      <Link
+                        to="/management"
+                        className="block px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-gray-100"
+                      >
+                        Management
+                      </Link>
+                    )}
                     <button
                       onClick={handleLogout}
                       className="w-full text-left px-4 py-2 text-sm text-red-600 cursor-pointer hover:bg-gray-100"
@@ -99,24 +119,20 @@ export default function Header() {
         <div className="flex h-12 items-center justify-between border-t border-white">
 
           <nav className="flex items-center gap-6">
-            <a
-              href="/theaters"
+            <Link
+              to="/now-showing"
               className="font-semibold text-white transition-colors hover:text-yellow-400"
-            >
-              Showtimes
-            </a>
-            <a
-              href="/showtimes"
-              className="font-semibold text-white transition-colors hover:text-yellow-400"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             >
               Now Showing
-            </a>
-            <a
-              href="/showtimes"
+            </Link>
+            <Link
+              to="/coming-soon"
               className="font-semibold text-white transition-colors hover:text-yellow-400"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             >
               Coming Soon
-            </a>
+            </Link>
           </nav>
 
           <nav className="flex items-center gap-6">
@@ -126,12 +142,13 @@ export default function Header() {
             >
               Discounts
             </a>
-            <a
-              href="/about"
+            <Link
+              to="/about-us"
               className="font-semibold text-white transition-colors hover:text-yellow-400 hover:border-b-2 border-yellow-400"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             >
               About us
-            </a>
+            </Link>
           </nav>
         </div>
       </div>

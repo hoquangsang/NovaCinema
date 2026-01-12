@@ -4,6 +4,8 @@
  */
 
 import { apiClient } from '../client';
+import axios from 'axios';
+import { config } from '../../config/env';
 
 export interface LoginParams {
   email: string;
@@ -28,7 +30,7 @@ export interface User {
   fullName: string;
   dateOfBirth: string;
   roles: string[];
-  active: boolean;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -62,7 +64,7 @@ export const authApi = {
    * Refresh access token
    */
   refreshToken: async (refreshToken: string): Promise<{ accessToken: string }> => {
-    const response = await apiClient.post('/auth/refresh', { refreshToken });
+    const response = await apiClient.post('/auth/refresh-token', { refreshToken });
     return response.data;
   },
 
@@ -101,5 +103,24 @@ export const authApi = {
    */
   resetPassword: async (email: string, otp: string, newPassword: string): Promise<void> => {
     await apiClient.post('/auth/reset-password', { email, otp, newPassword });
+  },
+
+  /**
+   * Change password for current logged in user
+   */
+  changePassword: async (currentPassword: string, newPassword: string): Promise<void> => {
+    // Use direct axios call to bypass global interceptors so failure
+    // (validation or 400) doesn't trigger automatic logout/refresh logic.
+    const token = localStorage.getItem('accessToken');
+    await axios.patch(
+      `${config.apiBaseUrl}/api/users/change-password`,
+      { currentPassword, newPassword },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      }
+    );
   },
 };

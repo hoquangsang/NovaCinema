@@ -1,6 +1,7 @@
 // src/features/movies/components/MovieListSlider.tsx
 import { type Movie } from '../../api/endpoints/movie.api';
 import { MovieCard } from './MovieCard';
+import { Link } from 'react-router-dom';
 import { Button } from '../../components/common/Button';
 // Import Swiper
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -51,7 +52,7 @@ export const MovieListSlider = ({ title, movies, variant }: Props) => {
         >
           {movies.map((movie) => (
             <SwiperSlide key={movie._id} className="movie-slide mb-10">
-              <MovieCard movie={movie} variant={variant} />
+              <MovieCard movie={movie} />
             </SwiperSlide>
           ))}
         </Swiper>
@@ -62,7 +63,9 @@ export const MovieListSlider = ({ title, movies, variant }: Props) => {
       </div>
 
       <div className="text-center mt-6">
-        <Button intent="ghost">SEE MORE</Button>
+        <Link to={variant === 'now-showing' ? '/now-showing' : '/coming-soon'} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+          <Button intent="ghost">SEE MORE</Button>
+        </Link>
       </div>
     </section>
   );
