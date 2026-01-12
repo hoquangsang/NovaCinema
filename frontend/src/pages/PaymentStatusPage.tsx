@@ -47,28 +47,58 @@ export default function PaymentStatusPage() {
 
     const paymentStatus = getPaymentStatus();
 
+    // Debug logging
+    console.log('PaymentStatusPage - Query Params:', {
+        code,
+        status,
+        orderCode,
+        paymentLinkId,
+        cancel,
+        customReason
+    });
+    console.log('PaymentStatusPage - Payment Status:', paymentStatus);
+
     // Try to get booking details from localStorage if not in state
-    const [bookingDetails, setBookingDetails] = useState<PaymentState | null>(state);
+    const [bookingDetails] = useState<PaymentState | null>(() => {
+        // Initialize from state first
+        if (state) {
+            console.log('PaymentStatusPage - Using state from navigation:', state);
+            return state;
+        }
 
-    useEffect(() => {
-        // If we don't have state from navigation, try localStorage
-        if (!state) {
-            const pendingPayment = localStorage.getItem('pendingPayment');
-            if (pendingPayment) {
-                try {
-                    const parsed = JSON.parse(pendingPayment);
-                    setBookingDetails(parsed);
+        // Try localStorage on initial render
+        const pendingPayment = localStorage.getItem('pendingPayment');
+        console.log('PaymentStatusPage - localStorage raw data:', pendingPayment);
 
-                    // Clean up localStorage after successful payment
-                    if (paymentStatus === 'success') {
-                        localStorage.removeItem('pendingPayment');
-                    }
-                } catch (error) {
-                    console.error('Failed to parse pending payment data:', error);
-                }
+        if (pendingPayment) {
+            try {
+                const parsed = JSON.parse(pendingPayment);
+                console.log('PaymentStatusPage - Parsed booking details:', parsed);
+                return parsed;
+            } catch (error) {
+                console.error('Failed to parse pending payment data:', error);
             }
         }
-    }, [state, paymentStatus]);
+        console.log('PaymentStatusPage - No booking details found');
+        return null;
+    });
+
+    // Clean up localStorage after displaying the data
+    useEffect(() => {
+        if (bookingDetails && paymentStatus === 'success') {
+            // Delay cleanup to ensure data is displayed first
+            const timer = setTimeout(() => {
+                localStorage.removeItem('pendingPayment');
+                console.log('Cleaned up localStorage after successful payment');
+            }, 1000);
+            return () => clearTimeout(timer);
+        }
+
+        if (paymentStatus === 'failed') {
+            localStorage.removeItem('pendingPayment');
+            console.log('Cleaned up localStorage after failed payment');
+        }
+    }, [bookingDetails, paymentStatus]);
 
     // Get failure reason
     const getFailureReason = () => {
@@ -82,16 +112,11 @@ export default function PaymentStatusPage() {
     const failureReason = getFailureReason();
 
     useEffect(() => {
-        // Clean up localStorage on failure
-        if (paymentStatus === 'failed') {
-            localStorage.removeItem('pendingPayment');
-        }
-
         // If no booking info and not from PayOS, redirect to home after 3 seconds
-        if (!bookingId && !paymentLinkId && paymentStatus === 'success') {
+        if (!bookingId && !paymentLinkId && paymentStatus === 'success' && !bookingDetails) {
             setTimeout(() => navigate('/'), 3000);
         }
-    }, [bookingId, paymentLinkId, paymentStatus, navigate]);
+    }, [bookingId, paymentLinkId, paymentStatus, bookingDetails, navigate]);
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('vi-VN', {
@@ -212,80 +237,89 @@ export default function PaymentStatusPage() {
                             </div>
                         )}
 
-                        {/* Booking Details (for success/pending) */}
-                        {bookingDetails && bookingDetails.showtime && paymentStatus !== 'failed' && (
-                            <div className="space-y-4 mb-6">
-                                <div>
-                                    <p className="text-gray-400 text-sm mb-1">Movie</p>
-                                    <p className="text-white text-xl font-bold">{bookingDetails.showtime.movieTitle}</p>
-                                </div>
+                        {/* Booking/Order Details (Success/Pending) */}
+                        {paymentStatus !== 'failed' && (
+                            <>
+                                {/* Case 1: Full Booking Details Available */}
+                                {bookingDetails && bookingDetails.showtime ? (
+                                    <div className="space-y-4 mb-6">
+                                        <div>
+                                            <p className="text-gray-400 text-sm mb-1">Movie</p>
+                                            <p className="text-white text-xl font-bold">{bookingDetails.showtime.movieTitle}</p>
+                                        </div>
 
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <p className="text-gray-400 text-sm mb-1">Theater</p>
-                                        <p className="text-white font-semibold">{bookingDetails.showtime.theaterName}</p>
-                                        <p className="text-gray-400 text-sm">Room: {bookingDetails.showtime.roomName}</p>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <p className="text-gray-400 text-sm mb-1">Theater</p>
+                                                <p className="text-white font-semibold">{bookingDetails.showtime.theaterName}</p>
+                                                <p className="text-gray-400 text-sm">Room: {bookingDetails.showtime.roomName}</p>
+                                            </div>
+
+                                            <div>
+                                                <p className="text-gray-400 text-sm mb-1">Showtime</p>
+                                                <p className="text-white font-semibold">
+                                                    {formatDateTime(bookingDetails.showtime.startAt).time}
+                                                </p>
+                                                <p className="text-gray-400 text-sm">
+                                                    {formatDateTime(bookingDetails.showtime.startAt).date}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <p className="text-gray-400 text-sm mb-2">Seats</p>
+                                            <div className="flex flex-wrap gap-2">
+                                                {bookingDetails.selectedSeats.map((seat) => (
+                                                    <span
+                                                        key={seat.seatCode}
+                                                        className="bg-yellow-400 text-gray-900 px-3 py-1 rounded-full font-bold text-sm"
+                                                    >
+                                                        {seat.seatCode}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div className="border-t border-gray-700 pt-4">
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-gray-400">Total {paymentStatus === 'success' ? 'Paid' : 'Amount'}</span>
+                                                <span className={`text-2xl font-bold ${paymentStatus === 'success' ? 'text-green-400' : 'text-yellow-400'}`}>
+                                                    {formatCurrency(bookingDetails.totalAmount)}
+                                                </span>
+                                            </div>
+                                        </div>
                                     </div>
+                                ) : (
+                                    /* Case 2: Only Order Code available (No localStorage data) */
+                                    <div className="bg-gray-700/50 rounded-lg p-6 mb-6 text-center">
+                                        <div className="mb-4">
+                                            <CheckCircle className="mx-auto text-green-500 mb-2" size={48} />
+                                            <p className="text-white font-semibold text-lg">Transaction Recorded</p>
+                                        </div>
 
-                                    <div>
-                                        <p className="text-gray-400 text-sm mb-1">Showtime</p>
-                                        <p className="text-white font-semibold">
-                                            {formatDateTime(bookingDetails.showtime.startAt).time}
-                                        </p>
-                                        <p className="text-gray-400 text-sm">
-                                            {formatDateTime(bookingDetails.showtime.startAt).date}
-                                        </p>
+                                        <div className="space-y-4">
+                                            <div className="bg-gray-800 p-4 rounded-lg">
+                                                <p className="text-gray-400 text-sm mb-1">Order Code</p>
+                                                <p className="text-2xl font-bold text-yellow-400 font-mono tracking-wider">
+                                                    {orderCode || bookingId || 'N/A'}
+                                                </p>
+                                            </div>
+
+                                            {paymentLinkId && (
+                                                <div>
+                                                    <p className="text-gray-500 text-xs mb-1">Transaction Ref</p>
+                                                    <p className="text-gray-400 text-xs font-mono">{paymentLinkId}</p>
+                                                </div>
+                                            )}
+
+                                            <div className="text-blue-200 text-sm bg-blue-900/20 p-3 rounded border border-blue-500/30">
+                                                Detailed booking information has been sent to your email.
+                                                Please check your inbox (and spam folder).
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-
-                                <div>
-                                    <p className="text-gray-400 text-sm mb-2">Seats</p>
-                                    <div className="flex flex-wrap gap-2">
-                                        {bookingDetails.selectedSeats.map((seat) => (
-                                            <span
-                                                key={seat.seatCode}
-                                                className="bg-yellow-400 text-gray-900 px-3 py-1 rounded-full font-bold text-sm"
-                                            >
-                                                {seat.seatCode}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <div className="border-t border-gray-700 pt-4">
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-gray-400">Total {paymentStatus === 'success' ? 'Paid' : 'Amount'}</span>
-                                        <span className={`text-2xl font-bold ${paymentStatus === 'success' ? 'text-green-400' : 'text-yellow-400'}`}>
-                                            {formatCurrency(bookingDetails.totalAmount)}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Common Failure Reasons */}
-                        {paymentStatus === 'failed' && (
-                            <div className="bg-gray-700/50 rounded-lg p-6 mb-6">
-                                <h3 className="text-white font-semibold mb-3">Common reasons for payment failure:</h3>
-                                <ul className="space-y-2 text-gray-300 text-sm">
-                                    <li className="flex items-start gap-2">
-                                        <span className="text-yellow-400 mt-1">•</span>
-                                        <span>Payment was cancelled by user</span>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <span className="text-yellow-400 mt-1">•</span>
-                                        <span>Insufficient funds in account</span>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <span className="text-yellow-400 mt-1">•</span>
-                                        <span>Payment timeout or network error</span>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <span className="text-yellow-400 mt-1">•</span>
-                                        <span>Invalid payment information</span>
-                                    </li>
-                                </ul>
-                            </div>
+                                )}
+                            </>
                         )}
 
                         {/* Action Buttons */}
