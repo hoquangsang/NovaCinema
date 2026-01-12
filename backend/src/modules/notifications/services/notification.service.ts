@@ -43,7 +43,7 @@ export class NotificationService {
   ) {
     const { to, payment, booking, tickets, frontendUrl } = options;
 
-    const html = this.templateService.render('payment-success.hbs', {
+    const html = this.templateService.render('payment-success', {
       amount: payment.amount.toLocaleString('vi-VN'),
       transactionId: payment.transactionId,
       transactionAt: payment.transactionAt?.toLocaleString('vi-VN'),
