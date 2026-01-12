@@ -15,6 +15,8 @@ import { TheatersModule } from './modules/theaters';
 import { PricingConfigModule } from './modules/pricing-configs';
 import { ShowtimesModule } from './modules/showtimes';
 import { BookingsModule } from './modules/bookings';
+import { PaymentsModule } from './modules/payments';
+import { TicketsModule } from './modules/tickets';
 
 @Module({
   imports: [
@@ -29,6 +31,8 @@ import { BookingsModule } from './modules/bookings';
     PricingConfigModule,
     ShowtimesModule,
     BookingsModule,
+    PaymentsModule,
+    TicketsModule,
   ],
 
   providers: [
