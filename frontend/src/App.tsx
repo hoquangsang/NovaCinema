@@ -19,7 +19,6 @@ import UsersManagementPage from "./pages/management/UsersManagementPage";
 import ShowtimesManagementPage from "./pages/management/ShowtimesManagementPage";
 import TicketPricingManagementPage from "./pages/management/TicketPricingManagementPage";
 import BookingManagementPage from "./pages/management/BookingManagementPage";
-import SettingsPage from "./pages/management/SettingsPage";
 
 import ProfilePage from "./pages/ProfilePage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
@@ -93,7 +92,6 @@ function App() {
             <Route path="showtimes" element={<ShowtimesManagementPage />} />
             <Route path="pricing" element={<TicketPricingManagementPage />} />
             <Route path="bookings" element={<BookingManagementPage />} />
-            <Route path="settings" element={<SettingsPage />} />
             {/* Catch-all route for 404 within management layout */}
             <Route path="*" element={<NotFoundPage />} />
           </Route>
