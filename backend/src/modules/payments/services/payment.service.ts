@@ -135,6 +135,10 @@ export class PaymentService {
       seats: booking.seats,
       checkoutUrl: paymentLink.checkoutUrl,
       qrCode: paymentLink.qrCode,
+      bin: paymentLink.bin,
+      accountNumber: paymentLink.accountNumber,
+      accountName: paymentLink.accountName,
+      transferContent: paymentLink.transferContent,
     };
   }
 
