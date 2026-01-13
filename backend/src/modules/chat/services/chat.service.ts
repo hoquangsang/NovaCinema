@@ -1,9 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 import { MovieService } from 'src/modules/movies';
 import { TheaterService } from 'src/modules/theaters';
-import { ShowtimeService } from 'src/modules/showtimes';
 import { PricingConfigService } from 'src/modules/pricing-configs';
 import { DateUtil } from 'src/common/utils';
 import { CINEMA_INFO, RULE_BASED_KEYWORDS } from '../data/cinema-data.constant';
@@ -11,24 +10,20 @@ import { CINEMA_INFO, RULE_BASED_KEYWORDS } from '../data/cinema-data.constant';
 @Injectable()
 export class ChatService {
   private readonly logger = new Logger(ChatService.name);
-  private readonly genAI: GoogleGenerativeAI | null;
-  private readonly model: ReturnType<GoogleGenerativeAI['getGenerativeModel']> | null;
+  private readonly genAI: GoogleGenAI | null;
 
   constructor(
     private readonly configService: ConfigService,
     private readonly movieService: MovieService,
     private readonly theaterService: TheaterService,
-    private readonly showtimeService: ShowtimeService,
     private readonly pricingConfigService: PricingConfigService,
   ) {
     const apiKey = this.configService.get<string>('GEMINI_API_KEY');
     if (apiKey) {
-      this.genAI = new GoogleGenerativeAI(apiKey);
-      this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      this.genAI = new GoogleGenAI({ apiKey });
     } else {
       this.logger.warn('GEMINI_API_KEY not configured, AI features disabled');
       this.genAI = null;
-      this.model = null;
     }
   }
 
@@ -65,11 +60,6 @@ export class ChatService {
     // Địa chỉ rạp
     if (this.matchKeywords(message, RULE_BASED_KEYWORDS.ADDRESS)) {
       return this.getAddressResponse();
-    }
-
-    // Lịch chiếu (hướng dẫn)
-    if (this.matchKeywords(message, RULE_BASED_KEYWORDS.SHOWTIME)) {
-      return this.getShowtimeResponse();
     }
 
     // Phim đang chiếu
@@ -187,20 +177,6 @@ ${CINEMA_INFO.THEATERS.map((t, i) => `${i + 1}. **${t.name}**
     }
   }
 
-  private async getShowtimeResponse(): Promise<string> {
-    return `🎬 **Xem lịch chiếu phim tại Nova Cinema:**
-
-Để xem lịch chiếu chi tiết, quý khách có thể:
-
-1. 🌐 Truy cập trang web và chọn mục "Lịch chiếu"
-2. 📱 Sử dụng app Nova Cinema
-3. 🎫 Chọn phim yêu thích → Xem suất chiếu → Đặt vé
-
-💡 **Tip:** Đặt vé online để chọn được ghế đẹp nhất!
-
-Bạn có thể hỏi "lịch chiếu hôm nay" để xem các suất chiếu ngay! 🎥`;
-  }
-
   private async getMoviesResponse(): Promise<string> {
     try {
       const result = await this.movieService.findShowingMoviesPaginated({
@@ -260,18 +236,22 @@ Mình sẵn sàng giúp bạn 24/7 🤖✨`;
   }
 
   private getGreetingResponse(): string {
-    const greetings = [
-      `Xin chào! 👋 Mình là trợ lý ảo của Nova Cinema 🎬\n\nMình có thể giúp bạn:\n• 🎟️ Thông tin giá vé\n• 📍 Địa chỉ các rạp\n• 🎬 Phim đang chiếu\n• 📞 Thông tin liên hệ\n\nBạn cần hỗ trợ gì nào? 😊`,
-      `Chào bạn! 🌟 Rất vui được gặp bạn!\n\nMình là chatbot Nova Cinema, sẵn sàng hỗ trợ bạn tìm phim hay và đặt vé nhanh chóng!\n\nHãy hỏi mình bất cứ điều gì về rạp phim nhé! 🎥🍿`,
-      `Hello! 🎉 Chào mừng đến với Nova Cinema!\n\nMình có thể giúp bạn tra cứu lịch chiếu, giá vé, hoặc thông tin về các bộ phim đang HOT!\n\nBạn muốn biết gì nào? 🎬✨`,
-    ];
-    return greetings[Math.floor(Math.random() * greetings.length)];
+    return `Xin chào! 👋 Mình là trợ lý ảo của Nova Cinema 🎬
+
+Mình có thể giúp bạn:
+• 💰 Thông tin giá vé
+• 📍 Địa chỉ rạp chiếu phim
+• 🎬 Phim đang chiếu
+• 📞 Liên hệ & hỗ trợ
+
+Bạn muốn hỏi gì nào? 😊`;
   }
 
   // ==================== AI GEMINI RESPONSE ====================
 
   private async getAIResponse(userMessage: string): Promise<string> {
-    if (!this.model) {
+    if (!this.genAI) {
+      this.logger.warn('[GEMINI] API key not configured, returning fallback');
       return `Xin lỗi bạn, mình chưa hiểu rõ câu hỏi. 🤔
 
 Bạn có thể hỏi mình về:
@@ -284,80 +264,83 @@ Hoặc thử hỏi lại với từ khóa cụ thể hơn nhé! 😊`;
     }
 
     try {
-      // Lấy dữ liệu context từ database
+      this.logger.log('[GEMINI] Building context from database...');
       const context = await this.buildAIContext();
+      this.logger.log(`[GEMINI] Context length: ${context.length} chars`);
 
-      const systemPrompt = `Bạn là trợ lý ảo của Nova Cinema - hệ thống rạp chiếu phim hiện đại.
+      const systemPrompt = `Bạn là trợ lý ảo thân thiện của Nova Cinema.
 
-HƯỚNG DẪN:
-- Trả lời thân thiện, tự nhiên, sử dụng emoji phù hợp
-- CHỈ trả lời dựa trên thông tin được cung cấp bên dưới
-- Nếu không có thông tin, hướng dẫn người dùng liên hệ hotline hoặc website
-- Trả lời ngắn gọn, tối đa 200 từ
-- Sử dụng tiếng Việt
+QUY TẮC QUAN TRỌNG:
+- CHỈ sử dụng thông tin được cung cấp dưới đây
+- Trả lời ngắn gọn, tự nhiên, tối đa 150 từ
+- Sử dụng emoji phù hợp
+- Nếu không có thông tin: hướng dẫn liên hệ hotline ${CINEMA_INFO.HOTLINE} hoặc website ${CINEMA_INFO.WEBSITE}
+- Trả lời bằng tiếng Việt
 
 THÔNG TIN HỆ THỐNG:
 ${context}`;
 
-      const result = await this.model.generateContent({
-        contents: [
-          { role: 'user', parts: [{ text: userMessage }] },
-        ],
-        systemInstruction: systemPrompt,
+      this.logger.log('[GEMINI] Calling Gemini API...');
+      const result = await this.genAI.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: `${systemPrompt}\n\nCâu hỏi: ${userMessage}`,
       });
 
-      const response = result.response.text();
-      return response || this.getFallbackResponse();
+      const response = result.text;
+      this.logger.log(`[GEMINI] Response received: ${response?.substring(0, 100)}...`);
+      
+      // Thêm marker để biết đây là response từ Gemini
+      return response ? `🤖 ${response}` : this.getFallbackResponse();
     } catch (error) {
-      this.logger.error('AI generation error:', error);
+      this.logger.error('[GEMINI] API Error:', error);
       return this.getFallbackResponse();
     }
   }
 
   private async buildAIContext(): Promise<string> {
-    const contextParts: string[] = [];
+    const parts: string[] = [];
 
-    // Thông tin rạp
+    // Rạp chiếu
     try {
       const theaters = await this.theaterService.findTheaters({ isActive: true });
-      if (theaters && theaters.length > 0) {
-        contextParts.push('DANH SÁCH RẠP:');
+      if (theaters?.length > 0) {
+        parts.push('RẠP CHIẾU:');
         theaters.forEach((t) => {
-          contextParts.push(`- ${t.theaterName}: ${t.address || 'N/A'}, Hotline: ${t.hotline || 'N/A'}, ${t.roomsCount} phòng chiếu`);
+          parts.push(`- ${t.theaterName}: ${t.address || 'N/A'} | ${t.hotline || 'N/A'} | ${t.roomsCount} phòng`);
         });
       }
-    } catch (e) {
-      this.logger.warn('Failed to fetch theaters for AI context');
+    } catch {
+      this.logger.warn('Failed to fetch theaters');
     }
 
-    // Thông tin phim đang chiếu
+    // Phim đang chiếu
     try {
-      const movies = await this.movieService.findShowingMoviesPaginated({ page: 1, limit: 10 });
-      if (movies.items && movies.items.length > 0) {
-        contextParts.push('\nPHIM ĐANG CHIẾU:');
+      const movies = await this.movieService.findShowingMoviesPaginated({ page: 1, limit: 8 });
+      if (movies.items?.length > 0) {
+        parts.push('\nPHIM ĐANG CHIẾU:');
         movies.items.forEach((m) => {
-          const genres = m.genres?.join(', ') || 'N/A';
-          contextParts.push(`- ${m.title}: Thể loại ${genres}, ${m.duration} phút, Độ tuổi: ${m.ratingAge || 'Mọi lứa tuổi'}`);
+          const info = `${m.genres?.join(', ') || 'N/A'} | ${m.duration}p | ${m.ratingAge || 'Mọi lứa tuổi'}`;
+          parts.push(`- ${m.title}: ${info}`);
         });
       }
-    } catch (e) {
-      this.logger.warn('Failed to fetch movies for AI context');
+    } catch {
+      this.logger.warn('Failed to fetch movies');
     }
 
-    // Thông tin giá vé
+    // Giá vé
     try {
       const pricing = await this.pricingConfigService.findPricingConfig();
       if (pricing) {
-        contextParts.push(`\nGIÁ VÉ: Giá cơ bản ${pricing.basePrice.toLocaleString('vi-VN')}đ, có phụ thu theo loại ghế và ngày trong tuần`);
+        parts.push(`\nGIÁ VÉ: ${pricing.basePrice.toLocaleString('vi-VN')}đ (có phụ thu theo ghế/phòng/ngày)`);
       }
-    } catch (e) {
-      this.logger.warn('Failed to fetch pricing for AI context');
+    } catch {
+      this.logger.warn('Failed to fetch pricing');
     }
 
-    // Thông tin liên hệ
-    contextParts.push(`\nLIÊN HỆ: Website ${CINEMA_INFO.WEBSITE}, Email ${CINEMA_INFO.EMAIL}, Hotline ${CINEMA_INFO.HOTLINE}`);
+    // Liên hệ
+    parts.push(`\nLIÊN HỆ: ${CINEMA_INFO.HOTLINE} | ${CINEMA_INFO.EMAIL} | ${CINEMA_INFO.WEBSITE}`);
 
-    return contextParts.join('\n');
+    return parts.join('\n');
   }
 
   private getFallbackResponse(): string {

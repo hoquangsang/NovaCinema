@@ -3,9 +3,9 @@
  * Dùng làm fallback khi không lấy được dữ liệu từ database
  */
 export const CINEMA_INFO = {
-  WEBSITE: 'https://nova-cinema.io.vn',
+  WEBSITE: 'https://nova-cinema-smoky.vercel.app/',
   EMAIL: 'support@nova-cinema.io.vn',
-  HOTLINE: '1900-0000',
+  HOTLINE: '1900-7979',
   SUPPORT_HOURS: '8:00 - 22:00 hàng ngày',
 
   // Fallback theaters khi database trống
@@ -32,24 +32,55 @@ export const CINEMA_INFO = {
 
 /**
  * Keywords cho rule-based matching
- * Tổ chức theo nhóm chức năng
+ * - Tập trung vào các câu hỏi thông tin cơ bản
+ * - Các câu hỏi phức tạp sẽ fallback sang Gemini AI
  */
 export const RULE_BASED_KEYWORDS = {
   // Giá vé
-  PRICE: ['giá', 'vé', 'price', 'bao nhiêu tiền', 'giá tiền', 'ticket'] as const,
+  PRICE: [
+    'giá vé',
+    'giá tiền',
+    'bao nhiêu tiền',
+    'chi phí',
+    'giá cả',
+    'vé giá',
+  ] as const,
 
   // Địa chỉ rạp
-  ADDRESS: ['địa chỉ', 'ở đâu', 'location', 'rạp ở', 'chỗ nào', 'đường nào'] as const,
-
-  // Lịch chiếu (hướng dẫn truy cập website)
-  SHOWTIME: ['giờ chiếu', 'lịch chiếu', 'suất chiếu', 'chiếu lúc', 'mấy giờ', 'showtime', 'hôm nay'] as const,
+  ADDRESS: [
+    'địa chỉ',
+    'ở đâu',
+    'vị trí',
+    'chỗ nào',
+    'đường nào',
+    'rạp nào',
+  ] as const,
 
   // Phim đang chiếu
-  MOVIES: ['phim gì', 'phim nào', 'đang chiếu', 'phim mới', 'phim hay', 'danh sách phim', 'movies'] as const,
+  MOVIES: [
+    'phim đang chiếu',
+    'phim gì',
+    'có phim',
+    'danh sách phim',
+    'phim nào',
+  ] as const,
 
   // Liên hệ
-  CONTACT: ['liên hệ', 'hotline', 'hỗ trợ', 'contact', 'support', 'email', 'điện thoại'] as const,
+  CONTACT: [
+    'liên hệ',
+    'hotline',
+    'số điện thoại',
+    'liên lạc',
+    'hỗ trợ',
+    'email',
+  ] as const,
 
   // Lời chào
-  GREETING: ['xin chào', 'hello', 'hi', 'chào', 'hey', 'alo'] as const,
+  GREETING: [
+    'xin chào',
+    'hello',
+    'hi',
+    'chào',
+    'hey',
+  ] as const,
 } as const;

@@ -4,7 +4,6 @@ import { ChatController } from './controllers';
 import { ChatService } from './services';
 import { MoviesModule } from '../movies';
 import { TheatersModule } from '../theaters';
-import { ShowtimesModule } from '../showtimes';
 import { PricingConfigModule } from '../pricing-configs';
 
 @Module({
@@ -12,7 +11,6 @@ import { PricingConfigModule } from '../pricing-configs';
     ConfigModule,
     MoviesModule,
     TheatersModule,
-    ShowtimesModule,
     PricingConfigModule,
   ],
   controllers: [ChatController],
