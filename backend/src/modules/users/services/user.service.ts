@@ -259,6 +259,17 @@ export class UserService {
     return this.updateUserStatusById(id, false);
   }
 
+  public async changeUserRolesById(id: string, roles: UserRole[]) {
+    const { modifiedItem: updatedUser } =
+      await this.userRepo.command.updateOneById({
+        id,
+        update: { roles },
+      });
+
+    if (!updatedUser) throw new NotFoundException('User not found');
+    return this.stripPassword(updatedUser);
+  }
+
   /** */
   public async deleteUserById(id: string) {
     const exists = await this.userRepo.query.exists({

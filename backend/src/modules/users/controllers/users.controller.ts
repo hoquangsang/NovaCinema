@@ -24,6 +24,7 @@ import { USER_ROLES } from '../constants';
 import { UserService } from '../services';
 import {
   ChangePasswordReqDto,
+  ChangeRolesReqDto,
   PaginatedQueryUsersReqDto,
   UpdateProfileReqDto,
 } from '../dtos/requests';
@@ -104,5 +105,17 @@ export class UserController {
   @Delete('users:id')
   public async deleteUser(@Param('id', ParseObjectIdPipe) id: string) {
     return await this.userService.deleteUserById(id);
+  }
+
+  @ApiOperation({ description: 'Change user roles (Super Admin only)' })
+  @WrapOkResponse({ dto: UserResDto, message: 'Roles updated successfully' })
+  @RequireRoles(USER_ROLES.SUPER_ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @Patch('users/:id/roles')
+  public async changeUserRoles(
+    @Param('id', ParseObjectIdPipe) id: string,
+    @Body() dto: ChangeRolesReqDto,
+  ) {
+    return await this.userService.changeUserRolesById(id, dto.roles);
   }
 }
