@@ -17,6 +17,7 @@ import { ShowtimesModule } from './modules/showtimes';
 import { BookingsModule } from './modules/bookings';
 import { PaymentsModule } from './modules/payments';
 import { TicketsModule } from './modules/tickets';
+import { ChatModule } from './modules/chat';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { TicketsModule } from './modules/tickets';
     BookingsModule,
     PaymentsModule,
     TicketsModule,
+    ChatModule,
   ],
 
   providers: [
