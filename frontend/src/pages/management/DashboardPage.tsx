@@ -199,37 +199,36 @@ const RevenueChart = ({ data, loading }: RevenueChartProps) => {
                         </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis 
-                        dataKey="date" 
+                    <XAxis
+                        dataKey="date"
                         tick={{ fontSize: 12, fill: '#6b7280' }}
                         tickLine={{ stroke: '#e5e7eb' }}
                         axisLine={{ stroke: '#e5e7eb' }}
                     />
-                    <YAxis 
+                    <YAxis
                         tickFormatter={formatShortCurrency}
                         tick={{ fontSize: 12, fill: '#6b7280' }}
                         tickLine={{ stroke: '#e5e7eb' }}
                         axisLine={{ stroke: '#e5e7eb' }}
                     />
                     <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(99, 102, 241, 0.1)' }} />
-                    <Legend 
+                    <Legend
                         formatter={(value) => value === 'revenue' ? 'Doanh thu' : 'Giao dịch'}
                         wrapperStyle={{ paddingTop: '20px' }}
                     />
-                    <Bar 
-                        dataKey="revenue" 
-                        fill="url(#revenueGradient)" 
+                    <Bar
+                        dataKey="revenue"
+                        fill="url(#revenueGradient)"
                         radius={[4, 4, 0, 0]}
                         animationDuration={1000}
                         animationBegin={0}
                     />
-                    <Bar 
-                        dataKey="transactions" 
-                        fill="#10b981" 
+                    <Bar
+                        dataKey="transactions"
+                        fill="#10b981"
                         radius={[4, 4, 0, 0]}
                         animationDuration={1000}
                         animationBegin={200}
-                        hide
                     />
                 </BarChart>
             </ResponsiveContainer>
