@@ -2,7 +2,7 @@ import { Ticket, Search, UserCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../common/Button';
 import { useAuth } from '../../context/AuthContext';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 // Helper function to get last name from full name
 const getLastName = (fullName: string): string => {
@@ -14,8 +14,25 @@ export default function Header() {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
-  const handleLogout = () => {
+  // Auto search with 500ms debounce
+  useEffect(() => {
+    if (!searchQuery.trim()) return;
+
+    const timer = setTimeout(() => {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, navigate]);
+
+  const handleLogoutClick = () => {
+    setShowLogoutDialog(true);
+  };
+
+  const confirmLogout = () => {
+    setShowLogoutDialog(false);
     logout();
     navigate('/');
   };
@@ -88,12 +105,6 @@ export default function Header() {
                     >
                       My Profile
                     </Link>
-                    <Link
-                      to="/bookings"
-                      className="block px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-gray-100"
-                    >
-                      My Bookings
-                    </Link>
                     {/* Management option - only visible for admin users */}
                     {user?.roles?.includes('ADMIN') && (
                       <Link
@@ -104,7 +115,7 @@ export default function Header() {
                       </Link>
                     )}
                     <button
-                      onClick={handleLogout}
+                      onClick={handleLogoutClick}
                       className="w-full text-left px-4 py-2 text-sm text-red-600 cursor-pointer hover:bg-gray-100"
                     >
                       Logout
@@ -152,6 +163,30 @@ export default function Header() {
           </nav>
         </div>
       </div>
+
+      {/* Logout Confirmation Dialog */}
+      {showLogoutDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
+          <div className="bg-white rounded-lg p-6 max-w-sm mx-4 shadow-xl">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Xác nhận đăng xuất</h3>
+            <p className="text-gray-600 mb-6">Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?</p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowLogoutDialog(false)}
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={confirmLogout}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Đăng xuất
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   )
 }

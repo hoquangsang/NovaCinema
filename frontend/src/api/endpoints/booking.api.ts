@@ -30,7 +30,7 @@ export interface BookingSeat {
     unitPrice: number;
 }
 
-export type BookingStatus = 'DRAFT' | 'CONFIRMED' | 'CANCELLED';
+export type BookingStatus = 'DRAFT' | 'PENDING_PAYMENT' | 'CONFIRMED' | 'CANCELLED' | 'EXPIRED';
 
 export interface Booking {
     _id: string;
@@ -60,6 +60,25 @@ export interface CreateBookingDto {
 export interface ConfirmBookingDto {
     paymentMethod: 'CASH' | 'CARD' | 'MOMO' | 'VNPAY';
     voucherCode?: string;
+}
+
+export interface BookingHistoryQuery {
+    page?: number;
+    limit?: number;
+    status?: BookingStatus[];
+    from?: string;
+    to?: string;
+    movieTitle?: string;
+    theaterName?: string;
+    roomType?: ('2D' | '3D' | 'VIP')[];
+}
+
+export interface PaginatedBookings {
+    items: Booking[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
 }
 
 // ==================== API ====================
@@ -113,5 +132,15 @@ export const bookingApi = {
      */
     cancelBooking: async (bookingId: string): Promise<void> => {
         await apiClient.delete(`/bookings/${bookingId}`);
+    },
+
+    /**
+     * Get current user's booking history with pagination
+     * Returns paginated list of bookings for the logged-in user
+     */
+    getUserBookings: async (query?: BookingHistoryQuery): Promise<PaginatedBookings> => {
+        const response = await apiClient.get('/users/me/bookings', { params: query });
+        // Interceptor already transformed the response, so just return it directly
+        return response as any;
     },
 };

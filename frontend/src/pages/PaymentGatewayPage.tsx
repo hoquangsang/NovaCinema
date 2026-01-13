@@ -68,7 +68,7 @@ export default function PaymentGatewayPage() {
                 sessionStorage.removeItem(STORAGE_KEY);
             }
         }
-        
+
         // Redirect if no booking data and no saved state
         if (!state || !state.showtime || !state.selectedSeats || state.selectedSeats.length === 0) {
             navigate('/');
@@ -101,13 +101,13 @@ export default function PaymentGatewayPage() {
     // Poll payment status
     useEffect(() => {
         let pollInterval: ReturnType<typeof setInterval> | null = null;
-        
+
         if (step === 'pending' && payment) {
             pollInterval = setInterval(async () => {
                 try {
                     setStep('checking');
                     const paymentDetail = await paymentApi.getPaymentById(payment._id);
-                    
+
                     if (paymentDetail.status === 'PAID') {
                         setStep('success');
                         sessionStorage.removeItem(STORAGE_KEY); // Clear saved state
@@ -158,8 +158,8 @@ export default function PaymentGatewayPage() {
             }));
         } catch (err: unknown) {
             console.error('Payment creation error:', err);
-            const errorMessage = 
-                (err as { message?: string })?.message || 
+            const errorMessage =
+                (err as { message?: string })?.message ||
                 'Failed to create payment. Please try again.';
             setError(errorMessage);
             setStep('failed');
@@ -253,7 +253,7 @@ export default function PaymentGatewayPage() {
                     </div>
                     <h1 className="text-3xl font-bold text-gray-800 mb-2">Payment Successful!</h1>
                     <p className="text-gray-600 mb-6">Your booking has been confirmed</p>
-                    
+
                     <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
                         <p className="text-sm text-gray-600 mb-1">Order Code</p>
                         <p className="text-lg font-bold text-gray-800">{payment?.orderCode}</p>
@@ -264,7 +264,7 @@ export default function PaymentGatewayPage() {
                     </div>
 
                     <button
-                        onClick={() => navigate('/profile/bookings')}
+                        onClick={() => navigate('/profile')}
                         className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-3 rounded-lg transition-all shadow-lg"
                     >
                         View My Bookings
@@ -297,11 +297,11 @@ export default function PaymentGatewayPage() {
                         {step === 'expired' ? 'Hết thời gian thanh toán' : 'Thanh toán thất bại'}
                     </h1>
                     <p className="text-gray-600 mb-6">
-                        {step === 'expired' 
-                            ? 'Thời gian thanh toán đã hết. Vui lòng thử lại.' 
+                        {step === 'expired'
+                            ? 'Thời gian thanh toán đã hết. Vui lòng thử lại.'
                             : error || 'Thanh toán không thành công.'}
                     </p>
-                    
+
                     <button
                         onClick={handleRetry}
                         className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold py-3 rounded-lg transition-all shadow-lg"
@@ -343,8 +343,8 @@ export default function PaymentGatewayPage() {
                         {payment?.qrCode ? (
                             <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 mb-6 flex justify-center">
                                 <div className="bg-white p-4 rounded-lg shadow-lg">
-                                    <QRCodeSVG 
-                                        value={payment.qrCode} 
+                                    <QRCodeSVG
+                                        value={payment.qrCode}
                                         size={280}
                                         level="M"
                                         includeMargin={true}
@@ -354,7 +354,7 @@ export default function PaymentGatewayPage() {
                         ) : payment?.checkoutUrl ? (
                             <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 mb-6">
                                 <p className="text-center text-gray-700 mb-4">QR Code not available, but you can use this link:</p>
-                                <a 
+                                <a
                                     href={payment.checkoutUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
@@ -391,7 +391,7 @@ export default function PaymentGatewayPage() {
                                             <span className="text-gray-600">Số TK:</span>
                                             <div className="flex items-center gap-2">
                                                 <span className="font-mono font-medium text-gray-900">{payment.accountNumber}</span>
-                                                <button 
+                                                <button
                                                     onClick={() => {
                                                         navigator.clipboard.writeText(payment.accountNumber || '');
                                                         alert('Đã copy số tài khoản!');
@@ -413,7 +413,7 @@ export default function PaymentGatewayPage() {
                                         <span className="text-gray-600">Số tiền:</span>
                                         <div className="flex items-center gap-2">
                                             <span className="font-bold text-green-700">{formatCurrency(payment.amount)}</span>
-                                            <button 
+                                            <button
                                                 onClick={() => {
                                                     navigator.clipboard.writeText(payment.amount.toString());
                                                     alert('Đã copy số tiền!');
@@ -428,7 +428,7 @@ export default function PaymentGatewayPage() {
                                         <span className="text-gray-600">Nội dung CK:</span>
                                         <div className="flex items-center gap-2">
                                             <span className="font-mono text-xs text-gray-900">{payment.transferContent || payment.orderCode}</span>
-                                            <button 
+                                            <button
                                                 onClick={() => {
                                                     navigator.clipboard.writeText(payment.transferContent || payment.orderCode || '');
                                                     alert('Đã copy nội dung chuyển khoản!');
@@ -514,7 +514,7 @@ export default function PaymentGatewayPage() {
                                 <p className="text-sm text-gray-300 mb-2">Selected Seats</p>
                                 <div className="flex flex-wrap gap-2">
                                     {selectedSeats.map(seat => (
-                                        <span 
+                                        <span
                                             key={seat.seatCode}
                                             className="bg-gradient-to-r from-blue-500 to-purple-600 px-3 py-1 rounded-lg text-sm font-semibold"
                                         >
