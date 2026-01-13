@@ -106,11 +106,11 @@ const BookingDetailDialog = ({ booking, isOpen, onClose }: Props) => {
 
     return (
         <div
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-transparent flex items-center justify-center z-50 p-4"
             onClick={onClose}
         >
             <div
-                className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+                className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
@@ -280,10 +280,10 @@ const BookingDetailDialog = ({ booking, isOpen, onClose }: Props) => {
                                             <div className="bg-white p-2 rounded-lg shadow-sm">
                                                 <Barcode
                                                     value={ticket.code}
-                                                    width={1.5}
-                                                    height={60}
-                                                    fontSize={12}
-                                                    margin={5}
+                                                    width={1}
+                                                    height={50}
+                                                    fontSize={10}
+                                                    margin={2}
                                                 />
                                             </div>
                                         </div>
