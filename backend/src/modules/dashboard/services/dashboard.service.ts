@@ -233,4 +233,92 @@ export class DashboardService {
     }
     return Math.round(((current - previous) / previous) * 100);
   }
+
+  /**
+   * Get revenue chart data for a date range
+   * Aggregates daily revenue from PAID payments
+   */
+  async getRevenueChart(
+    startDate: Date,
+    endDate: Date,
+  ): Promise<{
+    data: { date: string; revenue: number; transactions: number }[];
+    totalRevenue: number;
+    totalTransactions: number;
+  }> {
+    // Ensure endDate includes the full day
+    const endOfDay = DateUtil.endOfDay(endDate);
+
+    // Aggregate payments by day
+    const dailyRevenue = await this.paymentModel.aggregate([
+      {
+        $match: {
+          status: PAYMENT_STATUSES.PAID,
+          transactionAt: {
+            $gte: startDate,
+            $lte: endOfDay,
+          },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: '$transactionAt' },
+            month: { $month: '$transactionAt' },
+            day: { $dayOfMonth: '$transactionAt' },
+          },
+          revenue: { $sum: '$amount' },
+          transactions: { $sum: 1 },
+        },
+      },
+      {
+        $sort: {
+          '_id.year': 1,
+          '_id.month': 1,
+          '_id.day': 1,
+        },
+      },
+    ]);
+
+    // Build a map of date string to data
+    const revenueMap = new Map<string, { revenue: number; transactions: number }>();
+    dailyRevenue.forEach((item) => {
+      const dateStr = `${item._id.year}-${String(item._id.month).padStart(2, '0')}-${String(item._id.day).padStart(2, '0')}`;
+      revenueMap.set(dateStr, {
+        revenue: item.revenue,
+        transactions: item.transactions,
+      });
+    });
+
+    // Generate all dates in range and fill with data
+    const data: { date: string; revenue: number; transactions: number }[] = [];
+    let totalRevenue = 0;
+    let totalTransactions = 0;
+
+    let currentDate = DateUtil.startOfDay(startDate);
+    const endDateDay = DateUtil.startOfDay(endDate);
+
+    while (currentDate <= endDateDay) {
+      const dateStr = DateUtil.toDateString(currentDate);
+      const dayData = revenueMap.get(dateStr) || { revenue: 0, transactions: 0 };
+
+      data.push({
+        date: dateStr,
+        revenue: dayData.revenue,
+        transactions: dayData.transactions,
+      });
+
+      totalRevenue += dayData.revenue;
+      totalTransactions += dayData.transactions;
+
+      currentDate = DateUtil.add(currentDate, { days: 1 });
+    }
+
+    return {
+      data,
+      totalRevenue,
+      totalTransactions,
+    };
+  }
 }
+
