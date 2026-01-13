@@ -105,12 +105,6 @@ export default function Header() {
                     >
                       My Profile
                     </Link>
-                    <Link
-                      to="/bookings"
-                      className="block px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-gray-100"
-                    >
-                      My Bookings
-                    </Link>
                     {/* Management option - only visible for admin users */}
                     {user?.roles?.includes('ADMIN') && (
                       <Link

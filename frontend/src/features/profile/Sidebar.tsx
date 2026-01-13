@@ -6,10 +6,11 @@ import { UserCircle, History, LogOut } from 'lucide-react';
 interface Props {
   user: User | null;
   onLogout: () => void;
+  selected: 'info' | 'history';
+  onTabChange: (tab: 'info' | 'history') => void;
 }
 
-const Sidebar = ({ user, onLogout }: Props) => {
-  const [selected, setSelected] = useState<'info' | 'history' | 'logout'>('info');
+const Sidebar = ({ user, onLogout, selected, onTabChange }: Props) => {
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
   const handleLogoutClick = () => {
@@ -49,14 +50,14 @@ const Sidebar = ({ user, onLogout }: Props) => {
 
     <div className="mt-3">
       <a
-        onClick={() => setSelected('info')}
+        onClick={() => onTabChange('info')}
         className={itemClass('info')}
       >
         <UserCircle className="mr-3" size={18} />
         Thông tin khách hàng
       </a>
       <a
-        onClick={() => setSelected('history')}
+        onClick={() => onTabChange('history')}
         className={itemClass('history')}
       >
         <History className="mr-3" size={18} />
@@ -64,7 +65,7 @@ const Sidebar = ({ user, onLogout }: Props) => {
       </a>
       <button
         type="button"
-        onClick={() => { setSelected('logout'); handleLogoutClick(); }}
+        onClick={handleLogoutClick}
         className={itemClass('logout')}
       >
         <LogOut className="mr-3" size={18} />
