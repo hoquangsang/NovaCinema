@@ -26,6 +26,7 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import SearchResultsPage from "./pages/SearchResultsPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import PaymentStatusPage from "./pages/PaymentStatusPage";
+import PaymentGatewayPage from "./pages/PaymentGatewayPage";
 
 import "./App.css";
 
@@ -62,6 +63,11 @@ function App() {
             <Route path="checkout" element={
               <ProtectedRoute>
                 <CheckoutPage />
+              </ProtectedRoute>
+            } />
+            <Route path="payment-gateway" element={
+              <ProtectedRoute>
+                <PaymentGatewayPage />
               </ProtectedRoute>
             } />
             <Route path="payments/callback" element={<PaymentStatusPage />} />
