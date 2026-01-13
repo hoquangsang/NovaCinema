@@ -282,6 +282,22 @@ export class UserService {
       throw new InternalServerErrorException('Deletion failed');
   }
 
+  /** Reset password by email (for forgot password flow) */
+  public async resetPasswordByEmail(email: string, newPassword: string) {
+    const user = await this.userRepo.query.findOneByEmail({ email });
+    if (!user) throw new NotFoundException('User not found');
+
+    const hashed = await HashUtil.hash(newPassword);
+    const { modifiedItem: updatedUser } =
+      await this.userRepo.command.updateOneById({
+        id: user._id.toString(),
+        update: { password: hashed },
+      });
+
+    if (!updatedUser) throw new NotFoundException('User not found');
+    return this.stripPassword(updatedUser);
+  }
+
   /** */
   private stripPassword<T extends { password?: string }>(user: T) {
     const { password: _, ...userSafe } = user;
