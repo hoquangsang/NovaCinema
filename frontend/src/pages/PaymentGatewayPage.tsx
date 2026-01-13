@@ -27,7 +27,6 @@ export default function PaymentGatewayPage() {
 
     const [step, setStep] = useState<PaymentStep>('creating');
     const [payment, setPayment] = useState<PaymentCheckout | null>(null);
-    const [bookingId, setBookingId] = useState<string>('');
     const [timeLeft, setTimeLeft] = useState(600); // 10 minutes
     const [error, setError] = useState<string>('');
     const [showCancelModal, setShowCancelModal] = useState(false);
@@ -43,7 +42,6 @@ export default function PaymentGatewayPage() {
                 const parsed = JSON.parse(savedPayment);
                 if (parsed.payment && parsed.showtime && parsed.selectedSeats) {
                     setPayment(parsed.payment);
-                    setBookingId(parsed.bookingId || '');
                     setStep('pending');
                     // Calculate remaining time
                     if (parsed.createdAt) {
@@ -137,7 +135,6 @@ export default function PaymentGatewayPage() {
             const booking = await bookingApi.createBooking(state.showtime._id, {
                 selectedSeats: state.selectedSeats.map(s => s.seatCode),
             });
-            setBookingId(booking._id);
 
             // Create payment
             const paymentData = await paymentApi.createPayment(booking._id);
@@ -278,6 +275,11 @@ export default function PaymentGatewayPage() {
 
     // Payment failed or expired
     if (step === 'failed' || step === 'expired') {
+        const handleRetry = () => {
+            clearSavedPayment(); // Clear old payment state
+            navigate(-1); // Go back to checkout to create new payment
+        };
+
         return (
             <div className="min-h-screen bg-gradient-to-br from-red-900 via-rose-800 to-pink-900 flex items-center justify-center p-4">
                 <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center">
@@ -285,25 +287,28 @@ export default function PaymentGatewayPage() {
                         <XCircle className="text-red-600" size={48} />
                     </div>
                     <h1 className="text-3xl font-bold text-gray-800 mb-2">
-                        {step === 'expired' ? 'Payment Expired' : 'Payment Failed'}
+                        {step === 'expired' ? 'Hết thời gian thanh toán' : 'Thanh toán thất bại'}
                     </h1>
                     <p className="text-gray-600 mb-6">
                         {step === 'expired' 
-                            ? 'Your payment time has expired. Please try again.' 
-                            : error || 'The payment was not completed successfully.'}
+                            ? 'Thời gian thanh toán đã hết. Vui lòng thử lại.' 
+                            : error || 'Thanh toán không thành công.'}
                     </p>
                     
                     <button
-                        onClick={() => navigate(-1)}
+                        onClick={handleRetry}
                         className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold py-3 rounded-lg transition-all shadow-lg"
                     >
-                        Try Again
+                        Thử lại
                     </button>
                     <button
-                        onClick={() => navigate('/')}
+                        onClick={() => {
+                            clearSavedPayment();
+                            navigate('/');
+                        }}
                         className="w-full mt-3 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-3 rounded-lg transition-all"
                     >
-                        Back to Home
+                        Về trang chủ
                     </button>
                 </div>
             </div>
