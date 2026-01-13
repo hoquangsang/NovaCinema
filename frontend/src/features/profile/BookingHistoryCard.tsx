@@ -57,12 +57,16 @@ const BookingHistoryCard = () => {
         setCurrentPage(1); // Reset to first page when filtering
     };
 
-    const handleViewDetails = (booking: Booking) => {
+    const handleViewDetails = (e: React.MouseEvent, booking: Booking) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('Opening dialog for booking:', booking._id);
         setSelectedBooking(booking);
         setIsDialogOpen(true);
     };
 
     const handleCloseDialog = () => {
+        console.log('Closing dialog');
         setIsDialogOpen(false);
         setSelectedBooking(null);
     };
@@ -165,7 +169,7 @@ const BookingHistoryCard = () => {
                         {bookings.items.map((booking: Booking) => (
                             <div
                                 key={booking._id}
-                                onClick={() => handleViewDetails(booking)}
+                                onClick={(e) => handleViewDetails(e, booking)}
                                 className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer hover:border-purple-300"
                             >
                                 <div className="flex justify-between items-start mb-3">
