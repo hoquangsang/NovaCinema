@@ -32,6 +32,8 @@ export interface BookingSeat {
 
 export type BookingStatus = 'DRAFT' | 'PENDING_PAYMENT' | 'CONFIRMED' | 'CANCELLED' | 'EXPIRED';
 
+export type RoomType = '2D' | '3D' | 'VIP';
+
 export interface Ticket {
     _id: string;
     code: string;
@@ -104,6 +106,36 @@ export interface PaginatedBookings {
     totalPages: number;
 }
 
+// Query params for admin booking management
+export interface AdminBookingQuery {
+    page?: number;
+    limit?: number;
+    sort?: string[];
+    search?: string;
+    userId?: string;
+    movieId?: string;
+    theaterId?: string;
+    roomId?: string;
+    status?: BookingStatus | BookingStatus[];
+    username?: string;
+    movieTitle?: string;
+    theaterName?: string;
+    roomName?: string;
+    roomType?: RoomType | RoomType[];
+    from?: string; // Date string
+    to?: string; // Date string
+}
+
+// Query params for showtime bookings
+export interface AdminBookingByShowtimeQuery {
+    page?: number;
+    limit?: number;
+    sort?: string[];
+    userId?: string;
+    username?: string;
+    status?: BookingStatus | BookingStatus[];
+}
+
 // ==================== API ====================
 
 export const bookingApi = {
@@ -155,6 +187,23 @@ export const bookingApi = {
      */
     cancelBooking: async (bookingId: string): Promise<void> => {
         await apiClient.delete(`/bookings/${bookingId}`);
+    },
+
+    /**
+     * Get paginated list of all bookings (Admin only)
+     * Supports filtering by various fields
+     */
+    getPaginatedBookings: async (query: AdminBookingQuery): Promise<PaginatedBookings> => {
+        const response = await apiClient.get('/bookings', { params: query });
+        return response as any;
+    },
+
+    /**
+     * Get paginated bookings for a specific showtime (Admin only)
+     */
+    getPaginatedBookingsByShowtime: async (showtimeId: string, query: AdminBookingByShowtimeQuery): Promise<PaginatedBookings> => {
+        const response = await apiClient.get(`/showtimes/${showtimeId}/bookings`, { params: query });
+        return response as any;
     },
 
     /**
