@@ -84,7 +84,7 @@ export class UserController {
   @WrapOkResponse({ dto: UserResDto, message: 'Activated successful' })
   @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.OK)
-  @Patch('users:id/activate')
+  @Patch('users/:id/activate')
   public async activateUser(@Param('id', ParseObjectIdPipe) id: string) {
     return await this.userService.activateUserById(id);
   }
@@ -93,7 +93,7 @@ export class UserController {
   @WrapOkResponse({ dto: UserResDto, message: 'Deactivated successful' })
   @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.OK)
-  @Patch('users:id/deactivate')
+  @Patch('users/:id/deactivate')
   public async deactivateUser(@Param('id', ParseObjectIdPipe) id: string) {
     return await this.userService.deactivateUserById(id);
   }
@@ -102,7 +102,7 @@ export class UserController {
   @WrapNoContentResponse({ message: 'Deleted successfully' })
   @RequireRoles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Delete('users:id')
+  @Delete('users/:id')
   public async deleteUser(@Param('id', ParseObjectIdPipe) id: string) {
     return await this.userService.deleteUserById(id);
   }
