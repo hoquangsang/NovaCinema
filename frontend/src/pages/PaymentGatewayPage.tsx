@@ -32,16 +32,46 @@ export default function PaymentGatewayPage() {
     const [error, setError] = useState<string>('');
     const [pollingCount, setPollingCount] = useState(0);
 
-    // Redirect if no booking data
+    // Storage key for persisting payment state
+    const STORAGE_KEY = 'pendingPaymentGateway';
+
+    // Load saved payment state on mount (for page reload)
     useEffect(() => {
+        const savedPayment = sessionStorage.getItem(STORAGE_KEY);
+        if (savedPayment) {
+            try {
+                const parsed = JSON.parse(savedPayment);
+                if (parsed.payment && parsed.showtime && parsed.selectedSeats) {
+                    setPayment(parsed.payment);
+                    setBookingId(parsed.bookingId || '');
+                    setStep('pending');
+                    // Calculate remaining time
+                    if (parsed.createdAt) {
+                        const elapsed = Math.floor((Date.now() - parsed.createdAt) / 1000);
+                        const remaining = Math.max(0, 600 - elapsed);
+                        setTimeLeft(remaining);
+                        if (remaining <= 0) {
+                            setStep('expired');
+                        }
+                    }
+                    return; // Don't redirect, we have saved state
+                }
+            } catch (e) {
+                console.error('Failed to parse saved payment:', e);
+                sessionStorage.removeItem(STORAGE_KEY);
+            }
+        }
+        
+        // Redirect if no booking data and no saved state
         if (!state || !state.showtime || !state.selectedSeats || state.selectedSeats.length === 0) {
             navigate('/');
         }
-    }, [state, navigate]);
+    }, [navigate, state]);
 
-    // Create booking and payment on mount
+    // Create booking and payment on mount (only if no saved payment)
     useEffect(() => {
-        if (state && step === 'creating') {
+        const savedPayment = sessionStorage.getItem(STORAGE_KEY);
+        if (state && step === 'creating' && !savedPayment) {
             createPayment();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -77,9 +107,11 @@ export default function PaymentGatewayPage() {
                     
                     if (paymentDetail.status === 'PAID') {
                         setStep('success');
+                        sessionStorage.removeItem(STORAGE_KEY); // Clear saved state
                         if (pollInterval) clearInterval(pollInterval);
                     } else if (paymentDetail.status === 'CANCELLED' || paymentDetail.status === 'FAILED') {
                         setStep('failed');
+                        sessionStorage.removeItem(STORAGE_KEY); // Clear saved state
                         if (pollInterval) clearInterval(pollInterval);
                     } else {
                         setStep('pending');
@@ -112,6 +144,16 @@ export default function PaymentGatewayPage() {
             const paymentData = await paymentApi.createPayment(booking._id);
             setPayment(paymentData);
             setStep('pending');
+
+            // Save to sessionStorage for page reload
+            sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
+                payment: paymentData,
+                bookingId: booking._id,
+                showtime: state.showtime,
+                selectedSeats: state.selectedSeats,
+                totalAmount: state.totalAmount,
+                createdAt: Date.now(),
+            }));
         } catch (err: unknown) {
             console.error('Payment creation error:', err);
             const errorMessage = 
@@ -122,16 +164,24 @@ export default function PaymentGatewayPage() {
         }
     };
 
+    // Clear saved payment state
+    const clearSavedPayment = () => {
+        sessionStorage.removeItem(STORAGE_KEY);
+    };
+
     const handleCancel = async () => {
-        if (payment && window.confirm('Are you sure you want to cancel this payment?')) {
+        if (payment && window.confirm('Bạn có chắc muốn hủy thanh toán này?')) {
             try {
                 await paymentApi.cancelPayment(payment._id, 'User cancelled');
+                clearSavedPayment();
                 navigate('/');
             } catch (err) {
                 console.error('Failed to cancel payment:', err);
+                clearSavedPayment();
                 navigate('/');
             }
-        } else {
+        } else if (!payment) {
+            clearSavedPayment();
             navigate('/');
         }
     };
@@ -317,17 +367,93 @@ export default function PaymentGatewayPage() {
                             </div>
                         )}
 
+                        {/* Bank Transfer Info */}
+                        {payment && (
+                            <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 mb-6 border border-green-200">
+                                <h3 className="text-sm font-semibold text-green-900 mb-3 flex items-center gap-2">
+                                    <CreditCard size={16} />
+                                    Hoặc chuyển khoản thủ công:
+                                </h3>
+                                <div className="space-y-2 text-sm">
+                                    {payment.accountName && (
+                                        <div className="flex justify-between items-center bg-white/60 rounded-lg px-3 py-2">
+                                            <span className="text-gray-600">Chủ TK:</span>
+                                            <span className="font-medium text-gray-900">{payment.accountName}</span>
+                                        </div>
+                                    )}
+                                    {payment.accountNumber && (
+                                        <div className="flex justify-between items-center bg-white/60 rounded-lg px-3 py-2">
+                                            <span className="text-gray-600">Số TK:</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-mono font-medium text-gray-900">{payment.accountNumber}</span>
+                                                <button 
+                                                    onClick={() => {
+                                                        navigator.clipboard.writeText(payment.accountNumber || '');
+                                                        alert('Đã copy số tài khoản!');
+                                                    }}
+                                                    className="text-green-600 hover:text-green-800 text-xs bg-green-100 px-2 py-1 rounded"
+                                                >
+                                                    Copy
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {payment.bin && (
+                                        <div className="flex justify-between items-center bg-white/60 rounded-lg px-3 py-2">
+                                            <span className="text-gray-600">Ngân hàng:</span>
+                                            <span className="font-medium text-gray-900">Mã BIN: {payment.bin}</span>
+                                        </div>
+                                    )}
+                                    <div className="flex justify-between items-center bg-white/60 rounded-lg px-3 py-2">
+                                        <span className="text-gray-600">Số tiền:</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-bold text-green-700">{formatCurrency(payment.amount)}</span>
+                                            <button 
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText(payment.amount.toString());
+                                                    alert('Đã copy số tiền!');
+                                                }}
+                                                className="text-green-600 hover:text-green-800 text-xs bg-green-100 px-2 py-1 rounded"
+                                            >
+                                                Copy
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-between items-center bg-white/60 rounded-lg px-3 py-2">
+                                        <span className="text-gray-600">Nội dung CK:</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-mono text-xs text-gray-900">{payment.transferContent || payment.orderCode}</span>
+                                            <button 
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText(payment.transferContent || payment.orderCode || '');
+                                                    alert('Đã copy nội dung chuyển khoản!');
+                                                }}
+                                                className="text-green-600 hover:text-green-800 text-xs bg-green-100 px-2 py-1 rounded"
+                                            >
+                                                Copy
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                {!payment.accountNumber && (
+                                    <p className="text-xs text-amber-700 mt-3 italic">
+                                        * Thông tin ngân hàng sẽ hiển thị khi quét QR code bằng app ngân hàng
+                                    </p>
+                                )}
+                            </div>
+                        )}
+
                         {/* Payment Info */}
                         <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 border border-blue-200">
                             <div className="flex items-start gap-3">
                                 <AlertCircle className="text-blue-600 flex-shrink-0 mt-1" size={20} />
                                 <div className="text-sm">
-                                    <p className="font-semibold text-blue-900 mb-1">Payment Instructions:</p>
+                                    <p className="font-semibold text-blue-900 mb-1">Hướng dẫn thanh toán:</p>
                                     <ul className="text-blue-800 space-y-1 list-disc list-inside">
-                                        <li>Open your banking app</li>
-                                        <li>Select "Scan QR Code"</li>
-                                        <li>Scan the code above</li>
-                                        <li>Confirm the payment</li>
+                                        <li>Mở ứng dụng ngân hàng của bạn</li>
+                                        <li>Chọn "Quét mã QR" hoặc chuyển khoản thủ công</li>
+                                        <li>Quét mã QR ở trên hoặc nhập thông tin chuyển khoản</li>
+                                        <li>Xác nhận thanh toán</li>
                                     </ul>
                                 </div>
                             </div>
