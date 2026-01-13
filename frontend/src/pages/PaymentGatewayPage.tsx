@@ -30,7 +30,7 @@ export default function PaymentGatewayPage() {
     const [bookingId, setBookingId] = useState<string>('');
     const [timeLeft, setTimeLeft] = useState(600); // 10 minutes
     const [error, setError] = useState<string>('');
-    const [pollingCount, setPollingCount] = useState(0);
+    const [showCancelModal, setShowCancelModal] = useState(false);
 
     // Storage key for persisting payment state
     const STORAGE_KEY = 'pendingPaymentGateway';
@@ -115,7 +115,6 @@ export default function PaymentGatewayPage() {
                         if (pollInterval) clearInterval(pollInterval);
                     } else {
                         setStep('pending');
-                        setPollingCount(prev => prev + 1);
                     }
                 } catch (err) {
                     console.error('Failed to check payment status:', err);
@@ -169,8 +168,17 @@ export default function PaymentGatewayPage() {
         sessionStorage.removeItem(STORAGE_KEY);
     };
 
-    const handleCancel = async () => {
-        if (payment && window.confirm('Bạn có chắc muốn hủy thanh toán này?')) {
+    const handleCancel = () => {
+        if (payment) {
+            setShowCancelModal(true);
+        } else {
+            clearSavedPayment();
+            navigate('/');
+        }
+    };
+
+    const confirmCancel = async () => {
+        if (payment) {
             try {
                 await paymentApi.cancelPayment(payment._id, 'User cancelled');
                 clearSavedPayment();
@@ -180,10 +188,11 @@ export default function PaymentGatewayPage() {
                 clearSavedPayment();
                 navigate('/');
             }
-        } else if (!payment) {
-            clearSavedPayment();
-            navigate('/');
         }
+    };
+
+    const closeCancelModal = () => {
+        setShowCancelModal(false);
     };
 
     const formatTime = (seconds: number) => {
@@ -461,15 +470,16 @@ export default function PaymentGatewayPage() {
 
                         {/* Status indicator */}
                         <div className="mt-4 text-center">
-                            {step === 'checking' ? (
+                            {step === 'checking' && (
                                 <div className="flex items-center justify-center gap-2 text-blue-600">
                                     <Loader2 className="animate-spin" size={18} />
-                                    <span className="text-sm font-medium">Checking payment status...</span>
+                                    <span className="text-sm font-medium">Đang kiểm tra trạng thái...</span>
                                 </div>
-                            ) : step === 'pending' && pollingCount > 0 && (
+                            )}
+                            {step === 'pending' && (
                                 <div className="flex items-center justify-center gap-2 text-gray-500">
                                     <div className="animate-pulse w-2 h-2 bg-blue-500 rounded-full"></div>
-                                    <span className="text-sm">Waiting for payment ({pollingCount} checks)</span>
+                                    <span className="text-sm">Đang chờ thanh toán...</span>
                                 </div>
                             )}
                         </div>
@@ -538,6 +548,37 @@ export default function PaymentGatewayPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Cancel Confirmation Modal */}
+            {showCancelModal && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform animate-in fade-in zoom-in duration-200">
+                        <div className="text-center">
+                            <div className="bg-red-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                                <XCircle className="text-red-600" size={32} />
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-800 mb-2">Xác nhận hủy thanh toán</h3>
+                            <p className="text-gray-600 mb-6">
+                                Bạn có chắc chắn muốn hủy thanh toán này? Ghế đã chọn sẽ được trả về và bạn cần đặt lại từ đầu.
+                            </p>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={closeCancelModal}
+                                    className="flex-1 py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold rounded-lg transition-colors"
+                                >
+                                    Tiếp tục thanh toán
+                                </button>
+                                <button
+                                    onClick={confirmCancel}
+                                    className="flex-1 py-3 px-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors"
+                                >
+                                    Hủy thanh toán
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
