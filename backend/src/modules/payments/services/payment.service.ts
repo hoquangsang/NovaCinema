@@ -163,7 +163,6 @@ export class PaymentService {
   }
 
   public async handleWebhook(payload: any) {
-    console.log('Webhook payload received:', payload);
     const parsed = await this.payosService.parseWebhook(payload);
     if (!parsed.isPaid) {
       console.log('Payment status is not success');
@@ -199,10 +198,12 @@ export class PaymentService {
     const booking = await this.bookingService.markPendingPaymentToConfirmed(
       existing.bookingId,
     );
+    console.log('\nBooking confirmed:', booking.seats.map((s) => s.seatCode).join(', '));
+
     const tickets = await this.ticketService.createTicketsFromBooking(booking);
+    console.log('\nTickets created:', tickets.map((t) => t.code).join(', '));
 
     const user = await this.userService.findUserById(existing.userId);
-    console.log('User found:', user);
     if (user) {
       const result = await this.notificationService.sendPaymentSuccessEmail({
         to: user.email,
@@ -216,7 +217,7 @@ export class PaymentService {
           unitPrice: t.unitPrice,
         })),
       });
-      console.log('Email sent successfully', result);
+      console.log(`\nEmail sent successfully: ${user.email}\n`);
     }
   }
 

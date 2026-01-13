@@ -116,8 +116,7 @@ export class TicketService {
     const roomChar = ROOM_TYPE_CODE_MAP[roomType] || 'XX';
     const seatChar = SEAT_TYPE_CODE_MAP[seatType] || 'SS';
     const oid = new Types.ObjectId().toHexString().toUpperCase();
-    const middleHash = oid.slice(0, 10);
 
-    return `${roomChar}-${middleHash}-${seatChar}`;
+    return `${roomChar}-${oid}-${seatChar}`;
   }
 }
