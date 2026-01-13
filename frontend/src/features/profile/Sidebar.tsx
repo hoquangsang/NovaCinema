@@ -1,15 +1,14 @@
-import { useState } from 'react';
 import type { User } from '../../api/endpoints/auth.api';
 import { UserCircle, History, LogOut } from 'lucide-react';
 
 interface Props {
   user: User | null;
   onLogout: () => void;
+  selected: 'info' | 'history';
+  onTabChange: (tab: 'info' | 'history') => void;
 }
 
-const Sidebar = ({ user, onLogout }: Props) => {
-  const [selected, setSelected] = useState<'info' | 'history' | 'logout'>('info');
-
+const Sidebar = ({ user, onLogout, selected, onTabChange }: Props) => {
   const itemClass = (key: 'info' | 'history' | 'logout') => {
     if (selected === key) {
       return 'flex items-center px-3 py-2 mb-1 text-yellow-300 font-bold cursor-pointer border-l-2 border-yellow-400';
@@ -32,30 +31,30 @@ const Sidebar = ({ user, onLogout }: Props) => {
         </div>
       </div>
 
-    <div className="mt-3">
-      <a
-        onClick={() => setSelected('info')}
-        className={itemClass('info')}
-      >
-        <UserCircle className="mr-3" size={18} />
-        Thông tin khách hàng
-      </a>
-      <a
-        onClick={() => setSelected('history')}
-        className={itemClass('history')}
-      >
-        <History className="mr-3" size={18} />
-        Lịch sử mua hàng
-      </a>
-      <button
-        type="button"
-        onClick={() => { setSelected('logout'); onLogout(); }}
-        className={itemClass('logout')}
-      >
-        <LogOut className="mr-3" size={18} />
-        Đăng xuất
-      </button>
-    </div>
+      <div className="mt-3">
+        <a
+          onClick={() => onTabChange('info')}
+          className={itemClass('info')}
+        >
+          <UserCircle className="mr-3" size={18} />
+          Thông tin khách hàng
+        </a>
+        <a
+          onClick={() => onTabChange('history')}
+          className={itemClass('history')}
+        >
+          <History className="mr-3" size={18} />
+          Lịch sử mua hàng
+        </a>
+        <button
+          type="button"
+          onClick={onLogout}
+          className={itemClass('logout')}
+        >
+          <LogOut className="mr-3" size={18} />
+          Đăng xuất
+        </button>
+      </div>
     </aside>
   );
 };
