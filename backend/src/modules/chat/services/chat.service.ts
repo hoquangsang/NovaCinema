@@ -39,14 +39,17 @@ export class ChatService {
    */
   async processMessage(userMessage: string): Promise<string> {
     const normalizedMessage = userMessage.toLowerCase().trim();
+    this.logger.log(`[CHAT] Processing: "${userMessage}"`);
 
     // Priority 1: Rule-based responses
     const ruleBasedResponse = await this.checkRuleBasedResponse(normalizedMessage);
     if (ruleBasedResponse) {
+      this.logger.log(`[CHAT] Response type: RULE-BASED`);
       return ruleBasedResponse;
     }
 
     // Priority 2: AI Gemini response
+    this.logger.log(`[CHAT] Response type: AI GEMINI`);
     return this.getAIResponse(userMessage);
   }
 
@@ -64,7 +67,7 @@ export class ChatService {
       return this.getAddressResponse();
     }
 
-    // Lịch chiếu
+    // Lịch chiếu (hướng dẫn)
     if (this.matchKeywords(message, RULE_BASED_KEYWORDS.SHOWTIME)) {
       return this.getShowtimeResponse();
     }
@@ -195,7 +198,7 @@ ${CINEMA_INFO.THEATERS.map((t, i) => `${i + 1}. **${t.name}**
 
 💡 **Tip:** Đặt vé online để chọn được ghế đẹp nhất!
 
-Bạn cần tìm lịch chiếu phim cụ thể nào không? Hãy cho mình biết tên phim nhé! 🎥`;
+Bạn có thể hỏi "lịch chiếu hôm nay" để xem các suất chiếu ngay! 🎥`;
   }
 
   private async getMoviesResponse(): Promise<string> {

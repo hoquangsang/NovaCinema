@@ -39,10 +39,10 @@ export const RULE_BASED_KEYWORDS = {
   PRICE: ['giá', 'vé', 'price', 'bao nhiêu tiền', 'giá tiền', 'ticket'] as const,
 
   // Địa chỉ rạp
-  ADDRESS: ['địa chỉ', 'ở đâu', 'location', 'rạp ở', 'chỗ nào', 'đường nào', 'phòng chiếu'] as const,
+  ADDRESS: ['địa chỉ', 'ở đâu', 'location', 'rạp ở', 'chỗ nào', 'đường nào'] as const,
 
-  // Lịch chiếu
-  SHOWTIME: ['giờ chiếu', 'lịch chiếu', 'suất chiếu', 'chiếu lúc', 'mấy giờ', 'showtime', 'schedule'] as const,
+  // Lịch chiếu (hướng dẫn truy cập website)
+  SHOWTIME: ['giờ chiếu', 'lịch chiếu', 'suất chiếu', 'chiếu lúc', 'mấy giờ', 'showtime', 'hôm nay'] as const,
 
   // Phim đang chiếu
   MOVIES: ['phim gì', 'phim nào', 'đang chiếu', 'phim mới', 'phim hay', 'danh sách phim', 'movies'] as const,
