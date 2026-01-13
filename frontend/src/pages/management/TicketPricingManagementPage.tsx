@@ -73,7 +73,9 @@ export default function TicketPricingManagementPage() {
             setDayModifiers(dayMods);
         } catch (error: unknown) {
             console.error('Failed to load pricing config:', error);
-            const errorMessage = error instanceof Error ? error.message : 'Failed to load pricing configuration';
+            const errorMessage = 
+                (error as { message?: string })?.message || 
+                (error instanceof Error ? error.message : 'Failed to load pricing configuration');
             toast.push(errorMessage, 'error');
         } finally {
             setLoading(false);
@@ -115,7 +117,9 @@ export default function TicketPricingManagementPage() {
             toast.push('Pricing configuration updated successfully!', 'success');
         } catch (error: unknown) {
             console.error('Failed to update pricing config:', error);
-            const errorMessage = error instanceof Error ? error.message : 'Failed to update pricing configuration';
+            const errorMessage = 
+                (error as { message?: string })?.message || 
+                (error instanceof Error ? error.message : 'Failed to update pricing configuration');
             toast.push(errorMessage, 'error');
         } finally {
             setSaving(false);
@@ -280,6 +284,7 @@ export default function TicketPricingManagementPage() {
                         type="number"
                         value={basePrice}
                         onChange={(e) => setBasePrice(Number(e.target.value))}
+                        onFocus={(e) => e.target.select()}
                         disabled={!editMode}
                         className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-50 disabled:cursor-not-allowed text-lg font-semibold transition-all"
                         min="0"
@@ -312,6 +317,7 @@ export default function TicketPricingManagementPage() {
                                     type="number"
                                     value={delta}
                                     onChange={(e) => setSeatModifiers({ ...seatModifiers, [type]: Number(e.target.value) })}
+                                    onFocus={(e) => e.target.select()}
                                     disabled={!editMode}
                                     className="w-full pl-8 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:bg-white disabled:cursor-not-allowed transition-all"
                                     min="0"
@@ -346,6 +352,7 @@ export default function TicketPricingManagementPage() {
                                     type="number"
                                     value={delta}
                                     onChange={(e) => setRoomModifiers({ ...roomModifiers, [type]: Number(e.target.value) })}
+                                    onFocus={(e) => e.target.select()}
                                     disabled={!editMode}
                                     className="w-full pl-8 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent disabled:bg-white disabled:cursor-not-allowed transition-all"
                                     min="0"
@@ -380,6 +387,7 @@ export default function TicketPricingManagementPage() {
                                     type="number"
                                     value={delta}
                                     onChange={(e) => setDayModifiers({ ...dayModifiers, [day]: Number(e.target.value) })}
+                                    onFocus={(e) => e.target.select()}
                                     disabled={!editMode}
                                     className="w-full pl-8 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent disabled:bg-white disabled:cursor-not-allowed transition-all"
                                     min="0"
