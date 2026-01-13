@@ -233,26 +233,56 @@ export default function CheckoutPage() {
                             <span className="text-3xl font-bold text-yellow-400">{formatCurrency(totalAmount)}</span>
                         </div>
 
-                        {/* Payment Button */}
-                        <button
-                            onClick={handlePayWithPayOS}
-                            disabled={isProcessing}
-                            className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-4 px-6 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
-                        >
-                            {isProcessing ? (
-                                <>
-                                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                                    Processing...
-                                </>
-                            ) : (
-                                <>
-                                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z" />
-                                    </svg>
-                                    Pay with PayOS
-                                </>
-                            )}
-                        </button>
+                        {/* Payment Buttons */}
+                        <div className="space-y-3">
+                            {/* Custom Payment Gateway - NEW */}
+                            <button
+                                onClick={() => navigate('/payment-gateway', {
+                                    state: {
+                                        showtime,
+                                        selectedSeats,
+                                        totalAmount
+                                    }
+                                })}
+                                disabled={isProcessing}
+                                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-4 px-6 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-lg"
+                            >
+                                {isProcessing ? (
+                                    <>
+                                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                                        Processing...
+                                    </>
+                                ) : (
+                                    <>
+                                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M3,6H21V18H3V6M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9M7,8A2,2 0 0,1 5,10V14A2,2 0 0,1 7,16H17A2,2 0 0,1 19,14V10A2,2 0 0,1 17,8H7Z" />
+                                        </svg>
+                                        Pay with QR Code (Recommended)
+                                    </>
+                                )}
+                            </button>
+
+                            {/* PayOS Redirect - Original */}
+                            <button
+                                onClick={handlePayWithPayOS}
+                                disabled={isProcessing}
+                                className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-4 px-6 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                            >
+                                {isProcessing ? (
+                                    <>
+                                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                                        Processing...
+                                    </>
+                                ) : (
+                                    <>
+                                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z" />
+                                        </svg>
+                                        Pay with PayOS (Redirect)
+                                    </>
+                                )}
+                            </button>
+                        </div>
 
                         <button
                             onClick={() => navigate(-1)}
