@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Clock, MapPin, Calendar, Users } from 'lucide-react';
+import { MapPin, Calendar, Users } from 'lucide-react';
 import type { Showtime } from '../api/endpoints/showtime.api';
 import type { BookingSeat } from '../api/endpoints/booking.api';
 
@@ -15,8 +15,6 @@ export default function CheckoutPage() {
     const navigate = useNavigate();
     const state = location.state as CheckoutState;
 
-    const [timeLeft, setTimeLeft] = useState(600); // 10 minutes in seconds
-
     // Redirect if no booking data
     useEffect(() => {
         if (!state || !state.showtime || !state.selectedSeats || state.selectedSeats.length === 0) {
@@ -24,34 +22,11 @@ export default function CheckoutPage() {
         }
     }, [state, navigate]);
 
-    // Countdown timer
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setTimeLeft((prev) => {
-                if (prev <= 1) {
-                    clearInterval(timer);
-                    alert('Time expired! Please select seats again.');
-                    navigate('/');
-                    return 0;
-                }
-                return prev - 1;
-            });
-        }, 1000);
-
-        return () => clearInterval(timer);
-    }, [navigate]);
-
     if (!state) {
         return null;
     }
 
     const { showtime, selectedSeats, totalAmount } = state;
-
-    const formatTime = (seconds: number) => {
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${mins}:${secs.toString().padStart(2, '0')}`;
-    };
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('vi-VN', {
@@ -81,20 +56,6 @@ export default function CheckoutPage() {
     return (
         <div className="min-h-screen bg-gray-900 py-8">
             <div className="container mx-auto px-4 max-w-4xl">
-                {/* Timer Warning */}
-                <div className="bg-orange-900/50 border border-orange-500 rounded-lg p-4 mb-6 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <Clock className="text-orange-400" size={24} />
-                        <div>
-                            <h3 className="text-orange-400 font-semibold">Complete payment within</h3>
-                            <p className="text-orange-200 text-sm">Your seats are temporarily reserved</p>
-                        </div>
-                    </div>
-                    <div className="text-3xl font-bold text-orange-400 font-mono">
-                        {formatTime(timeLeft)}
-                    </div>
-                </div>
-
                 <div className="bg-gray-800 rounded-lg shadow-xl overflow-hidden">
                     {/* Header */}
                     <div className="bg-gradient-to-r from-yellow-400 to-yellow-500 p-6">

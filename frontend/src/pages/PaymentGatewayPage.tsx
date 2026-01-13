@@ -3,9 +3,9 @@
  * Custom payment page with QR code display (alternative to PayOS redirect)
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { QrCode, Clock, CreditCard, AlertCircle, CheckCircle, Loader2, ArrowLeft, XCircle } from 'lucide-react';
+import { QrCode, Clock, CreditCard, AlertCircle, CheckCircle, Loader2, XCircle } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import type { Showtime } from '../api/endpoints/showtime.api';
 import type { BookingSeat } from '../api/endpoints/booking.api';
@@ -30,12 +30,20 @@ export default function PaymentGatewayPage() {
     const [timeLeft, setTimeLeft] = useState(600); // 10 minutes
     const [error, setError] = useState<string>('');
     const [showCancelModal, setShowCancelModal] = useState(false);
+    const [isInitialized, setIsInitialized] = useState(false);
+    
+    // Ref to prevent double initialization (React StrictMode)
+    const isInitializingRef = useRef(false);
 
     // Storage key for persisting payment state
     const STORAGE_KEY = 'pendingPaymentGateway';
 
     // Load saved payment state on mount (for page reload)
     useEffect(() => {
+        // Prevent double initialization (React StrictMode runs effects twice)
+        if (isInitializingRef.current) return;
+        isInitializingRef.current = true;
+        
         const savedPayment = sessionStorage.getItem(STORAGE_KEY);
         if (savedPayment) {
             try {
@@ -52,6 +60,7 @@ export default function PaymentGatewayPage() {
                             setStep('expired');
                         }
                     }
+                    setIsInitialized(true);
                     return; // Don't redirect, we have saved state
                 }
             } catch (e) {
@@ -63,15 +72,11 @@ export default function PaymentGatewayPage() {
         // Redirect if no booking data and no saved state
         if (!state || !state.showtime || !state.selectedSeats || state.selectedSeats.length === 0) {
             navigate('/');
+            return;
         }
-    }, [navigate, state]);
-
-    // Create booking and payment on mount (only if no saved payment)
-    useEffect(() => {
-        const savedPayment = sessionStorage.getItem(STORAGE_KEY);
-        if (state && step === 'creating' && !savedPayment) {
-            createPayment();
-        }
+        
+        // Create new payment
+        createPayment();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -140,6 +145,7 @@ export default function PaymentGatewayPage() {
             const paymentData = await paymentApi.createPayment(booking._id);
             setPayment(paymentData);
             setStep('pending');
+            setIsInitialized(true);
 
             // Save to sessionStorage for page reload
             sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
@@ -157,6 +163,7 @@ export default function PaymentGatewayPage() {
                 'Failed to create payment. Please try again.';
             setError(errorMessage);
             setStep('failed');
+            setIsInitialized(true);
         }
     };
 
@@ -223,14 +230,14 @@ export default function PaymentGatewayPage() {
 
     const { showtime, selectedSeats, totalAmount } = state;
 
-    // Creating payment
-    if (step === 'creating') {
+    // Show loading while initialization is in progress
+    if (!isInitialized) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
                 <div className="text-center">
                     <Loader2 className="animate-spin text-blue-500 mx-auto mb-4" size={64} />
-                    <p className="text-white text-xl">Creating your payment...</p>
-                    <p className="text-gray-400 mt-2">Please wait a moment</p>
+                    <p className="text-white text-xl">Đang tạo thanh toán...</p>
+                    <p className="text-gray-400 mt-2">Vui lòng chờ trong giây lát</p>
                 </div>
             </div>
         );
@@ -318,22 +325,6 @@ export default function PaymentGatewayPage() {
     // Payment pending - Show QR Code
     return (
         <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
-            {/* Header */}
-            <div className="bg-black/30 backdrop-blur-sm border-b border-white/10">
-                <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-                    <button
-                        onClick={handleCancel}
-                        className="flex items-center gap-2 text-white hover:text-gray-300 transition-colors"
-                    >
-                        <ArrowLeft size={20} />
-                        <span>Cancel Payment</span>
-                    </button>
-                    <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md px-4 py-2 rounded-lg border border-white/20">
-                        <Clock className="text-yellow-400" size={20} />
-                        <span className="text-white font-semibold text-lg">{formatTime(timeLeft)}</span>
-                    </div>
-                </div>
-            </div>
 
             <div className="container mx-auto px-4 py-8">
                 <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -541,15 +532,31 @@ export default function PaymentGatewayPage() {
                             </div>
                         </div>
 
-                        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
-                            <p className="text-sm text-yellow-200 flex items-start gap-2">
-                                <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
-                                <span>
-                                    Please complete your payment within <strong>{formatTime(timeLeft)}</strong> minutes.
-                                    The system will automatically check your payment status.
-                                </span>
+                        {/* Countdown Timer - Prominent */}
+                        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl p-4 border border-indigo-400/50 shadow-xl">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <Clock className="text-indigo-200" size={28} />
+                                    <div>
+                                        <p className="text-xs text-indigo-200 font-medium">Thời gian còn lại</p>
+                                        <p className="text-3xl font-bold text-white">{formatTime(timeLeft)}</p>
+                                    </div>
+                                </div>
+                                <AlertCircle className="text-indigo-200" size={32} />
+                            </div>
+                            <p className="text-xs text-indigo-100 mt-3">
+                                Vui lòng hoàn tất thanh toán trước khi hết thời gian. Hệ thống sẽ tự động kiểm tra trạng thái.
                             </p>
                         </div>
+
+                        {/* Cancel Button */}
+                        <button
+                            onClick={handleCancel}
+                            className="w-full mt-4 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-4 rounded-xl transition-colors font-semibold shadow-lg"
+                        >
+                            <XCircle size={24} />
+                            <span>Hủy thanh toán</span>
+                        </button>
                     </div>
                 </div>
             </div>
