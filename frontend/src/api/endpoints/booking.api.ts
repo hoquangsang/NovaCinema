@@ -32,6 +32,29 @@ export interface BookingSeat {
 
 export type BookingStatus = 'DRAFT' | 'PENDING_PAYMENT' | 'CONFIRMED' | 'CANCELLED' | 'EXPIRED';
 
+export interface Ticket {
+    _id: string;
+    code: string;
+    bookingId: string;
+    showtimeId: string;
+    userId: string;
+    status: 'VALID' | 'USED' | 'CANCELLED' | 'EXPIRED';
+    scannedAt?: string;
+    startAt?: string;
+    // Snapshot data
+    movieTitle?: string;
+    moviePoster?: string;
+    theaterName?: string;
+    roomName?: string;
+    roomType?: string;
+    // Seat info
+    seatType: string;
+    seatCode: string;
+    unitPrice: number;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
 export interface Booking {
     _id: string;
     userId: string;
@@ -142,5 +165,16 @@ export const bookingApi = {
         const response = await apiClient.get('/users/me/bookings', { params: query });
         // Interceptor already transformed the response, so just return it directly
         return response as any;
+    },
+
+    /**
+     * Get tickets for a specific booking
+     * Returns list of tickets with QR codes for the booking
+     */
+    getTicketsByBookingId: async (bookingId: string): Promise<Ticket[]> => {
+        const response = await apiClient.get(`/bookings/${bookingId}/tickets`);
+        // Interceptor returns response.data which contains the full API response
+        // So we need to extract the data array from it
+        return response.data || response;
     },
 };

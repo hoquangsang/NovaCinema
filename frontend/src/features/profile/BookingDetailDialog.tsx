@@ -1,5 +1,8 @@
-import { X } from 'lucide-react';
-import type { Booking } from '../../api/endpoints/booking.api';
+import { useEffect, useState } from 'react';
+import { X, Loader2 } from 'lucide-react';
+import Barcode from 'react-barcode';
+import type { Booking, Ticket } from '../../api/endpoints/booking.api';
+import { bookingApi } from '../../api/endpoints/booking.api';
 
 interface Props {
     booking: Booking | null;
@@ -8,6 +11,46 @@ interface Props {
 }
 
 const BookingDetailDialog = ({ booking, isOpen, onClose }: Props) => {
+    const [tickets, setTickets] = useState<Ticket[]>([]);
+    const [loadingTickets, setLoadingTickets] = useState(false);
+
+    // Fetch tickets when dialog opens with a booking
+    useEffect(() => {
+        if (!isOpen || !booking) {
+            setTickets([]);
+            return;
+        }
+
+        console.log('Fetching tickets for booking:', booking._id);
+        const fetchTickets = async () => {
+            setLoadingTickets(true);
+            try {
+                const ticketData = await bookingApi.getTicketsByBookingId(booking._id);
+                console.log('API returned tickets:', ticketData);
+
+                if (Array.isArray(ticketData)) {
+                    setTickets(ticketData);
+                } else if ((ticketData as any).items && Array.isArray((ticketData as any).items)) {
+                    // Handle pagination structure from interceptor
+                    setTickets((ticketData as any).items);
+                } else if ((ticketData as any).data && Array.isArray((ticketData as any).data)) {
+                    // Handle standard API response wrapper
+                    setTickets((ticketData as any).data);
+                } else {
+                    console.error('Unknown ticket response structure:', ticketData);
+                    setTickets([]);
+                }
+            } catch (error) {
+                console.error('Failed to fetch tickets:', error);
+                setTickets([]);
+            } finally {
+                setLoadingTickets(false);
+            }
+        };
+
+        fetchTickets();
+    }, [isOpen, booking]);
+
     if (!isOpen || !booking) return null;
 
     const formatDate = (dateString?: string) => {
@@ -62,8 +105,14 @@ const BookingDetailDialog = ({ booking, isOpen, onClose }: Props) => {
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            onClick={onClose}
+        >
+            <div
+                className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+            >
                 {/* Header */}
                 <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between rounded-t-lg z-10">
                     <h2 className="text-2xl font-bold text-gray-800">Booking Details</h2>
@@ -185,6 +234,68 @@ const BookingDetailDialog = ({ booking, isOpen, onClose }: Props) => {
                             </p>
                         </div>
                     )}
+
+                    {/* Tickets with QR Codes */}
+                    <div>
+                        <div className="flex items-center justify-between mb-3">
+                            <label className="text-sm font-semibold text-gray-600">Your Tickets</label>
+                            {tickets.length > 0 && (
+                                <span className="text-xs font-semibold px-2 py-1 bg-purple-100 text-purple-700 rounded-full">
+                                    {tickets.length} Ticket{tickets.length > 1 ? 's' : ''}
+                                </span>
+                            )}
+                        </div>
+                        {loadingTickets ? (
+                            <div className="flex items-center justify-center py-8">
+                                <Loader2 className="animate-spin text-purple-600" size={32} />
+                            </div>
+                        ) : tickets.length > 0 ? (
+                            <div className="grid grid-cols-1 gap-4">
+                                {tickets.map((ticket, idx) => (
+                                    <div key={ticket._id} className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg p-4 border border-purple-200">
+                                        <div className="flex items-start justify-between gap-4">
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <span className="font-bold text-purple-700">Ticket #{idx + 1}</span>
+                                                    <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-xs font-semibold">
+                                                        {ticket.seatCode}
+                                                    </span>
+                                                </div>
+                                                <div className="text-sm space-y-1 text-gray-700">
+                                                    <p><strong>Seat Type:</strong> {ticket.seatType}</p>
+                                                    <p><strong>Price:</strong> {formatCurrency(ticket.unitPrice)}</p>
+                                                    {ticket.status && (
+                                                        <p>
+                                                            <strong>Status:</strong>{' '}
+                                                            <span className={`px-2 py-0.5 rounded text-xs font-semibold ${ticket.status === 'VALID' ? 'bg-green-100 text-green-700' :
+                                                                ticket.status === 'USED' ? 'bg-gray-100 text-gray-700' :
+                                                                    'bg-red-100 text-red-700'
+                                                                }`}>
+                                                                {ticket.status}
+                                                            </span>
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="bg-white p-2 rounded-lg shadow-sm">
+                                                <Barcode
+                                                    value={ticket.code}
+                                                    width={1.5}
+                                                    height={60}
+                                                    fontSize={12}
+                                                    margin={5}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="bg-gray-50 rounded-lg p-6 text-center text-gray-500 text-sm">
+                                No tickets available yet
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Footer */}
