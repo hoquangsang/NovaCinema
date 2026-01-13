@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../common/Button';
 import { useAuth } from '../../context/AuthContext';
 import { useState, useEffect } from 'react';
+import { movieApi } from '../../api/endpoints/movie.api';
 
 // Helper function to get last name from full name
 const getLastName = (fullName: string): string => {
@@ -43,6 +44,25 @@ export default function Header() {
     }
   };
 
+  const handleBuyTicket = async () => {
+    console.log('Buy ticket button clicked!');
+    try {
+      const response = await movieApi.getNowShowing(1, 100);
+      console.log('Movies response:', response);
+      if (response.items && response.items.length > 0) {
+        const randomMovie = response.items[Math.floor(Math.random() * response.items.length)];
+        console.log('Random movie selected:', randomMovie);
+        navigate(`/movie/${randomMovie._id}`);
+      } else {
+        console.log('No movies found, redirecting to now-showing');
+        navigate('/now-showing');
+      }
+    } catch (error) {
+      console.error('Error fetching movies:', error);
+      navigate('/now-showing');
+    }
+  };
+
   return (
     <header className="w-full bg-[#10142C] text-white shadow-lg sticky top-0 z-50">
       <div className="container mx-auto max-w-7xl px-4">
@@ -70,7 +90,7 @@ export default function Header() {
               />
             </div>
 
-            <Button intent="primary" className="hidden sm:flex">
+            <Button intent="primary" className="hidden sm:flex" onClick={handleBuyTicket}>
               <Ticket size={16} />
               <span>BUY TICKETS</span>
             </Button>
@@ -147,12 +167,6 @@ export default function Header() {
           </nav>
 
           <nav className="flex items-center gap-6">
-            <a
-              href="/discounts"
-              className="font-semibold text-white transition-colors hover:text-yellow-400 hover:border-b-2 border-yellow-400"
-            >
-              Discounts
-            </a>
             <Link
               to="/about-us"
               className="font-semibold text-white transition-colors hover:text-yellow-400 hover:border-b-2 border-yellow-400"
