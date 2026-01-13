@@ -18,6 +18,7 @@ import { BookingsModule } from './modules/bookings';
 import { PaymentsModule } from './modules/payments';
 import { TicketsModule } from './modules/tickets';
 import { ChatModule } from './modules/chat';
+import { DashboardModule } from './modules/dashboard';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { ChatModule } from './modules/chat';
     PaymentsModule,
     TicketsModule,
     ChatModule,
+    DashboardModule,
   ],
 
   providers: [
