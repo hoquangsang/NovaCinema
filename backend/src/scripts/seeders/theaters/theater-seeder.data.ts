@@ -1,7 +1,9 @@
-import { Seat, SeatMap, Theater } from 'src/modules/theaters';
+import { Types } from 'mongoose';
+import { Theater } from 'src/modules/theaters';
+import { SEAT_TYPES } from 'src/modules/theaters/constants';
+import { RoomType, SeatType } from 'src/modules/theaters/types';
 
 export const THEATERS_DATA: Theater[] = [
-  // Ho Chi Minh City - 4 theaters
   {
     theaterName: 'NovaCinema Landmark 81',
     address: '720A Điện Biên Phủ, Phường 22, Bình Thạnh, Ho Chi Minh',
@@ -22,8 +24,6 @@ export const THEATERS_DATA: Theater[] = [
     address: '240-242 Phạm Văn Đồng, Thủ Đức, Ho Chi Minh',
     hotline: '1900 1114',
   },
-
-  // Ha Noi - 4 theaters
   {
     theaterName: 'NovaCinema Royal City',
     address: '72 Nguyễn Trãi, Thanh Xuân, Ha Noi',
@@ -44,8 +44,6 @@ export const THEATERS_DATA: Theater[] = [
     address: '54 Liễu Giai, Ba Đình, Ha Noi',
     hotline: '1900 2224',
   },
-
-  // Da Nang - 2 theaters
   {
     theaterName: 'NovaCinema Vincom Đà Nẵng',
     address: '910 Ngô Quyền, Sơn Trà, Da Nang',
@@ -56,8 +54,6 @@ export const THEATERS_DATA: Theater[] = [
     address: '74 Bạch Đằng, Hải Châu, Da Nang',
     hotline: '1900 3332',
   },
-
-  // Can Tho - 2 theaters
   {
     theaterName: 'NovaCinema Vincom Cần Thơ',
     address: '209 Đường 30/4, Ninh Kiều, Can Tho',
@@ -70,23 +66,85 @@ export const THEATERS_DATA: Theater[] = [
   },
 ];
 
-export function generateSeatMap(
-  rowCount: number,
-  seatsPerRow: number,
-): SeatMap {
-  const seatMap: SeatMap = [];
+const LAST_ROW: (SeatType | null)[] = [
+  SEAT_TYPES.COUPLE,
+  SEAT_TYPES.COUPLE,
+  null,
+  SEAT_TYPES.VIP,
+  null,
+  null,
+  SEAT_TYPES.VIP,
+  null,
+  SEAT_TYPES.COUPLE,
+  SEAT_TYPES.COUPLE,
+];
 
-  for (let row = 0; row < rowCount; row++) {
-    const seatRow: (Seat | null)[] = [];
-    for (let col = 0; col < seatsPerRow; col++) {
+const LAYOUT: (SeatType | null)[][] = [
+  ...Array.from({ length: 8 }, () =>
+    Array.from({ length: 10 }, () => SEAT_TYPES.NORMAL),
+  ),
+  LAST_ROW,
+];
+
+const CAPACITY = LAYOUT.flat().filter((seat) => seat !== null).length;
+
+function seatCode(rowIndex: number, seatIndex: number): string {
+  return `${String.fromCharCode(65 + rowIndex)}${seatIndex + 1}`;
+}
+
+function buildSeatMap() {
+  return LAYOUT.map((row, rowIndex) => {
+    const seatRow: ({ seatCode: string; seatType: SeatType; isActive: boolean } | null)[] = [];
+    let seatNumber = 1;
+
+    for (let colIndex = 0; colIndex < row.length; colIndex++) {
+      const seatType = row[colIndex];
+
+      if (!seatType) {
+        seatRow.push(null);
+        continue;
+      }
+
+      // COUPLE SEAT HANDLING
+      if (seatType === SEAT_TYPES.COUPLE) {
+        if (row[colIndex + 1] !== SEAT_TYPES.COUPLE) {
+          throw new Error(
+            `COUPLE seat at row ${rowIndex}, col ${colIndex} must be paired`,
+          );
+        }
+
+        const code = seatCode(rowIndex, seatNumber);
+        seatRow.push({ seatCode: code, seatType, isActive: true });
+        seatRow.push({ seatCode: code, seatType, isActive: true });
+
+        seatNumber += 2;
+        colIndex++;
+        continue;
+      }
+
       seatRow.push({
-        seatCode: `${String.fromCharCode(65 + row)}${col + 1}`, // A1, B1, ...
-        seatType: 'NORMAL',
+        seatCode: seatCode(rowIndex, seatNumber),
+        seatType,
         isActive: true,
       });
+      seatNumber++;
     }
-    seatMap.push(seatRow);
-  }
 
-  return seatMap;
+    return seatRow;
+  });
+}
+
+export function generateRoom(
+  theaterId: Types.ObjectId,
+  roomName: string,
+  roomType: RoomType,
+) {
+  return {
+    theaterId,
+    roomName,
+    roomType,
+    seatMap: buildSeatMap(),
+    capacity: CAPACITY,
+    isActive: true,
+  };
 }

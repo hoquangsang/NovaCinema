@@ -3,6 +3,7 @@ import { UserSeederService } from './users/user-seeder.service';
 import { MovieSeederService } from './movies/movie-seeder.service';
 import { TheaterSeederService } from './theaters/theater-seeder.service';
 import { ShowtimeSeederService } from './showtimes/showtime-seeder.service';
+import { BookingSeederService } from './bookings/booking-seeder.service';
 
 @Injectable()
 export class SeederService {
@@ -13,6 +14,7 @@ export class SeederService {
     private readonly movieSeeder: MovieSeederService,
     private readonly theaterSeeder: TheaterSeederService,
     private readonly showtimeSeeder: ShowtimeSeederService,
+    private readonly bookingSeeder: BookingSeederService,
   ) {}
 
   async seed() {
@@ -23,6 +25,8 @@ export class SeederService {
     await this.theaterSeeder.seed();
 
     await this.showtimeSeeder.seed();
+
+    await this.bookingSeeder.seed();
 
     this.logger.log('All seed done');
   }

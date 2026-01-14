@@ -4,6 +4,7 @@ import { UserSeederService } from './users';
 import { MovieSeederService } from './movies';
 import { TheaterSeederService } from './theaters';
 import { ShowtimeSeederService } from './showtimes';
+import { BookingSeederService } from './bookings';
 import { SeederModule } from './seeders.module';
 import { SeederService } from './seeder.service';
 
@@ -12,6 +13,7 @@ const SEED_TARGETS = {
   MOVIES: 'movies',
   THEATERS: 'theaters',
   SHOWTIMES: 'showtimes',
+  BOOKINGS: 'bookings',
   ALL: 'all',
 } as const;
 
@@ -28,6 +30,7 @@ const SEEDER_MAP: Record<SeedTarget, new (...args: any[]) => Seeder> = {
   [SEED_TARGETS.MOVIES]: MovieSeederService,
   [SEED_TARGETS.THEATERS]: TheaterSeederService,
   [SEED_TARGETS.SHOWTIMES]: ShowtimeSeederService,
+  [SEED_TARGETS.BOOKINGS]: BookingSeederService,
   [SEED_TARGETS.ALL]: SeederService,
 };
 

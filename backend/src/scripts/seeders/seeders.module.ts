@@ -5,6 +5,7 @@ import { UsersSeederModule } from './users';
 import { MoviesSeederModule } from './movies';
 import { TheaterSeederModule } from './theaters';
 import { ShowtimeSeederModule } from './showtimes';
+import { BookingSeederModule } from './bookings';
 import { SeederService } from './seeder.service';
 
 @Module({
@@ -15,6 +16,7 @@ import { SeederService } from './seeder.service';
     MoviesSeederModule,
     TheaterSeederModule,
     ShowtimeSeederModule,
+    BookingSeederModule,
   ],
   providers: [SeederService],
   exports: [SeederService],

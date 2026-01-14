@@ -7,11 +7,11 @@ import {
   Theater,
   TheaterDocument,
 } from 'src/modules/theaters';
-import { THEATERS_DATA, generateSeatMap } from './theater-seeder.data';
+import { THEATERS_DATA, generateRoom } from './theater-seeder.data';
 
-const ROOM_COUNT = 8;
-const ROW_COUNT = 8;
-const SEATS_PER_ROW = 10;
+const ROOM_2D_COUNT = 5;
+const ROOM_3D_COUNT = 2;
+const ROOM_VIP_COUNT = 1;
 
 @Injectable()
 export class TheaterSeederService {
@@ -20,7 +20,6 @@ export class TheaterSeederService {
   constructor(
     @InjectModel(Theater.name)
     private readonly theaterModel: Model<TheaterDocument>,
-
     @InjectModel(Room.name)
     private readonly roomModel: Model<RoomDocument>,
   ) {}
@@ -39,21 +38,26 @@ export class TheaterSeederService {
 
     for (let index = 0; index < theaters.length; index++) {
       const theater = theaters[index];
-      const theaterId = theater._id;
 
-      const roomsToInsert: Room[] = [];
-      for (let i = 1; i <= ROOM_COUNT; i++) {
-        roomsToInsert.push({
-          theaterId,
-          roomName: `Room ${i}`,
-          seatMap: generateSeatMap(ROW_COUNT, SEATS_PER_ROW),
-          roomType: '2D',
-          capacity: ROW_COUNT * SEATS_PER_ROW,
-        });
+      const rooms: Room[] = [];
+
+      // 2D rooms
+      for (let i = 1; i <= ROOM_2D_COUNT; i++) {
+        rooms.push(generateRoom(theater._id, `Room ${String(i).padStart(2, '0')}`, '2D'));
       }
 
-      await this.roomModel.insertMany(roomsToInsert);
-      totalRooms += roomsToInsert.length;
+      // 3D rooms
+      for (let i = 1; i <= ROOM_3D_COUNT; i++) {
+        rooms.push(generateRoom(theater._id, `Room 3D ${String(i).padStart(2, '0')}`, '3D'));
+      }
+
+      // VIP rooms
+      for (let i = 1; i <= ROOM_VIP_COUNT; i++) {
+        rooms.push(generateRoom(theater._id, `Room VIP ${String(i).padStart(2, '0')}`, 'VIP'));
+      }
+
+      await this.roomModel.insertMany(rooms);
+      totalRooms += rooms.length;
 
       const shortName =
         theater.theaterName.length > 30
@@ -61,7 +65,9 @@ export class TheaterSeederService {
           : theater.theaterName;
 
       this.logger.log(
-        `[${String(index + 1).padStart(2, '0')}/${theaters.length}] ${shortName.padEnd(30)} | inserted ${roomsToInsert.length} rooms`,
+        `[${String(index + 1).padStart(2, '0')}/${theaters.length}] ${shortName.padEnd(
+          30,
+        )} | inserted ${rooms.length} rooms`,
       );
     }
 
